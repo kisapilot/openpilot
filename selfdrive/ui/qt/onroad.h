@@ -102,6 +102,7 @@ private:
   QPixmap gear_img_r;
   QPixmap gear_img_n;
   QPixmap gear_img_d;
+  QPixmap kisapilot_img;
 
   float speed;
   QString speedUnit;

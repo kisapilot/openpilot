@@ -410,7 +410,7 @@ class CarState(CarStateBase):
       else:
         ret.gas = cp.vl["E_EMS11"]["Accel_Pedal_Pos"] / 254.
         ret.engineRpm = cp.vl["ELECT_GEAR"]["Elect_Motor_Speed"] * 30 # kisa, may multiply deceleration ratio in line with engine rpm
-        ret.chargeMeter = cp.vl["EV_Info"]["KISA_EV_Charge_Level"] # kisa
+        ret.chargeMeter = cp.vl["EV_Info"]["EV_Charge_Level"] # kisa
       ret.gasPressed = ret.gas > 0
     else:
       ret.gas = cp.vl["EMS12"]["PV_AV_CAN"] / 100.
