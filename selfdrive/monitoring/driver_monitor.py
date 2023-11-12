@@ -123,6 +123,12 @@ class DriverBlink():
 
 class DriverStatus():
   def __init__(self, rhd_saved=False, settings=None):
+    # For ehanacement of Driver Monitoring, Not for nerfing or disabling
+    self.EyesThreshold = float(Decimal(Params().get("OpkrMonitorEyesThreshold", encoding="utf8")) * Decimal('0.01')) # def(0.65) ~ 0.1
+    self.BlinkThreshold = float(Decimal(Params().get("OpkrMonitorBlinkThreshold", encoding="utf8")) * Decimal('0.01')) # def(0.895) ~ 0.1
+    self.monitoring_mode = Params().get_bool("OpkrMonitoringMode") # unsleep mode
+    self.second = 0.0
+
     if settings is None:
       settings = DRIVER_MONITOR_SETTINGS()
     # init policy settings
@@ -160,12 +166,6 @@ class DriverStatus():
     self.threshold_prompt = self.settings._DISTRACTED_PROMPT_TIME_TILL_TERMINAL / self.settings._DISTRACTED_TIME
 
     self._set_timers(active_monitoring=True)
-
-    # For ehanacement of Driver Monitoring, Not for nerfing or disabling
-    self.EyesThreshold = float(Decimal(Params().get("OpkrMonitorEyesThreshold", encoding="utf8")) * Decimal('0.01')) # def(0.65) ~ 0.1
-    self.BlinkThreshold = float(Decimal(Params().get("OpkrMonitorBlinkThreshold", encoding="utf8")) * Decimal('0.01')) # def(0.895) ~ 0.1
-    self.monitoring_mode = Params().get_bool("OpkrMonitoringMode") # unsleep mode
-    self.second = 0.0
 
   def _reset_awareness(self):
     self.awareness = 1.
