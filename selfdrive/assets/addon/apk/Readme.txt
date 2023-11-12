@@ -1,4 +1,4 @@
-1. Prepare a device with Android version equal or upper than 7.0(Nougat)
+1. Prepare a device with Android version equal or upper than 6.0(marshmallow)
 2. Root the device
 3. Install kisa connect and Navi application on the device.
 4. Connect to same Wifi Network the Device and Openpilot Device.
