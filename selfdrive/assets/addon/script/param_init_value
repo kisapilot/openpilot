@@ -165,3 +165,4 @@ SetSpeedFive:0
 CruiseSpammingSpd:50,80,110
 CruiseSpammingLevel:15,10,5,0
 KisaCruiseGapSet:4
+UseLegacyLaneModel:0

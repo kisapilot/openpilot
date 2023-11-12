@@ -4125,4 +4125,15 @@ This may take up to a minute.</source>
         <translation>업로드 프로세스를 활성화하여 시스템 로그 및 기타 주행 데이터를 서버로 전송합니다. 오프로드 상태에서만 업로드합니다. 이 기능은 리소스를 많이 사용하므로 데이터 분석외 평시에는 해당기능을 끄는것을 권장합니다.</translation>
     </message>
 </context>
+<context>
+    <name>UseLegacyLaneModel</name>
+    <message>
+        <source>Use Legacy Lane Model</source>
+        <translation>기존 Lateral MPC 경로 사용</translation>
+    </message>
+    <message>
+        <source>Use MPC lateral plan instead of model path if you feel bad the new laterl plan from model.</source>
+        <translation>모델 경로가 아닌 기존 MPC경로를 사용합니다. 새로운 모델 경로가 불편하거나 기존 레인모델 선호시 기능을 켭니다.</translation>
+    </message>
+</context>
 </TS>

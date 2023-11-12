@@ -33,7 +33,7 @@ LATERAL_JERK_COST = 0.04
 # speed lateral control is stable on all cars
 STEERING_RATE_COST = 700.0
 
-USER_SPECIFIC_FEATURE = int(Params().get("UserSpecificFeature", encoding="utf8")) if Params().get("UserSpecificFeature", encoding="utf8") is not None else 0
+USE_LEGACY_LANE_MODEL = Params().get_bool("UseLegacyLaneModel") if Params().get_bool("UseLegacyLaneModel") is not None else False
 
 
 class LateralPlanner:
@@ -49,7 +49,7 @@ class LateralPlanner:
     self.path_xyz = np.zeros((TRAJECTORY_SIZE, 3))
     self.velocity_xyz = np.zeros((TRAJECTORY_SIZE, 3))
     self.v_plan = np.zeros((TRAJECTORY_SIZE,))
-    if USER_SPECIFIC_FEATURE == 30:
+    if USE_LEGACY_LANE_MODEL:
       self.plan_yaw = np.zeros((TRAJECTORY_SIZE,))
       self.plan_yaw_rate = np.zeros((TRAJECTORY_SIZE,))
       self.t_idxs = np.arange(TRAJECTORY_SIZE)
@@ -343,7 +343,7 @@ class LateralPlanner:
 
     # Parse model predictions
     md = sm['modelV2']
-    if USER_SPECIFIC_FEATURE == 30:
+    if USE_LEGACY_LANE_MODEL:
       self.parse_model(md, sm, v_ego)
       if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
         self.path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
@@ -371,7 +371,7 @@ class LateralPlanner:
     lane_change_prob = self.l_lane_change_prob + self.r_lane_change_prob
     self.DH.update(CP, sm['carState'], sm['controlsState'], sm['carControl'].latActive, lane_change_prob, md)
 
-    if USER_SPECIFIC_FEATURE == 30:
+    if USE_LEGACY_LANE_MODEL:
       self.lat_mpc.set_weights(PATH_COST, LATERAL_MOTION_COST,
                               LATERAL_ACCEL_COST, LATERAL_JERK_COST,
                               STEERING_RATE_COST)
@@ -447,14 +447,14 @@ class LateralPlanner:
         self.solution_invalid_cnt = 0
 
   def publish(self, sm, pm):
-    if USER_SPECIFIC_FEATURE == 30:
+    if USE_LEGACY_LANE_MODEL:
       plan_solution_valid = self.solution_invalid_cnt < 2
     plan_send = messaging.new_message('lateralPlan')
     plan_send.valid = sm.all_checks(service_list=['carState', 'controlsState', 'modelV2'])
 
     lateralPlan = plan_send.lateralPlan
     lateralPlan.modelMonoTime = sm.logMonoTime['modelV2']
-    if USER_SPECIFIC_FEATURE == 30:
+    if USE_LEGACY_LANE_MODEL:
       lateralPlan.laneWidth = float(self.lane_width)
       lateralPlan.dPathPoints = self.y_pts.tolist()
       lateralPlan.psis = self.lat_mpc.x_sol[0:CONTROL_N, 2].tolist()
@@ -477,14 +477,14 @@ class LateralPlanner:
       lateralPlan.mpcSolutionValid = bool(1)
       lateralPlan.solverExecutionTime = 0.0
     if self.debug_mode:
-      if USER_SPECIFIC_FEATURE == 30:
+      if USE_LEGACY_LANE_MODEL:
         lateralPlan.solverCost = self.lat_mpc.cost
       lateralPlan.solverState = log.LateralPlan.SolverState.new_message()
-      if USER_SPECIFIC_FEATURE == 30:
+      if USE_LEGACY_LANE_MODEL:
         lateralPlan.solverState.x = self.lat_mpc.x_sol.tolist()
       else:
         lateralPlan.solverState.x = self.x_sol.tolist()
-      if USER_SPECIFIC_FEATURE == 30:
+      if USE_LEGACY_LANE_MODEL:
         lateralPlan.solverState.u = self.lat_mpc.u_sol.flatten().tolist()
 
     lateralPlan.desire = self.DH.desire

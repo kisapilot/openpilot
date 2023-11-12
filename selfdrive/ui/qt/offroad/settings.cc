@@ -522,6 +522,7 @@ DrivingPanel::DrivingPanel(QWidget *parent) : QFrame(parent) {
   layout->addWidget(new ToAvoidLKASFaultToggle());
   layout->addWidget(new ToAvoidLKASFault());
   layout->addWidget(new SetSpeedByFive());
+  layout->addWidget(new UseLegacyLaneModel());
 }
 
 DeveloperPanel::DeveloperPanel(QWidget *parent) : QFrame(parent) {

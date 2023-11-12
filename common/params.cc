@@ -422,6 +422,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"CruiseSpammingLevel", PERSISTENT},
     {"KisaCruiseGapSet", PERSISTENT},
     {"KisaPilotCurrentDescription", PERSISTENT},
+    {"UseLegacyLaneModel", PERSISTENT},
 };
 
 } // namespace

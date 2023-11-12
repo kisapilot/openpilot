@@ -245,6 +245,7 @@ def manager_init() -> None:
     ("CruiseSpammingSpd", "50,80,110"),
     ("CruiseSpammingLevel", "15,10,5,0"),
     ("KisaCruiseGapSet", "4"),
+    ("UseLegacyLaneModel", "0"),
   ]
   if not PC:
     default_params.append(("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')))
