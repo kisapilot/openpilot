@@ -87,6 +87,8 @@ procs = [
   #PythonProcess("uploader", "system.loggerd.uploader", always_run),
   #PythonProcess("statsd", "selfdrive.statsd", always_run),
 
+  PythonProcess("kupdate", "selfdrive.kupdate", always_run),
+
   # debug procs
   NativeProcess("bridge", "cereal/messaging", ["./bridge"], notcar),
   PythonProcess("webjoystick", "tools.bodyteleop.web", notcar),
