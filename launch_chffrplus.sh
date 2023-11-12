@@ -102,6 +102,9 @@ function launch {
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
 
+  # KisaPilot Current Stat
+  git log -n 1 --pretty=format:"* %cd/%h" --date=short > /data/params/d/KisaPilotCurrentDescription
+  
   # start manager
   cd selfdrive/manager
   if [ -f "/data/params/d/OSMEnable" ]; then

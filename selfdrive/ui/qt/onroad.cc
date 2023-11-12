@@ -380,7 +380,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
   gear_img_r = loadPixmap("../assets/addon/img/circle_green_letter-r.svg", {img_size+45, img_size+45});
   gear_img_n = loadPixmap("../assets/addon/img/circle_blue_letter-n.svg", {img_size+45, img_size+45});
   gear_img_d = loadPixmap("../assets/addon/img/circle_green_letter-d.svg", {img_size+45, img_size+45});
-  kisapilot_img = loadPixmap("../assets/addon/img/kisapilot.png", {img_size-45, img_size-45});
+  kisapilot_img = loadPixmap("../assets/addon/img/kisapilot.png", {img_size-35, img_size-35});
 
   // neokii screen recorder, thx for sharing:)
   record_timer = std::make_shared<QTimer>();
@@ -1135,8 +1135,8 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     int m_y = m_btn_center_y - m_btn_size/2;
     QRect multi_btn_draw(m_x, m_y, m_btn_size, m_btn_size);
 
-    drawIcon(p, m_btn_center_x, m_btn_center_y, kisapilot_img, QColor(0, 0, 0, 30), 1.0);
-    p.setBrush(blackColor(70));
+    drawIcon(p, m_btn_center_x, m_btn_center_y, kisapilot_img, QColor(0, 0, 0, 20), 1.0);
+    p.setBrush(blackColor(60));
     p.setPen(Qt::NoPen);
     p.drawEllipse(m_x-15, m_y-15, m_btn_size+30, m_btn_size+30);
     if (s->scene.liveENaviData.ekisaconalive) {
@@ -1145,7 +1145,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       p.setPen(QPen(QColor(255, 255, 255, 80), 6));
     }
     p.setBrush(Qt::NoBrush);
-    if (s->scene.lateralPlan.lanelessModeStatus) p.setBrush(QColor(13, 177, 248, 100));
+    //if (s->scene.lateralPlan.lanelessModeStatus) p.setBrush(QColor(13, 177, 248, 100));
     p.drawEllipse(multi_btn_draw);
     p.setPen(whiteColor(200));
     p.setFont(InterFont(43, QFont::DemiBold));

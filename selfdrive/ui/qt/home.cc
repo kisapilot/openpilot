@@ -627,7 +627,7 @@ void OffroadHome::hideEvent(QHideEvent *event) {
 }
 
 void OffroadHome::refresh() {
-  version->setText("KisaPilot " + QString::fromStdString(params.get("UpdaterCurrentDescription")));
+  version->setText("KisaPilot " + QString::fromStdString(params.get("KisaPilotCurrentDescription")));
 
   bool updateAvailable = update_widget->refresh();
   int alerts = alerts_widget->refresh();
