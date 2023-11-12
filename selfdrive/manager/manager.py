@@ -246,6 +246,9 @@ def manager_init() -> None:
     ("CruiseSpammingLevel", "15,10,5,0"),
     ("KisaCruiseGapSet", "4"),
     ("UseLegacyLaneModel", "0"),
+    ("OpkrMonitoringMode", "0"),
+    ("OpkrMonitorEyesThreshold", "45"),
+    ("OpkrMonitorBlinkThreshold", "35"),
   ]
   if not PC:
     default_params.append(("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')))

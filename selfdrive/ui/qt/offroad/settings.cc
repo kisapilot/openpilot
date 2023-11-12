@@ -445,10 +445,10 @@ UIPanel::UIPanel(QWidget *parent) : QFrame(parent) {
   });
   layout->addWidget(realdatadelbtn);
   layout->addWidget(horizontal_line());
-  //layout->addWidget(new MonitoringMode());
-  //layout->addWidget(new MonitorEyesThreshold());
-  //layout->addWidget(new NormalEyesThreshold());
-  //layout->addWidget(new BlinkThreshold());
+  layout->addWidget(new MonitoringMode());
+  layout->addWidget(new MonitorEyesThreshold());
+  layout->addWidget(new BlinkThreshold());
+  layout->addWidget(horizontal_line());
   layout->addWidget(new KISANaviSelect());
   layout->addWidget(new ExternalDeviceIP());
   //layout->addWidget(new KISAServerSelect());

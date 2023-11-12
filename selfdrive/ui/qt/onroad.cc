@@ -1816,7 +1816,11 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   int x = rightHandDM ? width() - offset : offset;
   int y = scene.low_ui_profile?offset:(height() - offset);
   float opacity = dmActive ? 0.65 : 0.2;
-  drawIcon(painter, x, y, dm_img, blackColor(70), opacity);
+  if (scene.monitoring_mode) {
+    drawIcon(painter, x, y, dm_img, orangeColor(150), opacity);
+  } else {
+    drawIcon(painter, x, y, dm_img, blackColor(70), opacity);
+  }
 
   // face
   QPointF face_kpts_draw[std::size(default_face_kpts_3d)];

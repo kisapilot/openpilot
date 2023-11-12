@@ -7,6 +7,9 @@ from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.stat_live import RunningStatFilter
 from openpilot.common.transformations.camera import tici_d_frame_size
 
+from common.params import Params
+from decimal import Decimal
+
 EventName = car.CarEvent.EventName
 
 # ******************************************************************************************
@@ -158,6 +161,12 @@ class DriverStatus():
 
     self._set_timers(active_monitoring=True)
 
+    # For ehanacement of Driver Monitoring, Not for nerfing or disabling
+    self.EyesThreshold = float(Decimal(Params().get("OpkrMonitorEyesThreshold", encoding="utf8")) * Decimal('0.01')) # def(0.65) ~ 0.1
+    self.BlinkThreshold = float(Decimal(Params().get("OpkrMonitorBlinkThreshold", encoding="utf8")) * Decimal('0.01')) # def(0.895) ~ 0.1
+    self.monitoring_mode = Params().get_bool("OpkrMonitoringMode") # unsleep mode
+    self.second = 0.0
+
   def _reset_awareness(self):
     self.awareness = 1.
     self.awareness_active = 1.
@@ -166,7 +175,7 @@ class DriverStatus():
   def _set_timers(self, active_monitoring):
     if self.active_monitoring_mode and self.awareness <= self.threshold_prompt:
       if active_monitoring:
-        self.step_change = self.settings._DT_DMON / self.settings._DISTRACTED_TIME
+        self.step_change = self.settings._DT_DMON / (self.settings._DISTRACTED_TIME if not self.monitoring_mode else 9.)
       else:
         self.step_change = 0.
       return  # no exploit after orange alert
@@ -179,9 +188,9 @@ class DriverStatus():
         self.awareness_passive = self.awareness
         self.awareness = self.awareness_active
 
-      self.threshold_pre = self.settings._DISTRACTED_PRE_TIME_TILL_TERMINAL / self.settings._DISTRACTED_TIME
-      self.threshold_prompt = self.settings._DISTRACTED_PROMPT_TIME_TILL_TERMINAL / self.settings._DISTRACTED_TIME
-      self.step_change = self.settings._DT_DMON / self.settings._DISTRACTED_TIME
+      self.threshold_pre = self.settings._DISTRACTED_PRE_TIME_TILL_TERMINAL / (self.settings._DISTRACTED_TIME if not self.monitoring_mode else 9.)
+      self.threshold_prompt = (self.settings._DISTRACTED_PROMPT_TIME_TILL_TERMINAL if not self.monitoring_mode else 7.) / (self.settings._DISTRACTED_TIME if not self.monitoring_mode else 9.)
+      self.step_change = self.settings._DT_DMON / (self.settings._DISTRACTED_TIME if not self.monitoring_mode else 9.)
       self.active_monitoring_mode = True
     else:
       if self.active_monitoring_mode:
@@ -210,7 +219,7 @@ class DriverStatus():
        yaw_error > self.settings._POSE_YAW_THRESHOLD*self.pose.cfactor_yaw:
       distracted_types.append(DistractedType.DISTRACTED_POSE)
 
-    if (self.blink.left_blink + self.blink.right_blink)*0.5 > self.settings._BLINK_THRESHOLD:
+    if (self.blink.left_blink + self.blink.right_blink)*0.5 > (self.settings._BLINK_THRESHOLD if not self.monitoring_mode else self.BlinkThreshold):
       distracted_types.append(DistractedType.DISTRACTED_BLINK)
 
     if self.ee1_calibrated:
@@ -239,6 +248,10 @@ class DriverStatus():
                                             self.settings._POSE_YAW_THRESHOLD_STRICT]) / self.settings._POSE_YAW_THRESHOLD
 
   def update_states(self, driver_state, cal_rpy, car_speed, op_engaged):
+    self.second += self.settings._DT_DMON
+    if self.second > 1.0:
+      self.monitoring_mode = Params().get_bool("OpkrMonitoringMode")
+      self.second = 0.0
     rhd_pred = driver_state.wheelOnRightProb
     # calibrates only when there's movement and either face detected
     if car_speed > self.settings._WHEELPOS_CALIB_MIN_SPEED and (driver_state.leftDriverData.faceProb > self.settings._FACE_THRESHOLD or
@@ -266,9 +279,9 @@ class DriverStatus():
     self.pose.yaw_std = driver_data.faceOrientationStd[1]
     model_std_max = max(self.pose.pitch_std, self.pose.yaw_std)
     self.pose.low_std = model_std_max < self.settings._POSESTD_THRESHOLD
-    self.blink.left_blink = driver_data.leftBlinkProb * (driver_data.leftEyeProb > self.settings._EYE_THRESHOLD) \
+    self.blink.left_blink = driver_data.leftBlinkProb * (driver_data.leftEyeProb > (self.settings._EYE_THRESHOLD if not self.monitoring_mode else self.EyesThreshold)) \
                                                                   * (driver_data.sunglassesProb < self.settings._SG_THRESHOLD)
-    self.blink.right_blink = driver_data.rightBlinkProb * (driver_data.rightEyeProb > self.settings._EYE_THRESHOLD) \
+    self.blink.right_blink = driver_data.rightBlinkProb * (driver_data.rightEyeProb > (self.settings._EYE_THRESHOLD if not self.monitoring_mode else self.EyesThreshold)) \
                                                                   * (driver_data.sunglassesProb < self.settings._SG_THRESHOLD)
     self.eev1 = driver_data.notReadyProb[0]
     self.eev2 = driver_data.readyProb[0]

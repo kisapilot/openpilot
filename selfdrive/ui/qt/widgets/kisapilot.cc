@@ -1542,8 +1542,8 @@ MonitorEyesThreshold::MonitorEyesThreshold() : AbstractControl(tr("E2E EYE Thres
     auto str = QString::fromStdString(params.get("KisaMonitorEyesThreshold"));
     int value = str.toInt();
     value = value - 1;
-    if (value <= 1) {
-      value = 1;
+    if (value <= 10) {
+      value = 10;
     }
     QString values = QString::number(value);
     params.put("KisaMonitorEyesThreshold", values.toStdString());
@@ -1605,8 +1605,8 @@ NormalEyesThreshold::NormalEyesThreshold() : AbstractControl(tr("Normal EYE Thre
     auto str = QString::fromStdString(params.get("KisaMonitorNormalEyesThreshold"));
     int value = str.toInt();
     value = value - 1;
-    if (value <= 1) {
-      value = 1;
+    if (value <= 10) {
+      value = 10;
     }
     QString values = QString::number(value);
     params.put("KisaMonitorNormalEyesThreshold", values.toStdString());
@@ -1668,8 +1668,8 @@ BlinkThreshold::BlinkThreshold() : AbstractControl(tr("Blink Threshold"), tr("Ad
     auto str = QString::fromStdString(params.get("KisaMonitorBlinkThreshold"));
     int value = str.toInt();
     value = value - 1;
-    if (value <= 1) {
-      value = 1;
+    if (value <= 10) {
+      value = 10;
     }
     QString values = QString::number(value);
     params.put("KisaMonitorBlinkThreshold", values.toStdString());
