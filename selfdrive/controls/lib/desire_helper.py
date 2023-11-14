@@ -81,7 +81,7 @@ class DesireHelper:
       pass
     v_ego = carstate.vEgo
     one_blinker = carstate.leftBlinker != carstate.rightBlinker
-    below_lane_change_speed = v_ego < LANE_CHANGE_SPEED_MIN
+    below_lane_change_speed = (v_ego < LANE_CHANGE_SPEED_MIN) or (LANE_CHANGE_SPEED_MIN == -1)
 
     left_edge_prob = np.clip(1.0 - md.roadEdgeStds[0], 0.0, 1.0)
     left_nearside_prob = md.laneLineProbs[0]
