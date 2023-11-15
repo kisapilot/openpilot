@@ -366,6 +366,8 @@ typedef struct UIScene {
   float driver_pose_coss[3];
   vec3 face_kpts_draw[std::size(default_face_kpts_3d)];
 
+  float dm_prob[5];
+
   bool navigate_on_openpilot = false;
 
   float light_sensor;

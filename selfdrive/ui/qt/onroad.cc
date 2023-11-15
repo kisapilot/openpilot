@@ -732,15 +732,22 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     uiText(p, ui_viz_rx, ui_viz_ry+320, "SF:" + QString::number(s->scene.liveParams.stiffnessFactor, 'f', 2));
     uiText(p, ui_viz_rx, ui_viz_ry+360, "AD:" + QString::number(s->scene.steer_actuator_delay, 'f', 2));
     uiText(p, ui_viz_rx, ui_viz_ry+400, "OS:" + QString::number(s->scene.output_scale, 'f', 2));
-    uiText(p, ui_viz_rx, ui_viz_ry+440, QString::number(s->scene.lateralPlan.lProb, 'f', 2) + "|" + QString::number(s->scene.lateralPlan.rProb, 'f', 2));
-    uiText(p, ui_viz_rx, ui_viz_ry+480, QString::number(s->scene.lateralPlan.dProb, 'f', 1) + "/" + QString::number(s->scene.lateralPlan.laneWidth, 'f', 1) + "m"
+    // uiText(p, ui_viz_rx, ui_viz_ry+440, QString::number(s->scene.lateralPlan.lProb, 'f', 2) + "|" + QString::number(s->scene.lateralPlan.rProb, 'f', 2));
+    uiText(p, ui_viz_rx, ui_viz_ry+440, QString::number(s->scene.lateralPlan.dProb, 'f', 1) + "/" + QString::number(s->scene.lateralPlan.laneWidth, 'f', 1) + "m"
                                 + "/" + QString::number(s->scene.lateralPlan.totalCameraOffset, 'f', 2));
-    uiText(p, ui_viz_rx, ui_viz_ry+520, QString::number(std::clamp<float>(1.0 - s->scene.road_edge_stds[0], 0.0, 1.0), 'f', 1)
+    uiText(p, ui_viz_rx, ui_viz_ry+480, QString::number(std::clamp<float>(1.0 - s->scene.road_edge_stds[0], 0.0, 1.0), 'f', 1)
                                 + "/" + QString::number(s->scene.lane_line_probs[0], 'f', 1)
                                 + "/" + QString::number(s->scene.lane_line_probs[1], 'f', 1)
                                 + "/" + QString::number(s->scene.lane_line_probs[2], 'f', 1)
                                 + "/" + QString::number(s->scene.lane_line_probs[3], 'f', 1)
                                 + "/" + QString::number(std::clamp<float>(1.0 - s->scene.road_edge_stds[1], 0.0, 1.0), 'f', 1));
+    if (s->scene.nDebugUi3) {
+      uiText(p, ui_viz_rx, ui_viz_ry+520, QString::number(s->scene.dm_prob[0], 'f', 2)
+                                  + "|" + QString::number(s->scene.dm_prob[1], 'f', 2)
+                                  + " (" + QString::number(s->scene.dm_prob[2], 'f', 2)
+                                  + ") " + QString::number(s->scene.dm_prob[3], 'f', 2)
+                                  + "|" + QString::number(s->scene.dm_prob[4], 'f', 2));
+    }
 
     if (!s->scene.low_ui_profile) {
       QString szLaCMethod = "";

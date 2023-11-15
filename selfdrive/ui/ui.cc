@@ -120,6 +120,12 @@ void update_model(UIState *s,
 void update_dmonitoring(UIState *s, const cereal::DriverStateV2::Reader &driverstate, float dm_fade_state, bool is_rhd) {
   UIScene &scene = s->scene;
   const auto driver_orient = is_rhd ? driverstate.getRightDriverData().getFaceOrientation() : driverstate.getLeftDriverData().getFaceOrientation();
+  const auto driver_data = is_rhd ? driverstate.getRightDriverData() : driverstate.getLeftDriverData();
+  scene.dm_prob[0] = driver_data.getLeftBlinkProb();
+  scene.dm_prob[1] = driver_data.getLeftEyeProb();
+  scene.dm_prob[2] = driver_data.getFaceProb();
+  scene.dm_prob[3] = driver_data.getRightEyeProb();
+  scene.dm_prob[4] = driver_data.getRightBlinkProb();
   for (int i = 0; i < std::size(scene.driver_pose_vals); i++) {
     float v_this = (i == 0 ? (driver_orient[i] < 0 ? 0.7 : 0.9) : 0.4) * driver_orient[i];
     scene.driver_pose_diff[i] = fabs(scene.driver_pose_vals[i] - v_this);
