@@ -512,7 +512,6 @@ void UIState::updateStatus() {
     scene.stock_lkas_on_disengagement = params.getBool("StockLKASEnabled");
     scene.ufc_mode = params.getBool("UFCModeEnabled");
     scene.op_long_enabled = params.getBool("ExperimentalLongitudinalEnabled");
-    scene.monitoring_mode = params.getBool("OpkrMonitoringMode");
 
     if (scene.autoScreenOff > 0) {
       scene.nTime = scene.autoScreenOff * 60 * UI_FREQ;

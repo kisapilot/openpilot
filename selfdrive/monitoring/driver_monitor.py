@@ -124,9 +124,9 @@ class DriverBlink():
 class DriverStatus():
   def __init__(self, rhd_saved=False, settings=None):
     # For ehanacement of Driver Monitoring, Not for nerfing or disabling
-    self.EyesThreshold = float(Decimal(Params().get("OpkrMonitorEyesThreshold", encoding="utf8")) * Decimal('0.01')) # def(0.65) ~ 0.1
-    self.BlinkThreshold = float(Decimal(Params().get("OpkrMonitorBlinkThreshold", encoding="utf8")) * Decimal('0.01')) # def(0.895) ~ 0.1
-    self.monitoring_mode = Params().get_bool("OpkrMonitoringMode") # unsleep mode
+    self.EyesThreshold = float(Decimal(Params().get("KisaMonitorEyesThreshold", encoding="utf8")) * Decimal('0.01')) # def(0.65) ~ 0.1
+    self.BlinkThreshold = float(Decimal(Params().get("KisaMonitorBlinkThreshold", encoding="utf8")) * Decimal('0.01')) # def(0.895) ~ 0.1
+    self.monitoring_mode = Params().get_bool("KisaMonitoringMode") # unsleep mode
     self.second = 0.0
 
     if settings is None:
@@ -202,7 +202,7 @@ class DriverStatus():
       self.step_change = self.settings._DT_DMON / self.settings._AWARENESS_TIME
       self.active_monitoring_mode = False
 
-  def _get_distracted_types(self):
+  def _get_distracted_types(self, car_spd):
     distracted_types = []
 
     if not self.pose_calibrated:
@@ -219,7 +219,7 @@ class DriverStatus():
        yaw_error > self.settings._POSE_YAW_THRESHOLD*self.pose.cfactor_yaw:
       distracted_types.append(DistractedType.DISTRACTED_POSE)
 
-    if (self.blink.left_blink + self.blink.right_blink)*0.5 > (self.settings._BLINK_THRESHOLD if not self.monitoring_mode else self.BlinkThreshold):
+    if (self.blink.left_blink + self.blink.right_blink)*0.5 > (self.settings._BLINK_THRESHOLD if not self.monitoring_mode else self.BlinkThreshold) and car_spd > 1:
       distracted_types.append(DistractedType.DISTRACTED_BLINK)
 
     if self.ee1_calibrated:
@@ -250,7 +250,7 @@ class DriverStatus():
   def update_states(self, driver_state, cal_rpy, car_speed, op_engaged):
     self.second += self.settings._DT_DMON
     if self.second > 1.0:
-      self.monitoring_mode = Params().get_bool("OpkrMonitoringMode")
+      self.monitoring_mode = Params().get_bool("KisaMonitoringMode")
       self.second = 0.0
     rhd_pred = driver_state.wheelOnRightProb
     # calibrates only when there's movement and either face detected
@@ -286,7 +286,7 @@ class DriverStatus():
     self.eev1 = driver_data.notReadyProb[0]
     self.eev2 = driver_data.readyProb[0]
 
-    self.distracted_types = self._get_distracted_types()
+    self.distracted_types = self._get_distracted_types(car_speed)
     self.driver_distracted = (DistractedType.DISTRACTED_E2E in self.distracted_types or DistractedType.DISTRACTED_POSE in self.distracted_types
                                 or DistractedType.DISTRACTED_BLINK in self.distracted_types) \
                               and driver_data.faceProb > self.settings._FACE_THRESHOLD and self.pose.low_std
