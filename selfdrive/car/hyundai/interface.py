@@ -68,6 +68,8 @@ class CarInterface(CarInterfaceBase):
     ret.steerActuatorDelay = 0.1  # Default delay
     ret.steerLimitTimer = 0.4
 
+    ret.radarTimeStep = 0.02  # 50Hz instead of standard 20Hz
+
     ret.smoothSteer.method = int( Params().get("KisaSteerMethod", encoding="utf8") )   # 1
     ret.smoothSteer.maxSteeringAngle = float( Params().get("KisaMaxSteeringAngle", encoding="utf8") )   # 90
     ret.smoothSteer.maxDriverAngleWait = float( Params().get("KisaMaxDriverAngleWait", encoding="utf8") )  # 0.002
