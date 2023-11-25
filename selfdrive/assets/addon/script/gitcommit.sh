@@ -11,7 +11,7 @@ if [ "$?" == "0" ]; then
   REMOTE_HASH=$(git rev-parse --verify origin/$CURRENT_BRANCH)
   echo -n "$REMOTE_HASH" > /data/params/d/GitCommitRemote
   if [ "$LOCAL_HASH" != "$REMOTE_HASH" ]; then
-    wget https://raw.githubusercontent.com/openpilotkr/openpilot/$CURRENT_BRANCH/KisaPilot_Updates.txt -O /data/KisaPilot_Updates.txt
+    wget https://raw.githubusercontent.com/kisapilot/openpilot/$CURRENT_BRANCH/KisaPilot_Updates.txt -O /data/KisaPilot_Updates.txt
   else
     if [ -f "/data/KisaPilot_Updates.txt" ]; then
       rm -f /data/KisaPilot_Updates.txt

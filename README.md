@@ -84,7 +84,7 @@ How To Install ❓💾
     - Comma 3: https://smiskol.com/fork/kisapilot/KisaPilot_test
 
 - ⌨️ `SSH:`
-  - cd /data && mv openpilot openpilot_bak && git clone https://github.com/openpilotkr/openpilot.git -b KisaPilot && reboot <br />
+  - cd /data && mv openpilot openpilot_bak && git clone https://github.com/kisapilot/openpilot.git -b KisaPilot && reboot <br />
 
 Setting Menu ⚙️📌
 =============

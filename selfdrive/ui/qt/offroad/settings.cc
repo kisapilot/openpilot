@@ -347,7 +347,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
           }
         }
       } else {
-        QString cmd1 = "wget https://raw.githubusercontent.com/openpilotkr/openpilot/"+QString::fromStdString(params.get("GitBranch"))+"/KisaPilot_Updates.txt -O /data/KisaPilot_Updates.txt";
+        QString cmd1 = "wget https://raw.githubusercontent.com/kisapilot/openpilot/"+QString::fromStdString(params.get("GitBranch"))+"/KisaPilot_Updates.txt -O /data/KisaPilot_Updates.txt";
         QProcess::execute(cmd1);
         QTimer::singleShot(2000, []() {});
         if (QFileInfo::exists("/data/KisaPilot_Updates.txt")) {
