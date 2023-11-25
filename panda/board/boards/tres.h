@@ -94,7 +94,7 @@ const board board_tres = {
   .set_fan_enabled = tres_set_fan_enabled,
   .set_ir_power = tres_set_ir_power,
   .set_phone_power = unused_set_phone_power,
-  .set_siren = fake_siren_set,
+  .set_siren = unused_set_siren, //fake_siren_set,
   .set_bootkick = tres_set_bootkick,
   .read_som_gpio = tres_read_som_gpio
 };
