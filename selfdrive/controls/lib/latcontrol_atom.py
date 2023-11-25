@@ -11,7 +11,7 @@ from decimal import Decimal
 from openpilot.common.conversions import Conversions as CV
 
 from openpilot.selfdrive.controls.lib.latcontrol import LatControl
-from openpilot.selfdrive.controls.lib.pid import PIDController, LatPIDController
+from openpilot.selfdrive.controls.lib.pid import PIDController
 
 from openpilot.selfdrive.controls.lib.latcontrol_torque import LatControlTorque
 from openpilot.selfdrive.controls.lib.latcontrol_lqr import LatControlLQR
@@ -130,7 +130,7 @@ class LatCtrlPidATOM(LatControlPID):
     self.steer_max = 1.0
     self.pid = PIDController((PID.kpBP, PID.kpV),
                              (PID.kiBP, PID.kiV),
-                             k_f=PID.kf, k_d=PID.kd
+                             k_f=PID.kf, k_d=PID.kd,
                              pos_limit=self.steer_max, neg_limit=-self.steer_max)
 
     self.get_steer_feedforward = CI.get_steer_feedforward_function()

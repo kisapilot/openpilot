@@ -33,29 +33,18 @@ const CanMsg HYUNDAI_COMMUNITY2_TX_MSGS[] = {
 };
 
 // older hyundai models have less checks due to missing counters and checksums
-AddrCheckStruct hyundai_community2_addr_checks[] = {
+RxCheck hyundai_community2_rx_checks[] = {
   {.msg = {{0x260, 0, 8, .check_checksum = true, .max_counter = 3U, .expected_timestep = 10000U},
            {0x371, 0, 8, .expected_timestep = 10000U}, { 0 }}},
   {.msg = {{0x386, 0, 8, .expected_timestep = 20000U}, { 0 }, { 0 }}},
   // {.msg = {{916, 0, 8, .expected_timestep = 20000U}}}, some Santa Fe does not have this msg, need to find alternative
 };
 
-#define HYUNDAI_COMMUNITY2_ADDR_CHECK_LEN (sizeof(hyundai_community2_addr_checks) / sizeof(hyundai_community2_addr_checks[0]))
-addr_checks hyundai_community2_rx_checks = {hyundai_community2_addr_checks, HYUNDAI_COMMUNITY2_ADDR_CHECK_LEN};
-
-static int hyundai_community2_rx_hook(CANPacket_t *to_push) {
+static void hyundai_community2_rx_hook(CANPacket_t *to_push) {
 
   int addr = GET_ADDR(to_push);
   int bus = GET_BUS(to_push);
 
-  bool valid = addr_safety_check(to_push, &hyundai_community2_rx_checks,
-                            hyundai_get_checksum, hyundai_compute_checksum,
-                            hyundai_get_counter, NULL);
-
-  if (!valid){
-    puth(addr);
-  }
-  if (bus == 1 && HKG_LCAN_on_bus1) {valid = false;}
   // check if we have a LCAN on Bus1
   if (bus == 1 && (addr == 0x510 || addr == 0x20C)) {
     HKG_Lcan_bus1_cnt = 500;
@@ -87,47 +76,44 @@ static int hyundai_community2_rx_hook(CANPacket_t *to_push) {
     }
   }
 
-  if (valid) {
-    if (addr == 0x251 && bus == HKG_mdps_bus) {
-      int torque_driver_new = ((GET_BYTES(to_push, 0, 4) & 0x7ffU) * 0.79) - 808; // scale down new driver torque signal to match previous one
-      // update array of samples
-      update_sample(&torque_driver, torque_driver_new);
-    }
-
-    if (addr == 0x420 && !OP_SCC_live) {
-      // 1 bits: 0
-      int cruise_available = GET_BIT(to_push, 0U);
-      hyundai_common_cruise_state_check_alt(cruise_available);
-    }
-
-    // cruise control for car without SCC
-    if (addr == 0x4F1 && bus == 0 && HKG_scc_bus == -1 && !OP_SCC_live) {
-      int cruise_button = GET_BYTE(to_push, 0) & 0x7U;
-      // enable on res+ or set- buttons press
-      if (!controls_allowed && (cruise_button == 1 || cruise_button == 2)) {
-        hyundai_common_cruise_state_check_alt(1);
-      }
-      // disable on cancel press
-      if (cruise_button == 4) {
-        controls_allowed = 0;
-      }
-    }
-
-    // sample wheel speed, averaging opposite corners
-    if (addr == 0x386 && bus == 0) {
-      uint32_t front_left_speed = GET_BYTES(to_push, 0, 2) & 0x3FFFU;
-      uint32_t rear_right_speed = GET_BYTES(to_push, 6, 2) & 0x3FFFU;
-      vehicle_moving = (front_left_speed > HYUNDAI_STANDSTILL_THRSLD) || (rear_right_speed > HYUNDAI_STANDSTILL_THRSLD);
-    }
-
-    gas_pressed = brake_pressed = false;
-
-    generic_rx_checks((addr == 0x340 && bus == 0));
+  if (addr == 0x251 && bus == HKG_mdps_bus) {
+    int torque_driver_new = ((GET_BYTES(to_push, 0, 4) & 0x7ffU) * 0.79) - 808; // scale down new driver torque signal to match previous one
+    // update array of samples
+    update_sample(&torque_driver, torque_driver_new);
   }
-  return valid;
+
+  if (addr == 0x420 && !OP_SCC_live) {
+    // 1 bits: 0
+    int cruise_available = GET_BIT(to_push, 0U);
+    hyundai_common_cruise_state_check_alt(cruise_available);
+  }
+
+  // cruise control for car without SCC
+  if (addr == 0x4F1 && bus == 0 && HKG_scc_bus == -1 && !OP_SCC_live) {
+    int cruise_button = GET_BYTE(to_push, 0) & 0x7U;
+    // enable on res+ or set- buttons press
+    if (!controls_allowed && (cruise_button == 1 || cruise_button == 2)) {
+      hyundai_common_cruise_state_check_alt(1);
+    }
+    // disable on cancel press
+    if (cruise_button == 4) {
+      controls_allowed = 0;
+    }
+  }
+
+  // sample wheel speed, averaging opposite corners
+  if (addr == 0x386 && bus == 0) {
+    uint32_t front_left_speed = GET_BYTES(to_push, 0, 2) & 0x3FFFU;
+    uint32_t rear_right_speed = GET_BYTES(to_push, 6, 2) & 0x3FFFU;
+    vehicle_moving = (front_left_speed > HYUNDAI_STANDSTILL_THRSLD) || (rear_right_speed > HYUNDAI_STANDSTILL_THRSLD);
+  }
+
+  gas_pressed = brake_pressed = false;
+
+  generic_rx_checks((addr == 0x340 && bus == 0));
 }
 
-static int hyundai_community2_tx_hook(CANPacket_t *to_send) {
+static bool hyundai_community2_tx_hook(CANPacket_t *to_send) {
 
   int tx = 1;
   int addr = GET_ADDR(to_send);
@@ -270,7 +256,7 @@ static int hyundai_community2_fwd_hook(int bus_num, int addr) {
   return bus_fwd;
 }
 
-static const addr_checks* hyundai_community2_init(uint16_t param) {
+static safety_config hyundai_community2_init(uint16_t param) {
   hyundai_common_init(param);
   controls_allowed = false;
   relay_malfunction_reset();
@@ -279,8 +265,7 @@ static const addr_checks* hyundai_community2_init(uint16_t param) {
   //   current_board->set_can_mode(CAN_MODE_OBD_CAN2);
   // }
 
-  hyundai_community2_rx_checks = (addr_checks){hyundai_community2_addr_checks, HYUNDAI_COMMUNITY2_ADDR_CHECK_LEN};
-  return &hyundai_community2_rx_checks;
+  return BUILD_SAFETY_CFG(hyundai_community2_rx_checks, HYUNDAI_COMMUNITY2_TX_MSGS);
 }
 
 const safety_hooks hyundai_community2_hooks = {

@@ -54,53 +54,42 @@ const CanMsg HYUNDAI_COMMUNITY1_CAMERA_SCC_TX_MSGS[] = {
   {0x4A2, 0, 8}, // FRT_RADAR11 Bus 0
 };
 
-AddrCheckStruct hyundai_community1_addr_checks[] = {
-  {.msg = {{0x260, 0, 8, .check_checksum = true, .max_counter = 3U, .expected_timestep = 10000U},
-           {0x371, 0, 8, .expected_timestep = 10000U}, { 0 }}},
-  {.msg = {{0x386, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 10000U}, { 0 }, { 0 }}},
-  {.msg = {{0x394, 0, 8, .check_checksum = true, .max_counter = 7U, .expected_timestep = 10000U}, { 0 }, { 0 }}},
-  {.msg = {{0x421, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},
-};
-#define HYUNDAI_COMMUNITY1_ADDR_CHECK_LEN (sizeof(hyundai_community1_addr_checks) / sizeof(hyundai_community1_addr_checks[0]))
 
-AddrCheckStruct hyundai_community1_cam_scc_addr_checks[] = {
-  {.msg = {{0x260, 0, 8, .check_checksum = true, .max_counter = 3U, .expected_timestep = 10000U},
-           {0x371, 0, 8, .expected_timestep = 10000U}, { 0 }}},
-  {.msg = {{0x386, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 10000U}, { 0 }, { 0 }}},
-  {.msg = {{0x394, 0, 8, .check_checksum = true, .max_counter = 7U, .expected_timestep = 10000U}, { 0 }, { 0 }}},
-  {.msg = {{0x421, 2, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},
-};
-#define HYUNDAI_COMMUNITY1_CAM_SCC_ADDR_CHECK_LEN (sizeof(hyundai_community1_cam_scc_addr_checks) / sizeof(hyundai_community1_cam_scc_addr_checks[0]))
+#define HYUNDAI_COMMUNITY1_RX_CHECKS(legacy)                                                                                              \
+  {.msg = {{0x260, 0, 8, .check_checksum = true, .max_counter = 3U, .expected_timestep = 10000U},                                       \
+           {0x371, 0, 8, .expected_timestep = 10000U}, { 0 }}},                                                                         \
+  {.msg = {{0x386, 0, 8, .check_checksum = !(legacy), .max_counter = (legacy) ? 0U : 15U, .expected_timestep = 10000U}, { 0 }, { 0 }}}, \
+  {.msg = {{0x394, 0, 8, .check_checksum = !(legacy), .max_counter = (legacy) ? 0U : 7U, .expected_timestep = 10000U}, { 0 }, { 0 }}},  \
 
-AddrCheckStruct hyundai_community1_long_addr_checks[] = {
-  {.msg = {{0x260, 0, 8, .check_checksum = true, .max_counter = 3U, .expected_timestep = 10000U},
-           {0x371, 0, 8, .expected_timestep = 10000U}, { 0 }}},
-  {.msg = {{0x386, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 10000U}, { 0 }, { 0 }}},
-  {.msg = {{0x394, 0, 8, .check_checksum = true, .max_counter = 7U, .expected_timestep = 10000U}, { 0 }, { 0 }}},
+#define HYUNDAI_COMMUNITY1_SCC12_ADDR_CHECK(scc_bus)                                                                                  \
+  {.msg = {{0x421, (scc_bus), 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}}, \
+
+RxCheck hyundai_community1_rx_checks[] = {
+   HYUNDAI_COMMUNITY1_RX_CHECKS(false)
+   HYUNDAI_COMMUNITY1_SCC12_ADDR_CHECK(0)
+};
+
+RxCheck hyundai_community1_cam_scc_rx_checks[] = {
+  HYUNDAI_COMMUNITY1_RX_CHECKS(false)
+  HYUNDAI_COMMUNITY1_SCC12_ADDR_CHECK(2)
+};
+
+RxCheck hyundai_community1_long_rx_checks[] = {
+  HYUNDAI_COMMUNITY1_RX_CHECKS(false)
+  // Use CLU11 (buttons) to manage controls allowed instead of SCC cruise state
   {.msg = {{0x4F1, 0, 4, .check_checksum = false, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},
 };
-#define HYUNDAI_COMMUNITY1_LONG_ADDR_CHECK_LEN (sizeof(hyundai_community1_long_addr_checks) / sizeof(hyundai_community1_long_addr_checks[0]))
 
 // older hyundai models have less checks due to missing counters and checksums
-AddrCheckStruct hyundai_community1_legacy_addr_checks[] = {
+RxCheck hyundai_community1_legacy_rx_checks[] = {
   {.msg = {{0x260, 0, 8, .check_checksum = true, .max_counter = 3U, .expected_timestep = 10000U},
            {0x371, 0, 8, .expected_timestep = 10000U}, { 0 }}},
   {.msg = {{0x386, 0, 8, .expected_timestep = 20000U}, { 0 }, { 0 }}},
-  //{.msg = {{0x394, 0, 8, .expected_timestep = 10000U}, { 0 }, { 0 }}},
-  //{.msg = {{0x421, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},
 };
-#define HYUNDAI_COMMUNITY1_LEGACY_ADDR_CHECK_LEN (sizeof(hyundai_community1_legacy_addr_checks) / sizeof(hyundai_community1_legacy_addr_checks[0]))
 
 bool hyundai_community1_legacy = false;
 
-addr_checks hyundai_community1_rx_checks = {hyundai_community1_addr_checks, HYUNDAI_COMMUNITY1_ADDR_CHECK_LEN};
-
-static int hyundai_community1_rx_hook(CANPacket_t *to_push) {
-
-  bool valid = addr_safety_check(to_push, &hyundai_community1_rx_checks,
-                                 hyundai_get_checksum, hyundai_compute_checksum,
-                                 hyundai_get_counter, NULL);
-
+static void hyundai_community1_rx_hook(CANPacket_t *to_push) {
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
 
@@ -112,13 +101,13 @@ static int hyundai_community1_rx_hook(CANPacket_t *to_push) {
   //}
 
   // MainMode ACC
-  if (valid && (addr == 0x420)) {
+  if (addr == 0x420) {
     // 1 bits: 0
     int cruise_available = GET_BIT(to_push, 0U);
     hyundai_common_cruise_state_check_alt(cruise_available);
   }
 
-  if (valid && (bus == 0)) {
+  if (bus == 0) {
     if (addr == 0x251) {
       int torque_driver_new = ((GET_BYTES(to_push, 0, 4) & 0x7ffU) * 0.79) - 808; // scale down new driver torque signal to match previous one
       // update array of samples
@@ -162,7 +151,6 @@ static int hyundai_community1_rx_hook(CANPacket_t *to_push) {
     }
     generic_rx_checks(stock_ecu_detected);
   }
-  return valid;
 }
 
 uint32_t last_ts_lkas11_from_op = 0;
@@ -170,18 +158,9 @@ uint32_t last_ts_scc12_from_op = 0;
 uint32_t last_ts_mdps12_from_op = 0;
 uint32_t last_ts_fca11_from_op = 0;
 
-static int hyundai_community1_tx_hook(CANPacket_t *to_send) {
-
+static bool hyundai_community1_tx_hook(CANPacket_t *to_send) {
   int tx = 1;
   int addr = GET_ADDR(to_send);
-
-  if (hyundai_longitudinal) {
-    tx = msg_allowed(to_send, HYUNDAI_COMMUNITY1_LONG_TX_MSGS, sizeof(HYUNDAI_COMMUNITY1_LONG_TX_MSGS)/sizeof(HYUNDAI_COMMUNITY1_LONG_TX_MSGS[0]));
-  } else if (hyundai_camera_scc) {
-    tx = msg_allowed(to_send, HYUNDAI_COMMUNITY1_CAMERA_SCC_TX_MSGS, sizeof(HYUNDAI_COMMUNITY1_CAMERA_SCC_TX_MSGS)/sizeof(HYUNDAI_COMMUNITY1_CAMERA_SCC_TX_MSGS[0]));
-  } else {
-    tx = msg_allowed(to_send, HYUNDAI_COMMUNITY1_TX_MSGS, sizeof(HYUNDAI_COMMUNITY1_TX_MSGS)/sizeof(HYUNDAI_COMMUNITY1_TX_MSGS[0]));
-  }
 
   // FCA11: Block any potential actuation
   if (addr == 0x38D) {
@@ -343,7 +322,7 @@ static int hyundai_community1_fwd_hook(int bus_num, int addr) {
   return bus_fwd;
 }
 
-static const addr_checks* hyundai_community1_init(uint16_t param) {
+static safety_config hyundai_community1_init(uint16_t param) {
   hyundai_common_init(param);
   hyundai_community1_legacy = false;
 
@@ -351,24 +330,24 @@ static const addr_checks* hyundai_community1_init(uint16_t param) {
     hyundai_longitudinal = false;
   }
 
+  safety_config ret;
   if (hyundai_longitudinal) {
-    hyundai_community1_rx_checks = (addr_checks){hyundai_community1_long_addr_checks, HYUNDAI_COMMUNITY1_LONG_ADDR_CHECK_LEN};
+    ret = BUILD_SAFETY_CFG(hyundai_community1_long_rx_checks, HYUNDAI_COMMUNITY1_LONG_TX_MSGS);
   } else if (hyundai_camera_scc) {
-    hyundai_community1_rx_checks = (addr_checks){hyundai_community1_cam_scc_addr_checks, HYUNDAI_COMMUNITY1_CAM_SCC_ADDR_CHECK_LEN};
+    ret = BUILD_SAFETY_CFG(hyundai_community1_cam_scc_rx_checks, HYUNDAI_COMMUNITY1_CAMERA_SCC_TX_MSGS);
   } else {
-    hyundai_community1_rx_checks = (addr_checks){hyundai_community1_addr_checks, HYUNDAI_COMMUNITY1_ADDR_CHECK_LEN};
+    ret = BUILD_SAFETY_CFG(hyundai_community1_rx_checks, HYUNDAI_COMMUNITY1_TX_MSGS);
   }
-  return &hyundai_community1_rx_checks;
+  return ret;
 }
 
-static const addr_checks* hyundai_community1_legacy_init(uint16_t param) {
+static safety_config hyundai_community1_legacy_init(uint16_t param) {
   hyundai_common_init(param);
   hyundai_community1_legacy = true;
   hyundai_longitudinal = false;
   hyundai_camera_scc = false;
 
-  hyundai_community1_rx_checks = (addr_checks){hyundai_community1_legacy_addr_checks, HYUNDAI_COMMUNITY1_LEGACY_ADDR_CHECK_LEN};
-  return &hyundai_community1_rx_checks;
+  return BUILD_SAFETY_CFG(hyundai_community1_legacy_rx_checks, HYUNDAI_COMMUNITY1_TX_MSGS);
 }
 
 const safety_hooks hyundai_community1_hooks = {
