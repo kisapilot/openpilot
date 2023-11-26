@@ -275,7 +275,7 @@ void MapWindow::initializeGL() {
   } else if (MAPBOX_STYLE == "2" && !Params().get("MapboxStyleCustom").empty()) {
     m_map->setStyleUrl(MAPBOX_CUSTOM); // yours
   } else if (MAPBOX_STYLE == "3") {
-    m_map->setStyleUrl("mapbox://styles/mapbox/satellite-streets-v12"); // sat
+    m_map->setStyleUrl("mapbox://styles/multikyd/clpf0fgbo003r01px93i00y5p"); // sat
   } else {
     m_map->setStyleUrl("mapbox://styles/commaai/clkqztk0f00ou01qyhsa5bzpj"); // comma
   }
