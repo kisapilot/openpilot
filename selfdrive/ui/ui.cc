@@ -526,6 +526,7 @@ void UIState::updateStatus() {
     }
     scene.comma_stock_ui = std::stoi(params.get("CommaStockUI"));
     scene.kisa_livetune_ui = params.getBool("KisaLiveTunePanelEnable");
+    std::system("sudo rm /data/kisa_starting");
     scene.read_params_once = true;
   }
 }
