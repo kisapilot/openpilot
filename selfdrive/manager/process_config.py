@@ -64,7 +64,7 @@ procs = [
   NativeProcess("mapsd", "selfdrive/navd", ["./mapsd"], only_onroad),
   PythonProcess("navmodeld", "selfdrive.modeld.navmodeld", only_onroad),
   NativeProcess("sensord", "system/sensord", ["./sensord"], only_onroad, enabled=not PC),
-  NativeProcess("ui", "selfdrive/ui", ["./ui"], always_run, watchdog_max_dt=(5 if not PC else None)),
+  NativeProcess("ui", "selfdrive/ui", ["./ui"], always_run, watchdog_max_dt=(10 if not PC else None)),
   NativeProcess("soundd", "selfdrive/ui/soundd", ["./soundd"], only_onroad),
   NativeProcess("locationd", "selfdrive/locationd", ["./locationd"], only_onroad),
   NativeProcess("boardd", "selfdrive/boardd", ["./boardd"], always_run, enabled=False),
@@ -107,11 +107,11 @@ if EnableUploader:
   ]
 if EnableOSM:
   procs += [
-    PythonProcess("mapd", "selfdrive.mapd.mapd", always_run),
+    PythonProcess("mapd", "selfdrive.mapd.mapd", only_onroad),
   ]
 if EnableExternalNavi:
   procs += [
-    PythonProcess("navid", "selfdrive.enavi.navi_external", always_run),
+    PythonProcess("navid", "selfdrive.enavi.navi_external", only_onroad),
   ]
 
 managed_processes = {p.name: p for p in procs}
