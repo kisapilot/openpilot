@@ -271,7 +271,7 @@ void MapWindow::initializeGL() {
   if (MAPBOX_STYLE == "0") {
     m_map->setStyleUrl("mapbox://styles/commaai/clkqztk0f00ou01qyhsa5bzpj"); // comma
   } else if (MAPBOX_STYLE == "1") {
-    m_map->setStyleUrl("mapbox://styles/multikyd/clpgruv1g005q01opetzq2loo"); // kisapilot
+    m_map->setStyleUrl("mapbox://styles/multikyd/clpj2s49q007r01opf8z347p5"); // kisapilot
   } else if (MAPBOX_STYLE == "2" && !Params().get("MapboxStyleCustom").empty()) {
     m_map->setStyleUrl(MAPBOX_CUSTOM); // yours
   } else if (MAPBOX_STYLE == "3") {
