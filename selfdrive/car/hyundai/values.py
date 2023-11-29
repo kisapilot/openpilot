@@ -245,7 +245,7 @@ CAR_INFO: Dict[str, Optional[Union[HyundaiCarInfo, List[HyundaiCarInfo]]]] = {
   CAR.GRANDEUR_HEV_IG: HyundaiCarInfo("Hyundai Grandeur IG Hybrid", "All", car_parts=CarParts.common([CarHarness.hyundai_c])),
   CAR.GRANDEUR_FL_IG: HyundaiCarInfo("Hyundai Grandeur IG FL", "All", car_parts=CarParts.common([CarHarness.hyundai_k])),
   CAR.GRANDEUR_HEV_FL_IG: HyundaiCarInfo("Hyundai Grandeur IG FL Hybrid", "All", car_parts=CarParts.common([CarHarness.hyundai_k])),
-  CAR.NEXO_FE: HyundaiCarInfo("Hyundai Nexo", "All"),
+  CAR.NEXO_FE: HyundaiCarInfo("Hyundai NEXO", "All", harness=Harness.hyundai_h),
 
   # Kia
   CAR.KIA_FORTE: [
@@ -403,6 +403,9 @@ FINGERPRINTS = {
   }],
   CAR.PALISADE: [{
     67: 8, 127: 8, 304: 8, 320: 8, 339: 8, 356: 4, 544: 8, 546: 8, 547: 8, 548: 8, 549: 8, 576: 8, 593: 8, 608: 8, 688: 6, 809: 8, 832: 8, 854: 7, 870: 7, 871: 8, 872: 8, 897: 8, 902: 8, 903: 8, 905: 8, 909: 8, 913: 8, 916: 8, 1040: 8, 1042: 8, 1056: 8, 1057: 8, 1064: 8, 1078: 4, 1107: 5, 1123: 8, 1136: 8, 1151: 6, 1155: 8, 1156: 8, 1157: 4, 1162: 8, 1164: 8, 1168: 7, 1170: 8, 1173: 8, 1180: 8, 1186: 2, 1191: 2, 1193: 8, 1210: 8, 1225: 8, 1227: 8, 1265: 4, 1280: 8, 1287: 4, 1290: 8, 1292: 8, 1294: 8, 1312: 8, 1322: 8, 1342: 6, 1345: 8, 1348: 8, 1363: 8, 1369: 8, 1371: 8, 1378: 8, 1384: 8, 1407: 8, 1419: 8, 1427: 6, 1456: 4, 1470: 8, 1988: 8, 1996: 8, 2000: 8, 2004: 8, 2005: 8, 2008: 8, 2012: 8
+  }],
+  CAR.NEXO_FE: [{
+    127: 8, 145: 8, 146: 8, 304: 8, 320: 8, 339: 8, 352: 8, 356: 4, 512: 6, 544: 8, 593: 8, 688: 5, 832: 8, 881: 8, 882: 8, 897: 8, 902: 8, 903: 8, 905: 8, 908: 8, 909: 8, 912: 7, 916: 8, 1056: 8, 1057: 8, 1078: 4, 1136: 8, 1151: 8, 1155: 8, 1156: 8, 1157: 4, 1162: 8, 1164: 8, 1168: 7, 1173: 8, 1174: 8, 1180: 8, 1183: 8, 1186: 2, 1191: 2, 1192: 8, 1193: 8, 1210: 8, 1219: 8, 1220: 8, 1222: 6, 1223: 8, 1224: 8, 1227: 8, 1230: 6, 1231: 6, 1265: 4, 1268: 8, 1280: 1, 1287: 4, 1290: 8, 1291: 8, 1292: 8, 1294: 8, 1297: 8, 1298: 8, 1305: 8, 1312: 8, 1315: 8, 1316: 8, 1322: 8, 1324: 8, 1342: 6, 1345: 8, 1348: 8, 1355: 8, 1363: 8, 1369: 8, 1371: 8, 1407: 8, 1419: 8, 1427: 6, 1429: 8, 1430: 8, 1437: 8, 1456: 4, 1460: 8, 1470: 8, 1484: 8, 1507: 8, 1520: 8, 1535: 8
   }],
 }
 
@@ -2132,6 +2135,21 @@ FW_VERSIONS = {
       b'\xf1\x00GL3_ RDR -----      1.00 1.02 99110-L8000         ',
     ],
   },
+  CAR.NEXO_FE: {
+    (Ecu.fwdCamera, 0x7c4, None): [
+      b'\xf1\x00FE  MFC  AT KOR LHD 1.00 1.04 99211-M5000 180918',
+    ],
+    (Ecu.fwdRadar, 0x7d0, None): [
+      b'\xf1\x00FE__ SCC FHCUP      1.00 1.03 99110-M5000         ',
+      b'\xf1\x00FE__ SCC FHCUP      1.00 1.04 99110-M5000         ',
+    ],
+    (Ecu.abs, 0x7c1, None): [
+      b'\xf1\x00FE IEB \x01 312 \x11\x13 58520-M5000',
+    ],
+    (Ecu.eps, 0x7d4, None): [
+      b'\xf1\x00FE  MDPS C 1.00 1.05 56340-M5000 9903',
+    ],
+  },
 }
 
 CHECKSUM = {
@@ -2268,7 +2286,7 @@ DBC = {
   CAR.GRANDEUR_HEV_IG: dbc_dict('hyundai_kia_generic', RadarTrack),
   CAR.GRANDEUR_FL_IG: dbc_dict('hyundai_kia_generic', RadarTrack),
   CAR.GRANDEUR_HEV_FL_IG: dbc_dict('hyundai_kia_generic', RadarTrack),
-  CAR.NEXO_FE: dbc_dict('hyundai_kia_generic', RadarTrack),
+  CAR.NEXO_FE: dbc_dict('hyundai_kia_generic', 'hyundai_kia_mando_front_radar_generated'),
   CAR.K3_BD: dbc_dict('hyundai_kia_generic', RadarTrack),
   CAR.K5_JF: dbc_dict('hyundai_kia_generic', RadarTrack),
   CAR.K5_HEV_JF: dbc_dict('hyundai_kia_generic', RadarTrack),

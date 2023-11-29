@@ -1669,4 +1669,4 @@ VAL_ 1157 LFA_SysWarning 0 "no_message" 1 "switching_to_hda" 2 "switching_to_scc
 VAL_ 1157 LFA_Icon_State 0 "no_wheel" 1 "white_wheel" 2 "green_wheel" 3 "green_wheel_blink";
 VAL_ 1157 HDA_SysWarning 0 "no_message" 1 "driving_convenience_systems_cancelled" 2 "highway_drive_assist_system_cancelled";
 VAL_ 1322 CF_Clu_Gear 1 "P" 2 "R" 4 "N" 8 "D";
-VAL_ 882 Elect_Gear_Shifter_NEXO  1546 "D" 2314 "N" 2566 "R" 2569 "P";
+VAL_ 882 Elect_Gear_Shifter_NEXO 1546 "D" 2314 "N" 2566 "R" 2569 "P";
