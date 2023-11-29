@@ -245,7 +245,7 @@ CAR_INFO: Dict[str, Optional[Union[HyundaiCarInfo, List[HyundaiCarInfo]]]] = {
   CAR.GRANDEUR_HEV_IG: HyundaiCarInfo("Hyundai Grandeur IG Hybrid", "All", car_parts=CarParts.common([CarHarness.hyundai_c])),
   CAR.GRANDEUR_FL_IG: HyundaiCarInfo("Hyundai Grandeur IG FL", "All", car_parts=CarParts.common([CarHarness.hyundai_k])),
   CAR.GRANDEUR_HEV_FL_IG: HyundaiCarInfo("Hyundai Grandeur IG FL Hybrid", "All", car_parts=CarParts.common([CarHarness.hyundai_k])),
-  CAR.NEXO_FE: HyundaiCarInfo("Hyundai NEXO", "All", harness=Harness.hyundai_h),
+  CAR.NEXO_FE: HyundaiCarInfo("Hyundai NEXO", "All", car_parts=CarParts.common([CarHarness.hyundai_h])),
 
   # Kia
   CAR.KIA_FORTE: [
