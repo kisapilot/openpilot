@@ -168,7 +168,11 @@ class Tici(HardwareBase):
 
   def get_modem(self):
     objects = self.mm.GetManagedObjects(dbus_interface="org.freedesktop.DBus.ObjectManager", timeout=TIMEOUT)
-    modem_path = list(objects.keys())[0]
+    try:
+      modem_path = list(objects.keys())[0]
+    except:
+      modem_path = "/"
+      pass
     return self.bus.get_object(MM, modem_path)
 
   def get_wlan(self):
