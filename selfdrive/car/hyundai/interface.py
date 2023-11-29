@@ -10,6 +10,7 @@ from openpilot.selfdrive.car.hyundai.radar_interface import RADAR_START_ADDR
 from openpilot.selfdrive.car import create_button_events, get_safety_config
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
 from openpilot.selfdrive.car.disable_ecu import disable_ecu
+from selfdrive.car.hyundai.cruise_helper import enable_radar_tracks #ajouatom
 
 from openpilot.common.params import Params
 from decimal import Decimal
@@ -319,6 +320,8 @@ class CarInterface(CarInterfaceBase):
       elif candidate == CAR.NEXO_FE:
         ret.mass = 1885.
         ret.wheelbase = 2.79
+        ret.steerRatio = 14.2
+        ret.tireStiffnessFactor = 0.385  
       # kia
       elif candidate == CAR.K5_JF:
         ret.wheelbase = 2.805
@@ -467,6 +470,7 @@ class CarInterface(CarInterfaceBase):
       if CP.flags & HyundaiFlags.CANFD_HDA2.value:
         addr, bus = 0x730, CanBus(CP).ECAN
       disable_ecu(logcan, sendcan, bus=bus, addr=addr, com_cont_req=b'\x28\x83\x01')
+      enable_radar_tracks(CP, logcan, sendcan) # from ajouatom. really appreciate that.
 
     # for blinkers
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS and CP.experimentalLong and not CP.experimentalLongAlt:
