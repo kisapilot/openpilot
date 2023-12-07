@@ -643,10 +643,10 @@ class CarController:
         if not self.cruise_gap_adjusting:
           if not self.gap_by_spd_on or not self.gap_by_spd_on_sw_trg:
             if 0 < CS.lead_distance <= 149 and CS.lead_objspd < 0 and self.try_early_stop and CS.cruiseGapSet != 4.0 and CS.clu_Vanz > 30 and \
-            0 < self.e2e_x < 120 and CS.lead_objspd < -4:
+             0 < self.e2e_x < 120 and CS.lead_objspd < -4:
               if not self.try_early_stop_retrieve:
                 self.try_early_stop_org_gap = CS.cruiseGapSet
-              self.try_early_stop_retrieve = True
+                self.try_early_stop_retrieve = True
               if self.switch_timer > 0:
                 self.switch_timer -= 1
               else:
@@ -686,10 +686,10 @@ class CarController:
               self.resume_cnt = 0
           elif self.gap_by_spd_on and self.gap_by_spd_on_sw_trg:
             if 0 < CS.lead_distance <= 149 and CS.lead_objspd < 0 and self.try_early_stop and CS.cruiseGapSet != 4.0 and CS.clu_Vanz > 30 and \
-            0 < self.e2e_x < 120 and CS.lead_objspd < -4:
+             0 < self.e2e_x < 120 and CS.lead_objspd < -4:
               if not self.try_early_stop_retrieve:
                 self.try_early_stop_org_gap = CS.cruiseGapSet
-              self.try_early_stop_retrieve = True
+                self.try_early_stop_retrieve = True
               if self.switch_timer > 0:
                 self.switch_timer -= 1
               else:
