@@ -256,7 +256,7 @@ class NaviControl():
       elif self.decel_on_speedbump and self.liveNaviData.safetySign == 22 and self.navi_sel == 1:
         sb_consider_speed = interp((v_ego_kph - (20 if CS.is_set_speed_in_mph else 30)), [0, 10, 25, 50], [1.5, 1.9, 2.0, 2.1])
         sb_final_decel_start_dist = sb_consider_speed*v_ego_kph
-        if 15 < self.liveNaviData.safetyDistance < sb_final_decel_start_dist:
+        if 20 < self.liveNaviData.safetyDistance < sb_final_decel_start_dist:
           cruise_set_speed_kph == 20 if CS.is_set_speed_in_mph else 30
           self.onSpeedBumpControl = True
           self.onSpeedBumpControl2 = False
