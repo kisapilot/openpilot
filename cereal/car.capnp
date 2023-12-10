@@ -502,12 +502,12 @@ struct CarParams {
   enableBsm @56 :Bool;       # blind spot monitoring
   flags @64 :UInt32;         # flags for car specific quirks
   experimentalLongitudinalAvailable @71 :Bool;
-  experimentalLong @96 :Bool;
-  experimentalLongAlt @97 :Bool;
+  experimentalLong @74 :Bool;
+  experimentalLongAlt @75 :Bool;
 
   minEnableSpeed @7 :Float32;
   minSteerSpeed @8 :Float32;
-  smoothSteer @95 :SmoothSteerData;
+  smoothSteer @76 :SmoothSteerData;
   safetyConfigs @62 :List(SafetyConfig);
   alternativeExperience @65 :Int16;      # panda flag for features like no disengage on gas
 
@@ -535,7 +535,7 @@ struct CarParams {
     indi @27 :LateralINDITuning;
     lqr @40 :LateralLQRTuning;
     torque @67 :LateralTorqueTuning;
-    atom @94 :LateralATOMTuning;
+    atom @77 :LateralATOMTuning;
   }
 
   steerLimitAlert @28 :Bool;
@@ -557,6 +557,7 @@ struct CarParams {
   openpilotLongitudinalControl @37 :Bool; # is openpilot doing the longitudinal control?
   carVin @38 :Text; # VIN number queried during fingerprinting
   dashcamOnly @41: Bool;
+  passive @73: Bool;   # is openpilot in control?
   transmissionType @43 :TransmissionType;
   carFw @44 :List(CarFw);
 
@@ -573,27 +574,27 @@ struct CarParams {
     safetyParam2DEPRECATED @2 :UInt32;
   }
 
-  mdpsBus @73: Int8;
-  sasBus @74: Int8;
-  sccBus @75: Int8;
-  fcaBus @76: Int8;
-  bsmAvailable @77: Bool;
-  lfaAvailable @78: Bool;
-  lvrAvailable @79: Bool;
-  evgearAvailable @80: Bool;
-  emsAvailable @81: Bool;
-  standStill @82: Bool;
-  vCruisekph @83: Float32;
-  resSpeed @84: Float32;
-  vFuture @85: Float32;
-  aqValue @86: Float32;
-  aqValueRaw @87: Float32;
-  vFutureA @88: Float32;
-  autoHoldAvailable @89 :Bool;
-  scc13Available @90 :Bool;
-  scc14Available @91 :Bool;
-  lfaHdaAvailable @92 :Bool;
-  navAvailable @93 :Bool;
+  mdpsBus @78: Int8;
+  sasBus @79: Int8;
+  sccBus @80: Int8;
+  fcaBus @81: Int8;
+  bsmAvailable @82: Bool;
+  lfaAvailable @83: Bool;
+  lvrAvailable @84: Bool;
+  evgearAvailable @85: Bool;
+  emsAvailable @86: Bool;
+  standStill @87: Bool;
+  vCruisekph @88: Float32;
+  resSpeed @89: Float32;
+  vFuture @90: Float32;
+  aqValue @91: Float32;
+  aqValueRaw @92: Float32;
+  vFutureA @93: Float32;
+  autoHoldAvailable @94 :Bool;
+  scc13Available @95 :Bool;
+  scc14Available @96 :Bool;
+  lfaHdaAvailable @97 :Bool;
+  navAvailable @98 :Bool;
 
   struct SmoothSteerData
   {

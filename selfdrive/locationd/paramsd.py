@@ -12,7 +12,7 @@ from openpilot.common.realtime import config_realtime_process, DT_MDL
 from openpilot.common.numpy_fast import clip
 from openpilot.selfdrive.locationd.models.car_kf import CarKalman, ObservationKind, States
 from openpilot.selfdrive.locationd.models.constants import GENERATED_DIR
-from openpilot.system.swaglog import cloudlog
+from openpilot.common.swaglog import cloudlog
 from decimal import Decimal
 
 STIFFNESS_FACTOR = float(Decimal(Params().get("TireStiffnessFactorAdj", encoding="utf8")) * Decimal('0.01'))

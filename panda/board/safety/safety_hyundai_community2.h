@@ -34,10 +34,10 @@ const CanMsg HYUNDAI_COMMUNITY2_TX_MSGS[] = {
 
 // older hyundai models have less checks due to missing counters and checksums
 RxCheck hyundai_community2_rx_checks[] = {
-  {.msg = {{0x260, 0, 8, .check_checksum = true, .max_counter = 3U, .expected_timestep = 10000U},
-           {0x371, 0, 8, .expected_timestep = 10000U}, { 0 }}},
-  {.msg = {{0x386, 0, 8, .expected_timestep = 20000U}, { 0 }, { 0 }}},
-  // {.msg = {{916, 0, 8, .expected_timestep = 20000U}}}, some Santa Fe does not have this msg, need to find alternative
+  {.msg = {{0x260, 0, 8, .check_checksum = true, .max_counter = 3U, .frequency = 100U},
+           {0x371, 0, 8, .frequency = 100U}, { 0 }}},
+  {.msg = {{0x386, 0, 8, .frequency = 50U}, { 0 }, { 0 }}},
+  // {.msg = {{916, 0, 8, .frequency = 50U}}}, some Santa Fe does not have this msg, need to find alternative
 };
 
 static void hyundai_community2_rx_hook(CANPacket_t *to_push) {
@@ -77,7 +77,7 @@ static void hyundai_community2_rx_hook(CANPacket_t *to_push) {
   }
 
   if (addr == 0x251 && bus == HKG_mdps_bus) {
-    int torque_driver_new = ((GET_BYTES(to_push, 0, 4) & 0x7ffU) * 0.79) - 808; // scale down new driver torque signal to match previous one
+    int torque_driver_new = (GET_BYTES(to_push, 0, 2) & 0x7ffU) - 1024U;
     // update array of samples
     update_sample(&torque_driver, torque_driver_new);
   }
@@ -115,7 +115,7 @@ static void hyundai_community2_rx_hook(CANPacket_t *to_push) {
 
 static bool hyundai_community2_tx_hook(CANPacket_t *to_send) {
 
-  int tx = 1;
+  bool tx = true;
   int addr = GET_ADDR(to_send);
   int bus = GET_BUS(to_send);
 
@@ -126,7 +126,7 @@ static bool hyundai_community2_tx_hook(CANPacket_t *to_send) {
     OP_LKAS_live = 20;
     int desired_torque = ((GET_BYTES(to_send, 0, 4) >> 16) & 0x7ffU) - 1024U;
     uint32_t ts = microsecond_timer_get();
-    bool violation = 0;
+    bool violation = false;
 
     if (controls_allowed) {
 
@@ -157,7 +157,7 @@ static bool hyundai_community2_tx_hook(CANPacket_t *to_send) {
 
     // no torque if controls is not allowed
     if (!controls_allowed && (desired_torque != 0)) {
-      violation = 1;
+      violation = true;
     }
 
     // reset to 0 if either controls is not allowed or there's a violation
@@ -168,7 +168,7 @@ static bool hyundai_community2_tx_hook(CANPacket_t *to_send) {
     }
 
     if (violation) {
-      tx = 0;
+      tx = false;
     }
   }
 
@@ -178,7 +178,7 @@ static bool hyundai_community2_tx_hook(CANPacket_t *to_send) {
   //allow clu11 to be sent to MDPS if MDPS is not on bus0
   if (addr == 0x4F1 && !controls_allowed && (bus != HKG_mdps_bus && HKG_mdps_bus == 1)) {
     if ((GET_BYTES(to_send, 0, 4) & 0x7U) != 4U) {
-      tx = 0;
+      tx = false;
     }
   }
 
@@ -187,7 +187,7 @@ static bool hyundai_community2_tx_hook(CANPacket_t *to_send) {
   if (addr == 0x421) {OP_SCC_live = 20; if (car_SCC_live > 0) {car_SCC_live -= 1;}}
   if (addr == 0x316) {OP_EMS_live = 20;}
 
-  // 1 allows the message through
+  // true allows the message through
   return tx;
 }
 
@@ -253,6 +253,7 @@ static int hyundai_community2_fwd_hook(int bus_num, int addr) {
       bus_fwd = 0;
     }
   }
+
   return bus_fwd;
 }
 
@@ -272,6 +273,5 @@ const safety_hooks hyundai_community2_hooks = {
   .init = hyundai_community2_init,
   .rx = hyundai_community2_rx_hook,
   .tx = hyundai_community2_tx_hook,
-  .tx_lin = nooutput_tx_lin_hook,
   .fwd = hyundai_community2_fwd_hook,
 };

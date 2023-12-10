@@ -70,7 +70,7 @@ class LatControlTorque(LatControl):
       self.torque_params.latAccelFactor = self.max_lat_accel
       self.torque_params.latAccelOffset = latAccelOffset
 
-  def update(self, active, CS, VM, params, last_actuators, steer_limited, desired_curvature, desired_curvature_rate, llk):
+  def update(self, active, CS, VM, params, steer_limited, desired_curvature, desired_curvature_rate, llk):
     self.lt_timer += 1
     if self.lt_timer > 100:
       self.lt_timer = 0

@@ -76,7 +76,7 @@ class LatControlINDI(LatControl):
         
       self.mpc_frame = 0
 
-  def update(self, active, CS, VM, params, last_actuators, steer_limited, desired_curvature, desired_curvature_rate, llk):
+  def update(self, active, CS, VM, params, steer_limited, desired_curvature, desired_curvature_rate, llk):
     self.speed = CS.vEgo
 
     self.li_timer += 1
@@ -109,7 +109,6 @@ class LatControlINDI(LatControl):
     else:
       # Expected actuator value
       self.steer_filter.update_alpha(self.RC)
-      self.steer_filter.update(last_actuators.steer)
 
       # Compute acceleration error
       rate_sp = self.outer_loop_gain * (steers_des - self.x[0]) + rate_des
@@ -119,10 +118,6 @@ class LatControlINDI(LatControl):
       # Compute change in actuator
       g_inv = 1. / self.G
       delta_u = g_inv * accel_error
-
-      # If steering pressed, only allow wind down
-      if CS.steeringPressed and (delta_u * last_actuators.steer > 0):
-        delta_u = 0
 
       output_steer = self.steer_filter.x + delta_u
 

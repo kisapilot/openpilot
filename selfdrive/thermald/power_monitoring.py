@@ -4,7 +4,7 @@ from typing import Optional
 
 from openpilot.common.params import Params, put_nonblocking
 from openpilot.system.hardware import HARDWARE
-from openpilot.system.swaglog import cloudlog
+from openpilot.common.swaglog import cloudlog
 from openpilot.selfdrive.statsd import statlog
 from openpilot.common.numpy_fast import interp
 from openpilot.common.params import Params

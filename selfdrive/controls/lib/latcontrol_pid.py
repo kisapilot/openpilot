@@ -41,7 +41,7 @@ class LatControlPID(LatControl):
                           pos_limit=self.steer_max, neg_limit=-self.steer_max)
       self.mpc_frame = 0
 
-  def update(self, active, CS, VM, params, last_actuators, steer_limited, desired_curvature, desired_curvature_rate, llk):
+  def update(self, active, CS, VM, params, steer_limited, desired_curvature, desired_curvature_rate, llk):
     self.lp_timer += 1
     if self.lp_timer > 100:
       self.lp_timer = 0

@@ -89,10 +89,6 @@ bool safety_tx_hook(CANPacket_t *to_send) {
   return !relay_malfunction && whitelisted && safety_allowed;
 }
 
-bool safety_tx_lin_hook(int lin_num, uint8_t *data, int len) {
-  return current_hooks->tx_lin(lin_num, data, len);
-}
-
 int safety_fwd_hook(int bus_num, int addr) {
   return (relay_malfunction ? -1 : current_hooks->fwd(bus_num, addr));
 }
@@ -187,7 +183,8 @@ void safety_tick(const safety_config *cfg) {
       // lag threshold is max of: 1s and MAX_MISSED_MSGS * expected timestep.
       // Quite conservative to not risk false triggers.
       // 2s of lag is worse case, since the function is called at 1Hz
-      bool lagging = elapsed_time > MAX(cfg->rx_checks[i].msg[cfg->rx_checks[i].index].expected_timestep * MAX_MISSED_MSGS, 1e6);
+      uint32_t timestep = 1e6 / cfg->rx_checks[i].msg[cfg->rx_checks[i].index].frequency;
+      bool lagging = elapsed_time > MAX(timestep * MAX_MISSED_MSGS, 1e6);
       cfg->rx_checks[i].lagging = lagging;
       if (lagging) {
         controls_allowed = false;

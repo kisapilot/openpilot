@@ -3,7 +3,7 @@ import numpy as np
 from openpilot.common.realtime import DT_MDL
 from openpilot.common.numpy_fast import interp
 from openpilot.common.filter_simple import FirstOrderFilter
-from openpilot.system.swaglog import cloudlog
+from openpilot.common.swaglog import cloudlog
 from openpilot.selfdrive.controls.lib.lateral_mpc_lib.lat_mpc import LateralMpc
 from openpilot.selfdrive.controls.lib.lateral_mpc_lib.lat_mpc import N as LAT_MPC_N
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, MIN_SPEED, get_speed_error
