@@ -613,8 +613,15 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       p.setPen(whiteColor(255));
     }
     debugText(p, rect().center().x(), s->scene.animated_rpm?315:280, speedUnit, 255, 50, true);
+  } else {
+    if (s->scene.brakeLights) {
+      p.setPen(QPen(Qt::red, 15));
+      p.setPen(redColor(200));
+      p.drawPoint(UI_BORDER_SIZE+1, height()-UI_BORDER_SIZE-16);
+    } else {
+      p.setPen(whiteColor(255));
+    }
   }
-
 
   // kisapilot
   p.setBrush(QColor(0, 0, 0, 0));
