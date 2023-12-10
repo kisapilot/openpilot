@@ -167,9 +167,12 @@ class Tici(HardwareBase):
     return NetworkType.none
 
   def get_modem(self):
-    objects = self.mm.GetManagedObjects(dbus_interface="org.freedesktop.DBus.ObjectManager", timeout=TIMEOUT)
-    modem_path = list(objects.keys())[0]
-    return self.bus.get_object(MM, modem_path)
+    try:
+      objects = self.mm.GetManagedObjects(dbus_interface="org.freedesktop.DBus.ObjectManager", timeout=TIMEOUT)
+      modem_path = list(objects.keys())[0]
+      return self.bus.get_object(MM, modem_path)
+    except:
+      return None
 
   def get_wlan(self):
     wlan_path = self.nm.GetDeviceByIpIface('wlan0', dbus_interface=NM, timeout=TIMEOUT)
@@ -181,8 +184,10 @@ class Tici(HardwareBase):
 
   def get_sim_info(self):
     modem = self.get_modem()
-    sim_path = modem.Get(MM_MODEM, 'Sim', dbus_interface=DBUS_PROPS, timeout=TIMEOUT)
-
+    if modem is not None:
+      sim_path = modem.Get(MM_MODEM, 'Sim', dbus_interface=DBUS_PROPS, timeout=TIMEOUT)
+    else:
+      sim_path = "/"
     if sim_path == "/":
       return {
         'sim_id': '',

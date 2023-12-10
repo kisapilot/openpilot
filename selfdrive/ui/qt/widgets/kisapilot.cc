@@ -947,9 +947,9 @@ VolumeControl::VolumeControl() : AbstractControl(tr("Device Volume Control(%)"),
   QObject::connect(&btnminus, &QPushButton::clicked, [=]() {
     auto str = QString::fromStdString(params.get("KisaUIVolumeBoost"));
     int value = str.toInt();
-    value = value - 5;
-    if (value <= -5) {
-      value = -5;
+    value = value - 10;
+    if (value <= -10) {
+      value = -10;
     }
     QString values = QString::number(value);
     uiState()->scene.nVolumeBoost = value;
@@ -961,7 +961,7 @@ VolumeControl::VolumeControl() : AbstractControl(tr("Device Volume Control(%)"),
   QObject::connect(&btnplus, &QPushButton::clicked, [=]() {
     auto str = QString::fromStdString(params.get("KisaUIVolumeBoost"));
     int value = str.toInt();
-    value = value + 5;
+    value = value + 10;
     if (value >= 100) {
       value = 100;
     }
@@ -978,7 +978,7 @@ void VolumeControl::refresh() {
   QString option = QString::fromStdString(params.get("KisaUIVolumeBoost"));
   if (option == "0") {
     label.setText(tr("Default"));
-  } else if (option == "-5") {
+  } else if (option == "-10") {
     label.setText(tr("Mute"));
   } else {
     label.setText(QString::fromStdString(params.get("KisaUIVolumeBoost")));

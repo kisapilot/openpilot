@@ -81,14 +81,15 @@ class Controls:
     self.can_sock = messaging.sub_sock('can', timeout=20)
 
     self.params = Params()
-    ignore = self.sensor_packets + ['testJoystick']
+    ignore = self.sensor_packets + ['testJoystick', 'liveENaviData', 'liveMapData']
     if SIMULATION:
       ignore += ['driverCameraState', 'managerState']
     self.sm = messaging.SubMaster(['deviceState', 'pandaStates', 'peripheralState', 'modelV2', 'liveCalibration',
                                    'driverMonitoringState', 'longitudinalPlan', 'lateralPlan', 'liveLocationKalman',
                                    'managerState', 'liveParameters', 'radarState', 'liveTorqueParameters',
                                    'testJoystick', 'liveENaviData', 'liveMapData'] + self.camera_packets + self.sensor_packets,
-                                  ignore_alive=ignore, ignore_avg_freq=['radarState', 'testJoystick', 'liveENaviData', 'liveMapData'])
+                                  ignore_alive=ignore, ignore_avg_freq=['radarState', 'testJoystick', 'liveENaviData', 'liveMapData'],
+                                  ignore_valid=['liveENaviData', 'liveMapData'])
 
     if CI is None:
       # wait for one pandaState and one CAN packet

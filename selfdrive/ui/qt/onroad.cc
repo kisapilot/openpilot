@@ -616,8 +616,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   } else {
     if (s->scene.brakeLights) {
       p.setPen(QPen(Qt::red, 15));
-      p.setPen(redColor(200));
-      p.drawPoint(UI_BORDER_SIZE+1, height()-UI_BORDER_SIZE-16);
+      p.drawPoint(UI_BORDER_SIZE+1, height()-UI_BORDER_SIZE-1);
     } else {
       p.setPen(whiteColor(255));
     }
