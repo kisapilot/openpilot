@@ -349,7 +349,7 @@ class CarState(CarStateBase):
       #ret.cruiseState.available = cp.vl["TCS13"]["ACCEnable"] == 0 or cp.vl["EMS16"]["CRUISE_LAMP_M"] != 0
       #ret.cruiseState.enabled = cp.vl["TCS13"]["ACC_REQ"] == 1 or cp.vl["LVR12"]["CF_Lvr_CruiseSet"] != 0
       ret.cruiseState.standstill = False
-      if ret.brakePressed and self.acc_active and not ret.standstill:
+      if ret.brakePressed and self.acc_active:
         self.brake_check = True
         self.acc_active = False
       set_speed = self.cruise_speed_button_long()
@@ -556,15 +556,33 @@ class CarState(CarStateBase):
       ret.leftBlindspot = cp.vl["BLINDSPOTS_REAR_CORNERS"]["FL_INDICATOR"] != 0
       ret.rightBlindspot = cp.vl["BLINDSPOTS_REAR_CORNERS"]["FR_INDICATOR"] != 0
 
-    # cruise state
-    # CAN FD cars enable on main button press, set available if no TCS faults preventing engagement
-    ret.cruiseState.available = cp.vl["TCS"]["ACCEnable"] == 0
     if self.CP.openpilotLongitudinalControl:
       # These are not used for engage/disengage since openpilot keeps track of state using the buttons
-      ret.cruiseState.enabled = cp.vl["TCS"]["ACC_REQ"] == 1
+      # ret.cruiseState.enabled = cp.vl["TCS"]["ACC_REQ"] == 1
       ret.cruiseState.standstill = False
+      if ret.brakePressed and self.acc_active and not ret.standstill:
+        self.brake_check = True
+        self.acc_active = False
+      set_speed = self.cruise_speed_button_long()
+      if self.cruise_buttons[-1] == 1 or self.cruise_buttons[-1] == 2:
+        self.brake_check = False
+        self.exp_engage_available = True
+        self.acc_active = self.exp_engage_available
+      elif self.cruise_buttons[-1] == 4:
+        self.exp_engage_available = False
+        self.acc_active = False
+      speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
+      ret.cruiseState.speed = set_speed * speed_conv if self.acc_active else 0
+      ret.cruiseState.speedCluster = set_speed * speed_conv if self.acc_active else 0
+      ret.cruiseState.available = self.exp_engage_available
+      ret.cruiseState.enabled = ret.cruiseState.available
+      ret.cruiseAccStatus = self.acc_active
+      ret.cruiseGapSet = self.cruise_gap
     else:
       cp_cruise_info = cp_cam if self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC else cp
+      # cruise state
+      # CAN FD cars enable on main button press, set available if no TCS faults preventing engagement
+      ret.cruiseState.available = cp.vl["TCS"]["ACCEnable"] != 0
       ret.cruiseState.enabled = cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"] in (1, 2)
       ret.cruiseState.standstill = cp_cruise_info.vl["SCC_CONTROL"]["CRUISE_STANDSTILL"] == 1
       ret.cruiseState.speed = cp_cruise_info.vl["SCC_CONTROL"]["VSetDis"] * speed_factor
@@ -573,13 +591,6 @@ class CarState(CarStateBase):
       self.cruise_info = copy.copy(cp_cruise_info.vl["SCC_CONTROL"])
       self.cruiseState_standstill = ret.cruiseState.standstill
 
-    # Manual Speed Limit Assist is a feature that replaces non-adaptive cruise control on EV CAN FD platforms.
-    # It limits the vehicle speed, overridable by pressing the accelerator past a certain point.
-    # The car will brake, but does not respect positive acceleration commands in this mode
-    # TODO: find this message on ICE & HYBRID cars + cruise control signals (if exists)
-    if self.CP.carFingerprint in EV_CAR:
-      ret.cruiseState.nonAdaptive = cp.vl["MANUAL_SPEED_LIMIT_ASSIST"]["MSLA_ENABLED"] == 1
-
       self.acc_active = ret.cruiseState.enabled
       ret.cruiseState.accActive = self.acc_active
       if self.acc_active:
@@ -587,7 +598,6 @@ class CarState(CarStateBase):
         self.cancel_check = False
       elif not ret.cruiseState.available:
         self.prev_acc_set_btn = False
-      self.cruiseState_standstill = ret.cruiseState.standstill
 
       set_speed = self.cruise_speed_button()
       if ret.cruiseState.enabled and (self.brake_check == False or self.cancel_check == False):
@@ -596,6 +606,14 @@ class CarState(CarStateBase):
       else:
         ret.cruiseState.speed = 0
       self.cruise_active = self.acc_active
+      ret.cruiseAccStatus = self.acc_active
+
+    # Manual Speed Limit Assist is a feature that replaces non-adaptive cruise control on EV CAN FD platforms.
+    # It limits the vehicle speed, overridable by pressing the accelerator past a certain point.
+    # The car will brake, but does not respect positive acceleration commands in this mode
+    # TODO: find this message on ICE & HYBRID cars + cruise control signals (if exists)
+    if self.CP.carFingerprint in EV_CAR:
+      ret.cruiseState.nonAdaptive = cp.vl["MANUAL_SPEED_LIMIT_ASSIST"]["MSLA_ENABLED"] == 1
 
     self.prev_cruise_buttons = self.cruise_buttons[-1]
     self.cruise_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["CRUISE_BUTTONS"])
