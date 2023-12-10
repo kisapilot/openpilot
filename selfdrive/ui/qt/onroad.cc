@@ -454,10 +454,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   }
 
   // kisapilot
-  over_sl = false;
-  if (s.scene.navi_select == 2) {
-    over_sl = s.scene.limitSpeedCamera > 19 && ((s.scene.car_state.getVEgo() * (s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH)) > s.scene.ctrl_speed+1.5);
-  }
+  over_sl = s.scene.limitSpeedCamera > 19 && ((s.scene.car_state.getVEgo() * (s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH)) > s.scene.ctrl_speed+1.5);
 
   auto lead_one = sm["radarState"].getRadarState().getLeadOne();
   dist_rel = lead_one.getDRel();
@@ -553,7 +550,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
 
   const QRect sign_rect = set_speed_rect.adjusted(sign_margin, default_size.height(), -sign_margin, -sign_margin);
-  // US/Canada (MUTCD style) sign`
+  // US/Canada (MUTCD style) sign
   if (has_us_speed_limit && false) {
     p.setPen(Qt::NoPen);
     p.setBrush(whiteColor());
