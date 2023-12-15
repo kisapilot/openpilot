@@ -582,7 +582,7 @@ class CarState(CarStateBase):
       cp_cruise_info = cp_cam if self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC else cp
       # cruise state
       # CAN FD cars enable on main button press, set available if no TCS faults preventing engagement
-      ret.cruiseState.available = cp.vl["TCS"]["ACCEnable"] != 0
+      ret.cruiseState.available = cp.vl["TCS"]["ACCEnable"] == 0
       ret.cruiseState.enabled = cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"] in (1, 2)
       ret.cruiseState.standstill = cp_cruise_info.vl["SCC_CONTROL"]["CRUISE_STANDSTILL"] == 1
       ret.cruiseState.speed = cp_cruise_info.vl["SCC_CONTROL"]["VSetDis"] * speed_factor
