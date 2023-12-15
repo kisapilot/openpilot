@@ -444,10 +444,10 @@ class ENavi:
             self.mtom1 = True
             self.mtom2 = False
             self.mtom3 = False
-            navi_msg.liveENaviData.wazeAlertDistance = 321
-            self.mtom_dist_last = 321
+            navi_msg.liveENaviData.wazeAlertDistance = 305
+            self.mtom_dist_last = 305
           elif self.mtom2:
-            self.mtom_dist_last = max(321, round(self.mtom_dist_last - (((int(self.waze_current_speed) + self.waze_current_speed_prev)/2) / 2.237)))
+            self.mtom_dist_last = max(305, round(self.mtom_dist_last - (((int(self.waze_current_speed) + self.waze_current_speed_prev)/2) / 2.237)))
             navi_msg.liveENaviData.wazeAlertDistance = self.mtom_dist_last
             self.waze_current_speed_prev = int(self.waze_current_speed)
           elif self.waze_alert_distance == "02" and not self.mtom2:
@@ -455,10 +455,10 @@ class ENavi:
             self.mtom1 = False
             self.mtom2 = True
             self.mtom3 = False
-            navi_msg.liveENaviData.wazeAlertDistance = 482
-            self.mtom_dist_last = 482
+            navi_msg.liveENaviData.wazeAlertDistance = 466
+            self.mtom_dist_last = 466
           elif self.mtom3:
-            self.mtom_dist_last = max(482, round(self.mtom_dist_last - (((int(self.waze_current_speed) + self.waze_current_speed_prev)/2) / 2.237)))
+            self.mtom_dist_last = max(466, round(self.mtom_dist_last - (((int(self.waze_current_speed) + self.waze_current_speed_prev)/2) / 2.237)))
             navi_msg.liveENaviData.wazeAlertDistance = self.mtom_dist_last
             self.waze_current_speed_prev = int(self.waze_current_speed)
           elif self.waze_alert_distance == "03" and not self.mtom3:
@@ -466,8 +466,8 @@ class ENavi:
             self.mtom1 = False
             self.mtom2 = False
             self.mtom3 = True
-            navi_msg.liveENaviData.wazeAlertDistance = 600
-            self.mtom_dist_last = 600
+            navi_msg.liveENaviData.wazeAlertDistance = 579
+            self.mtom_dist_last = 579
           else:
             navi_msg.liveENaviData.wazeAlertDistance = self.mtom_dist_last
         navi_msg.liveENaviData.wazeRoadSpeedLimit = int(self.waze_road_speed_limit)
