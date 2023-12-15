@@ -3,78 +3,39 @@
 #include <algorithm>
 #include <QPainter>
 
-#include "selfdrive/ui/qt/qt_window.h"
 #include "selfdrive/ui/qt/util.h"
 
 const int FACE_IMG_SIZE = 130;
 
-DriverViewWindow::DriverViewWindow(QWidget* parent) : QWidget(parent) {
-  setAttribute(Qt::WA_OpaquePaintEvent);
-  layout = new QStackedLayout(this);
-  layout->setStackingMode(QStackedLayout::StackAll);
-
-  cameraView = new CameraWidget("camerad", VISION_STREAM_DRIVER, true, this);
-  layout->addWidget(cameraView);
-
-  scene = new DriverViewScene(this);
-  connect(cameraView, &CameraWidget::vipcThreadFrameReceived, scene, &DriverViewScene::frameUpdated);
-  layout->addWidget(scene);
-  layout->setCurrentWidget(scene);
-
-  QObject::connect(device(), &Device::interactiveTimeout, this, &DriverViewWindow::closeView);
-}
-
-void DriverViewWindow::closeView() {
-  if (isVisible()) {
-    cameraView->stopVipcThread();
-    emit done();
-  }
-}
-
-void DriverViewWindow::mousePressEvent(QMouseEvent* e) {
-  if (d_rec_btn.contains(e->pos())) {
-    uiState()->scene.rec_stat = !uiState()->scene.rec_stat;
-    return;
-  }
-  closeView();
-}
-
-DriverViewScene::DriverViewScene(QWidget* parent) : QWidget(parent) {
+DriverViewWindow::DriverViewWindow(QWidget* parent) : CameraWidget("camerad", VISION_STREAM_DRIVER, true, parent) {
   face_img = loadPixmap("../assets/img_driver_face_static.png", {FACE_IMG_SIZE, FACE_IMG_SIZE});
-
-  // neokii screen recorder, thx for sharing:)
-  record_timer = std::make_shared<QTimer>();
-  QObject::connect(record_timer.get(), &QTimer::timeout, [=]() {
-    if(recorder) {
-      recorder->update_screen();
+  QObject::connect(this, &CameraWidget::clicked, this, &DriverViewWindow::done);
+  QObject::connect(device(), &Device::interactiveTimeout, this, [this]() {
+    if (isVisible()) {
+      emit done();
     }
   });
-  record_timer->start(1000/UI_FREQ);
-
-  recorder = new ScreenRecoder(this);
-  recorder->hide();
 }
 
-void DriverViewScene::showEvent(QShowEvent* event) {
-  frame_updated = false;
+void DriverViewWindow::showEvent(QShowEvent* event) {
   params.putBool("IsDriverViewEnabled", true);
   device()->resetInteractiveTimeout(60);
+  CameraWidget::showEvent(event);
 }
 
-void DriverViewScene::hideEvent(QHideEvent* event) {
+void DriverViewWindow::hideEvent(QHideEvent* event) {
   params.putBool("IsDriverViewEnabled", false);
+  stopVipcThread();
+  CameraWidget::hideEvent(event);
 }
 
-void DriverViewScene::frameUpdated() {
-  frame_updated = true;
-  update();
-}
+void DriverViewWindow::paintGL() {
+  CameraWidget::paintGL();
 
-void DriverViewScene::paintEvent(QPaintEvent* event) {
+  std::lock_guard lk(frame_lock);
   QPainter p(this);
-
   // startup msg
-  if (!frame_updated) {
+  if (frames.empty()) {
     p.setPen(Qt::white);
     p.setRenderHint(QPainter::TextAntialiasing);
     p.setFont(InterFont(100, QFont::Bold));
@@ -84,10 +45,8 @@ void DriverViewScene::paintEvent(QPaintEvent* event) {
 
   const auto &sm = *(uiState()->sm);
   cereal::DriverStateV2::Reader driver_state = sm["driverStateV2"].getDriverStateV2();
-  cereal::DriverStateV2::DriverData::Reader driver_data;
-
-  is_rhd = driver_state.getWheelOnRightProb() > 0.5;
-  driver_data = is_rhd ? driver_state.getRightDriverData() : driver_state.getLeftDriverData();
+  bool is_rhd = driver_state.getWheelOnRightProb() > 0.5;
+  auto driver_data = is_rhd ? driver_state.getRightDriverData() : driver_state.getLeftDriverData();
 
   bool face_detected = driver_data.getFaceProb() > 0.7;
   if (face_detected) {
@@ -115,37 +74,4 @@ void DriverViewScene::paintEvent(QPaintEvent* event) {
   const int img_y = rect().bottom() - FACE_IMG_SIZE - img_offset;
   p.setOpacity(face_detected ? 1.0 : 0.2);
   p.drawPixmap(img_x, img_y, face_img);
-
-  if (frame_updated) {
-  	UIState *s = uiState();
-    p.setPen(QColor(0xff, 0xff, 0xff));
-    p.setOpacity(1.0);
-    p.setRenderHint(QPainter::TextAntialiasing);
-    p.setFont(InterFont(50, QFont::Bold));
-
-    p.drawText(1550, 150, "faceProb:  " + QString::number(driver_data.getFaceProb(), 'f', 2));
-
-    p.drawText(1550, 250, "leftEyeProb:  " + QString::number(driver_data.getLeftEyeProb(), 'f', 2));
-    p.drawText(1550, 300, "rightEyeProb:  " + QString::number(driver_data.getRightEyeProb(), 'f', 2));
-    p.drawText(1550, 350, "leftBlinkProb:  " + QString::number(driver_data.getLeftBlinkProb(), 'f', 2));
-    p.drawText(1550, 400, "rightBlinkProb:  " + QString::number(driver_data.getRightBlinkProb(), 'f', 2));
-    p.drawText(1550, 500, "sunglassesProb:  " + QString::number(driver_data.getSunglassesProb(), 'f', 2));
-
-    // rec_stat and toggle
-    if (s->scene.rec_stat && !s->scene.rec_stat2) {
-      if (recorder) recorder->toggle();
-      s->scene.rec_stat2 = s->scene.rec_stat;
-    } else if (!s->scene.rec_stat && s->scene.rec_stat2) {
-      if (recorder) recorder->toggle();
-      s->scene.rec_stat = s->scene.rec_stat2;
-    }
-
-    QRect rec = {1800, 885, 140, 140};
-    p.setBrush(Qt::NoBrush);
-    if (s->scene.rec_stat3) p.setBrush(Qt::red);
-    p.setPen(QPen(QColor(255, 255, 255, 80), 6));
-    p.drawEllipse(rec);
-    p.setPen(QColor(255, 255, 255, 200));
-    p.drawText(rec, Qt::AlignCenter, QString("REC"));
-  }
 }

@@ -151,77 +151,77 @@ class ENavi:
           pass
       
       for line in self.message.split('\n'):
-        if "kisaspdlimit" in line:
-          arr = line.split('kisaspdlimit: ')
-          self.spd_limit = arr[1]
-        if "kisaspddist" in line:
-          arr = line.split('kisaspddist: ')
-          self.safety_distance = arr[1]
-        if "kisasigntype" in line:
-          arr = line.split('kisasigntype: ')
-          self.sign_type = arr[1]
-        if "kisaturninfo" in line:
-          arr = line.split('kisaturninfo: ')
-          self.turn_info = arr[1]
-        if "kisadistancetoturn" in line:
-          arr = line.split('kisadistancetoturn: ')
-          self.turn_distance = arr[1]
-        if "kisaroadlimitspd" in line:
-          arr = line.split('kisaroadlimitspd: ')
-          self.road_limit_speed = arr[1]
-          self.road_limit_speed_cnt = 0
-        elif (self.count % 2) == 0:
-          self.road_limit_speed_cnt += 1
-          if self.road_limit_speed_cnt > 30:
-            self.road_limit_speed = 0
+        if self.navi_selection == 1:
+          if "kisaspdlimit" in line:
+            arr = line.split('kisaspdlimit: ')
+            self.spd_limit = arr[1]
+          if "kisaspddist" in line:
+            arr = line.split('kisaspddist: ')
+            self.safety_distance = arr[1]
+          if "kisasigntype" in line:
+            arr = line.split('kisasigntype: ')
+            self.sign_type = arr[1]
+          if "kisaturninfo" in line:
+            arr = line.split('kisaturninfo: ')
+            self.turn_info = arr[1]
+          if "kisadistancetoturn" in line:
+            arr = line.split('kisadistancetoturn: ')
+            self.turn_distance = arr[1]
+          if "kisaroadlimitspd" in line:
+            arr = line.split('kisaroadlimitspd: ')
+            self.road_limit_speed = arr[1]
             self.road_limit_speed_cnt = 0
-        if "kisalinklength" in line:
-          arr = line.split('kisalinklength: ')
-          self.link_length = arr[1]
-        if "kisacurrentlinkangle" in line:
-          arr = line.split('kisacurrentlinkangle: ')
-          self.current_link_angle = arr[1]
-        if "kisanextlinkangle" in line:
-          arr = line.split('kisanextlinkangle: ')
-          self.next_link_angle = arr[1]
-        if "kisaroadname" in line:
-          arr = line.split('kisaroadname: ')
-          self.road_name = arr[1]
-        if "kisaishighway" in line:
-          arr = line.split('kisaishighway: ')
-          self.is_highway = arr[1]
-        if "kisaistunnel" in line:
-          arr = line.split('kisaistunnel: ')
-          self.is_tunnel = arr[1]
-        if "kisadestlat" in line:
-          arr = line.split('kisadestlat: ')
-          self.kisa_lat = arr[1]
-        if "kisadestlon" in line:
-          arr = line.split('kisadestlon: ')
-          self.kisa_lon = arr[1]
+          elif (self.count % 2) == 0:
+            self.road_limit_speed_cnt += 1
+            if self.road_limit_speed_cnt > 30:
+              self.road_limit_speed = 0
+              self.road_limit_speed_cnt = 0
+          if "kisalinklength" in line:
+            arr = line.split('kisalinklength: ')
+            self.link_length = arr[1]
+          if "kisacurrentlinkangle" in line:
+            arr = line.split('kisacurrentlinkangle: ')
+            self.current_link_angle = arr[1]
+          if "kisanextlinkangle" in line:
+            arr = line.split('kisanextlinkangle: ')
+            self.next_link_angle = arr[1]
+          if "kisaroadname" in line:
+            arr = line.split('kisaroadname: ')
+            self.road_name = arr[1]
+          if "kisaishighway" in line:
+            arr = line.split('kisaishighway: ')
+            self.is_highway = arr[1]
+          if "kisaistunnel" in line:
+            arr = line.split('kisaistunnel: ')
+            self.is_tunnel = arr[1]
+          if "kisadestlat" in line:
+            arr = line.split('kisadestlat: ')
+            self.kisa_lat = arr[1]
+          if "kisadestlon" in line:
+            arr = line.split('kisadestlon: ')
+            self.kisa_lon = arr[1]
 
-        if self.kisa_lat and self.kisa_lon and self.kisa_lat != self.kisa_lat_prev and self.kisa_lon != self.kisa_lon_prev:
-          self.dest_changed = True
-          self.dest_changed_count = 0
-          try:
-            self.params.remove("NavDestination")
-            self.params.remove("NavDestinationWaypoints")
-          except:
-            pass
-          self.kisa_lat_prev = self.kisa_lat
-          self.kisa_lon_prev = self.kisa_lon
-          kisa_lat_ = float(self.kisa_lat)
-          kisa_lon_ = float(self.kisa_lon)
-          dest = {"latitude": kisa_lat_, "longitude": kisa_lon_,}
-          waypoints = [(kisa_lon_, kisa_lat_),]
-        elif self.dest_changed:
-          self.dest_changed_count += 1
-          if self.dest_changed_count > 2:
-            self.dest_changed = False
-            self.params.put("NavDestination", json.dumps(dest))
-            self.params.put("NavDestinationWaypoints", json.dumps(waypoints))
-
-        if self.navi_selection == 2:
+          if self.kisa_lat and self.kisa_lon and self.kisa_lat != self.kisa_lat_prev and self.kisa_lon != self.kisa_lon_prev:
+            self.dest_changed = True
+            self.dest_changed_count = 0
+            try:
+              self.params.remove("NavDestination")
+              self.params.remove("NavDestinationWaypoints")
+            except:
+              pass
+            self.kisa_lat_prev = self.kisa_lat
+            self.kisa_lon_prev = self.kisa_lon
+            kisa_lat_ = float(self.kisa_lat)
+            kisa_lon_ = float(self.kisa_lon)
+            dest = {"latitude": kisa_lat_, "longitude": kisa_lon_,}
+            waypoints = [(kisa_lon_, kisa_lat_),]
+          elif self.dest_changed:
+            self.dest_changed_count += 1
+            if self.dest_changed_count > 2:
+              self.dest_changed = False
+              self.params.put("NavDestination", json.dumps(dest))
+              self.params.put("NavDestinationWaypoints", json.dumps(waypoints))
+        elif self.navi_selection == 2:
           if "kisawazereportid" in line:
             arr = line.split('kisawazereportid: ')
             try:
@@ -390,37 +390,25 @@ class ENavi:
             pass
 
       navi_msg = messaging.new_message('liveENaviData')
-      navi_msg.liveENaviData.speedLimit = int(self.spd_limit)
-      navi_msg.liveENaviData.safetyDistance = float(self.safety_distance)
-      navi_msg.liveENaviData.safetySign = int(self.sign_type)
-      navi_msg.liveENaviData.turnInfo = int(self.turn_info)
-      navi_msg.liveENaviData.distanceToTurn = float(self.turn_distance)
-      navi_msg.liveENaviData.connectionAlive = bool(self.check_connection)
-      navi_msg.liveENaviData.roadLimitSpeed = int(self.road_limit_speed)
-      navi_msg.liveENaviData.linkLength = int(self.link_length)
-      navi_msg.liveENaviData.currentLinkAngle = int(self.current_link_angle)
-      navi_msg.liveENaviData.nextLinkAngle = int(self.next_link_angle)
-      navi_msg.liveENaviData.roadName = str(self.road_name)
-      navi_msg.liveENaviData.isHighway = bool(int(self.is_highway))
-      navi_msg.liveENaviData.isTunnel = bool(int(self.is_tunnel))
-      navi_msg.liveENaviData.kisaLatitude = float(self.kisa_lat)
-      navi_msg.liveENaviData.kisaLongitude = float(self.kisa_lon)
-
-      if self.KISA_Debug:
-        navi_msg.liveENaviData.kisa0 = str(self.kisa_0)
-        navi_msg.liveENaviData.kisa1 = str(self.kisa_1)
-        navi_msg.liveENaviData.kisa2 = str(self.kisa_2)
-        navi_msg.liveENaviData.kisa3 = str(self.kisa_3)
-        navi_msg.liveENaviData.kisa4 = str(self.kisa_4)
-        navi_msg.liveENaviData.kisa5 = str(self.kisa_5)
-        navi_msg.liveENaviData.kisa6 = str(self.kisa_6)
-        navi_msg.liveENaviData.kisa7 = str(self.kisa_7)
-        navi_msg.liveENaviData.kisa8 = str(self.kisa_8)
-        navi_msg.liveENaviData.kisa9 = str(self.kisa_9)
-
-      if self.navi_selection == 2:
+      if self.navi_selection == 1:
+        navi_msg.liveENaviData.speedLimit = int(self.spd_limit)
+        navi_msg.liveENaviData.safetyDistance = float(self.safety_distance)
+        navi_msg.liveENaviData.safetySign = int(self.sign_type)
+        navi_msg.liveENaviData.turnInfo = int(self.turn_info)
+        navi_msg.liveENaviData.distanceToTurn = float(self.turn_distance)
+        navi_msg.liveENaviData.connectionAlive = bool(self.check_connection)
+        navi_msg.liveENaviData.roadLimitSpeed = int(self.road_limit_speed)
+        navi_msg.liveENaviData.linkLength = int(self.link_length)
+        navi_msg.liveENaviData.currentLinkAngle = int(self.current_link_angle)
+        navi_msg.liveENaviData.nextLinkAngle = int(self.next_link_angle)
+        navi_msg.liveENaviData.roadName = str(self.road_name)
+        navi_msg.liveENaviData.isHighway = bool(int(self.is_highway))
+        navi_msg.liveENaviData.isTunnel = bool(int(self.is_tunnel))
+        navi_msg.liveENaviData.kisaLatitude = float(self.kisa_lat)
+        navi_msg.liveENaviData.kisaLongitude = float(self.kisa_lon)
+      elif self.navi_selection == 2:
+        navi_msg.liveENaviData.connectionAlive = bool(self.check_connection)
         navi_msg.liveENaviData.wazeAlertId = int(self.waze_alert_id)
-
         if self.waze_is_metric:
           navi_msg.liveENaviData.wazeAlertDistance = int(self.waze_alert_distance)
         else:
@@ -478,6 +466,18 @@ class ENavi:
         navi_msg.liveENaviData.wazeAlertType = str(self.waze_alert_type)
         navi_msg.liveENaviData.wazeLatitude = float(self.waze_lat)
         navi_msg.liveENaviData.wazeLongitude = float(self.waze_lon)
+
+      if self.KISA_Debug:
+        navi_msg.liveENaviData.kisa0 = str(self.kisa_0)
+        navi_msg.liveENaviData.kisa1 = str(self.kisa_1)
+        navi_msg.liveENaviData.kisa2 = str(self.kisa_2)
+        navi_msg.liveENaviData.kisa3 = str(self.kisa_3)
+        navi_msg.liveENaviData.kisa4 = str(self.kisa_4)
+        navi_msg.liveENaviData.kisa5 = str(self.kisa_5)
+        navi_msg.liveENaviData.kisa6 = str(self.kisa_6)
+        navi_msg.liveENaviData.kisa7 = str(self.kisa_7)
+        navi_msg.liveENaviData.kisa8 = str(self.kisa_8)
+        navi_msg.liveENaviData.kisa9 = str(self.kisa_9)
 
       self.pm.send('liveENaviData', navi_msg)
 
