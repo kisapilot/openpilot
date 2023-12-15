@@ -109,7 +109,7 @@ static void hyundai_community1_rx_hook(CANPacket_t *to_push) {
 
   if (bus == 0) {
     if (addr == 0x251) {
-      int torque_driver_new = (GET_BYTES(to_push, 0, 2) & 0x7ffU) - 1024U;
+      int torque_driver_new = ((GET_BYTES(to_push, 0, 4) & 0x7ffU) * 0.79) - 808; // scale down new driver torque signal to match previous one
       // update array of samples
       update_sample(&torque_driver, torque_driver_new);
     }
@@ -197,17 +197,17 @@ static bool hyundai_community1_tx_hook(CANPacket_t *to_send) {
   if (addr == 0x340) {
     int desired_torque = ((GET_BYTES(to_send, 0, 4) >> 16) & 0x7ffU) - 1024U;
     uint32_t ts = microsecond_timer_get();
-    bool violation_lka = false;
+    bool violation = false;
 
     if (controls_allowed) {
 
       // *** global torque limit check ***
       bool torque_check = 0;
-      violation_lka |= torque_check = max_limit_check(desired_torque, HYUNDAI_MAX_STEER, -HYUNDAI_MAX_STEER);
+      violation |= torque_check = max_limit_check(desired_torque, HYUNDAI_MAX_STEER, -HYUNDAI_MAX_STEER);
 
       // *** torque rate limit check ***
       bool torque_rate_check = 0;
-      violation_lka |= torque_rate_check = driver_limit_check(desired_torque, desired_torque_last, &torque_driver,
+      violation |= torque_rate_check = driver_limit_check(desired_torque, desired_torque_last, &torque_driver,
         HYUNDAI_MAX_STEER, HYUNDAI_MAX_RATE_UP, HYUNDAI_MAX_RATE_DOWN,
         HYUNDAI_DRIVER_TORQUE_ALLOWANCE, HYUNDAI_DRIVER_TORQUE_FACTOR);
 
@@ -216,7 +216,7 @@ static bool hyundai_community1_tx_hook(CANPacket_t *to_send) {
 
       // *** torque real time rate limit check ***
       bool torque_rt_check = 0;
-      violation_lka |= torque_rt_check = rt_rate_limit_check(desired_torque, rt_torque_last, HYUNDAI_MAX_RT_DELTA);
+      violation |= torque_rt_check = rt_rate_limit_check(desired_torque, rt_torque_last, HYUNDAI_MAX_RT_DELTA);
 
       // every RT_INTERVAL set the new limits
       uint32_t ts_elapsed = get_ts_elapsed(ts, ts_last);
@@ -228,17 +228,17 @@ static bool hyundai_community1_tx_hook(CANPacket_t *to_send) {
 
     // no torque if controls is not allowed
     if (!controls_allowed && (desired_torque != 0)) {
-      violation_lka = true;
+      violation = true;
     }
 
-    // reset to 0 if either controls is not allowed or there's a violation_lka
+    // reset to 0 if either controls is not allowed or there's a violation
     if (!controls_allowed) { // a reset worsen the issue of Panda blocking some valid LKAS messages
       desired_torque_last = 0;
       rt_torque_last = 0;
       ts_last = ts;
     }
 
-    if (violation_lka) {
+    if (violation) {
       tx = false;
     }
   }
@@ -263,13 +263,13 @@ static bool hyundai_community1_tx_hook(CANPacket_t *to_send) {
   //}
 
   if (addr == 0x340) {
-    last_ts_lkas11_from_op = (!tx ? 0 : microsecond_timer_get());
+    last_ts_lkas11_from_op = (tx == false ? 0 : microsecond_timer_get());
   } else if (addr == 0x421) {
-    last_ts_scc12_from_op = (!tx ? 0 : microsecond_timer_get());
+    last_ts_scc12_from_op = (tx == false ? 0 : microsecond_timer_get());
   } else if (addr == 0x251) {
-    last_ts_mdps12_from_op = (!tx ? 0 : microsecond_timer_get());
+    last_ts_mdps12_from_op = (tx == false ? 0 : microsecond_timer_get());
   } else if (addr == 0x38D) {
-    last_ts_fca11_from_op = (!tx ? 0 : microsecond_timer_get());
+    last_ts_fca11_from_op = (tx == false ? 0 : microsecond_timer_get());
   }
 
   return tx;

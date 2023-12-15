@@ -77,7 +77,7 @@ static void hyundai_community2_rx_hook(CANPacket_t *to_push) {
   }
 
   if (addr == 0x251 && bus == HKG_mdps_bus) {
-    int torque_driver_new = (GET_BYTES(to_push, 0, 2) & 0x7ffU) - 1024U;
+    int torque_driver_new = ((GET_BYTES(to_push, 0, 4) & 0x7ffU) * 0.79) - 808; // scale down new driver torque signal to match previous one
     // update array of samples
     update_sample(&torque_driver, torque_driver_new);
   }
