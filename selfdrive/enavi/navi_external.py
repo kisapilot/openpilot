@@ -6,6 +6,7 @@ import time
 import subprocess
 import re
 import json
+import random
 
 import cereal.messaging as messaging
 from openpilot.common.params import Params
@@ -19,7 +20,7 @@ import zmq
 class ENavi:
   def __init__(self, pm):
     self.pm = pm
-    self.count = 0
+    self.count = 1
 
     self.params = Params()
 
@@ -58,10 +59,28 @@ class ENavi:
       self.kisa_9 = ""
 
     self.ip_bind = False
+    self.count2 = 70
+
+    self.ip_list_out = []
+    self.result = []
   
     self.check_connection = False
     try:
       self.ip_count = int(len(self.params.get("ExternalDeviceIP", encoding="utf8").split(',')))
+      if self.ip_count > 0:
+        ip_list = self.params.get("ExternalDeviceIP", encoding="utf8").split(',')
+        for input_list in ip_list:
+          if '-' in input_list:
+            t_out = input_list.split('-')
+            left1 = t_out[0].split('.')
+            leftp = left1[-1]
+            right1 = t_out[-1].split('.')
+            rightp = right1[0]
+            for x in range(int(leftp), int(rightp)+1):
+              self.ip_list_out.append(input_list.replace(leftp+"-"+rightp, str(x)))
+          else:
+            self.ip_list_out.append(input_list)
+        random.shuffle(self.ip_list_out)
     except:
       self.ip_count = 0
       pass
@@ -92,16 +111,24 @@ class ENavi:
   def update(self):
     self.count += 1
     if not self.ip_bind:
-      if (self.count % max(60., self.ip_count)) == 0:
-        os.system("/data/openpilot/selfdrive/assets/addon/script/find_ip.sh &")
-      if (self.count % (63+self.ip_count)) == 0:
-        ip_add = self.params.get("ExternalDeviceIPNow", encoding="utf8")
-        if ip_add is not None:
-          self.ip_bind = True
-          self.check_connection = True
-          self.context = zmq.Context()
-          self.socket = self.context.socket(zmq.SUB)
-          self.socket.connect("tcp://" + str(ip_add) + ":5555")
+      if (self.count % 60) == 0:
+        self.count2 = self.count + 10
+        self.result = []
+        for address in self.ip_list_out:
+            p = subprocess.Popen(['ping', '-c', '3', '-W', '2', '-q', address])
+            self.result.append(p)
+      elif (self.count % self.count2) == 0:
+        for ip, p in zip(self.ip_list_out, self.result):
+            if p.wait() == 0:
+                res = subprocess.call(['nc', '-vz', ip, '5555'])
+                if res == 0:
+                  self.params.put("ExternalDeviceIPNow", ip)
+                  self.ip_bind = True
+                  self.check_connection = True
+                  self.context = zmq.Context()
+                  self.socket = self.context.socket(zmq.SUB)
+                  self.socket.connect("tcp://" + str(ip) + ":5555")
+                  break
 
     if self.ip_bind:
       self.spd_limit = 0

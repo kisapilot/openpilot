@@ -8194,7 +8194,7 @@ void VariableCruiseLevel::refresh() {
   label.setText(QString::fromStdString(params.get("VarCruiseSpeedFactor")));
 }
 
-ExternalDeviceIP::ExternalDeviceIP() : AbstractControl(tr("ExternalDevIP"), tr("Set Your External Device IP to get useful data."), "") {
+ExternalDeviceIP::ExternalDeviceIP() : AbstractControl(tr("ExternalDevIP"), tr("Set Your External Device IP to get useful data. ex. a ip:192.168.0.1 / two or more: 192.168.0.1,192.168.0.2 put comma btw IPs / range:192.168.0.1-10  192.168.0-10.254 use dash(-)"), "") {
   btn.setStyleSheet(R"(
     padding: 0;
     border-radius: 50px;
@@ -8220,7 +8220,7 @@ ExternalDeviceIP::ExternalDeviceIP() : AbstractControl(tr("ExternalDevIP"), tr("
 
 
   QObject::connect(&btn, &QPushButton::clicked, [=]() {
-    QString eip_address = InputDialog::getText(tr("Input Your External Dev IP"), this, tr("Seperate with (,) for multiple IP"), false, 1, QString::fromStdString(params.get("ExternalDeviceIP")));
+    QString eip_address = InputDialog::getText(tr("Input Your External Dev IP"), this, tr("See description for more detail how to set up."), false, 1, QString::fromStdString(params.get("ExternalDeviceIP")));
     if (eip_address.length() > 0) {
       params.put("ExternalDeviceIP", eip_address.toStdString());
     }

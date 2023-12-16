@@ -3983,8 +3983,8 @@ This may take up to a minute.</source>
         <translation>외부장치IP</translation>
     </message>
     <message>
-        <source>Set Your External Device IP to get useful data.</source>
-        <translation>외부 장치 IP를 설정하여 장치로부터 유용한 데이터(네비 등)를 받아올수 있게 합니다.</translation>
+        <source>Set Your External Device IP to get useful data. ex. a ip:192.168.0.1 / two or more: 192.168.0.1,192.168.0.2 put comma btw IPs / range:192.168.0.1-10  192.168.0-10.254 use dash(-)</source>
+        <translation>외부 장치 IP를 설정하여 장치로부터 유용한 데이터(네비 등)를 받아올수 있게 합니다. 설정방법은 단수:192.168.0.1 / 여러개:192.168.0.1,192.168.0.2 IP사이에 콤마로 구분 / 범위:192.168.0.1-10 이런식으로 하이픈을 이용 192.168.0-10.1 이렇게도 가능</translation>
     </message>
     <message>
         <source>SET</source>
@@ -3995,8 +3995,8 @@ This may take up to a minute.</source>
         <translation>외부장치의 IP를 입력하세요</translation>
     </message>
     <message>
-        <source>Seperate with (,) for multiple IP</source>
-        <translation>여러개 IP 설정시 (,)로 구분하세요</translation>
+        <source>See description for more detail how to set up.</source>
+        <translation>IP입력 방법은 메뉴의 설명을 참고하세요.</translation>
     </message>
 </context>
 <context>
