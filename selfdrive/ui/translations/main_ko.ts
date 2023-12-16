@@ -1652,6 +1652,33 @@ This may take up to a minute.</source>
     </message>
 </context>
 <context>
+    <name>ModelSelectCombo</name>
+    <message>
+        <source>Select Driving Model</source>
+        <translation>드라이빙 모델을 선택하세요</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>리셋</translation>
+    </message>
+    <message>
+        <source>Model</source>
+        <translation>모델</translation>
+    </message>
+    <message>
+        <source>Driving model will be changed. Downloading(50MB) takes a time. Will be reboot if done.</source>
+        <translation>드라이빙 모델을 변경합니다. 다운로드(50MB)에 시간이 걸립니다. 완료되면 재부팅 됩니다.</translation>
+    </message>
+    <message>
+        <source>Do you want to restore original model?</source>
+        <translation>원래의 모델로 바꾸시겠습니까?</translation>
+    </message>
+    <message>
+        <source>Original Model</source>
+        <translation>원래 모델</translation>
+    </message>
+</context>
+<context>
     <name>BranchSelectCombo</name>
     <message>
         <source>RELOAD</source>

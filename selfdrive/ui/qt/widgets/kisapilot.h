@@ -1067,6 +1067,23 @@ private:
   void refresh();
 };
 
+class ModelSelectCombo : public AbstractControl 
+{
+  Q_OBJECT
+
+public:
+  ModelSelectCombo();
+
+private:
+  QLabel label;
+  QPushButton btn1;
+  QPushButton btn2;
+  Params params;
+  QString selection;
+
+  void refresh();
+};
+
 class BranchSelectCombo : public AbstractControl 
 {
   Q_OBJECT

@@ -18,6 +18,7 @@ if [ "$?" == "0" ]; then
   git reset --hard origin/$CURRENT_BRANCH
   git pull origin $CURRENT_BRANCH
 
+  rm -f /data/params/d/DrivingModel
   touch /data/kisa_compiling
   sleep 1
 

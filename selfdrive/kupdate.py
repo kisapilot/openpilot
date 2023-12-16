@@ -224,6 +224,163 @@ def sw_update_thread(end_event, nv_queue):
                 p_order = 0
                 lcount = 0
                 result.kill()
+        elif int(params.get("RunCustomCommand", encoding="utf8")) == 4:
+          if p_order == 0:
+            model_name = params.get("DrivingModel", encoding="utf8")
+            command1 = "wget -P /data/model https://raw.githubusercontent.com/kisapilot/model/main/models/" + model_name
+            command2 = "rm -f /data/openpilot/selfdrive/modeld/models/supercombo.onnx"
+            command3 = "rm -f /data/openpilot/selfdrive/modeld/models/supercombo.thneed"
+            command4 = "rm -f /data/openpilot/selfdrive/modeld/models/supercombo_metadata.pkl"
+            command5 = "cp -f /data/model/" + model_name + " /data/openpilot/selfdrive/modeld/models/supercombo.onnx"
+            command6 = "sudo reboot"
+            p_order = 1
+            lcount = 0
+            if not os.path.isfile("/data/model/" + model_name):
+              result=subprocess.Popen(command1, shell=True)
+            else:
+              result=subprocess.Popen("ls", shell=True)
+          elif p_order == 1:
+            rvalue=result.poll()
+            if rvalue == 0:
+              p_order = 2
+              result=subprocess.Popen(command2, shell=True)
+            else:
+              lcount += 1
+              if lcount > 300: # killing in 180sec if proc is abnormal or not completed.
+                params.put("RunCustomCommand", "0")
+                p_order = 0
+                lcount = 0
+                result.kill()
+          elif p_order == 2:
+            rvalue=result.poll()
+            if rvalue == 0:
+              p_order = 3
+              result=subprocess.Popen(command3, shell=True)
+            else:
+              lcount += 1
+              if lcount > 30: # killing in 30sec if proc is abnormal or not completed.
+                params.put("RunCustomCommand", "0")
+                p_order = 0
+                lcount = 0
+                result.kill()
+          elif p_order == 3:
+            rvalue=result.poll()
+            if rvalue == 0:
+              p_order = 4
+              result=subprocess.Popen(command4, shell=True)
+            else:
+              lcount += 1
+              if lcount > 30: # killing in 30sec if proc is abnormal or not completed.
+                params.put("RunCustomCommand", "0")
+                p_order = 0
+                lcount = 0
+                result.kill()
+          elif p_order == 4:
+            rvalue=result.poll()
+            if rvalue == 0:
+              p_order = 5
+              result=subprocess.Popen(command5, shell=True)
+            else:
+              lcount += 1
+              if lcount > 30: # killing in 30sec if proc is abnormal or not completed.
+                params.put("RunCustomCommand", "0")
+                p_order = 0
+                lcount = 0
+                result.kill()
+          elif p_order == 5:
+            rvalue=result.poll()
+            if rvalue == 0:
+              p_order = 6
+              result=subprocess.Popen(command6, shell=True)
+            else:
+              lcount += 1
+              if lcount > 30: # killing in 30sec if proc is abnormal or not completed.
+                params.put("RunCustomCommand", "0")
+                p_order = 0
+                lcount = 0
+                result.kill()
+          elif p_order == 6:
+            rvalue=result.poll()
+            if rvalue == 0:
+              p_order = 0
+              params.put("RunCustomCommand", "0")
+            else:
+              lcount += 1
+              if lcount > 30: # killing in 30sec if proc is abnormal or not completed.
+                params.put("RunCustomCommand", "0")
+                p_order = 0
+                lcount = 0
+                result.kill()
+        elif int(params.get("RunCustomCommand", encoding="utf8")) == 5:
+          if p_order == 0:
+            command1 = "rm -f /data/openpilot/selfdrive/modeld/models/supercombo.onnx"
+            command2 = "rm -f /data/openpilot/selfdrive/modeld/models/supercombo.thneed"
+            command3 = "rm -f /data/openpilot/selfdrive/modeld/models/supercombo_metadata.pkl"
+            command4 = "git -C /data/openpilot/selfdrive//modeld/models checkout supercombo.onnx"
+            command5 = "sudo reboot"
+            p_order = 1
+            lcount = 0
+            result=subprocess.Popen(command1, shell=True)
+          elif p_order == 1:
+            rvalue=result.poll()
+            if rvalue == 0:
+              p_order = 2
+              result=subprocess.Popen(command2, shell=True)
+            else:
+              lcount += 1
+              if lcount > 30: # killing in 30sec if proc is abnormal or not completed.
+                params.put("RunCustomCommand", "0")
+                p_order = 0
+                lcount = 0
+                result.kill()
+          elif p_order == 2:
+            rvalue=result.poll()
+            if rvalue == 0:
+              p_order = 3
+              result=subprocess.Popen(command3, shell=True)
+            else:
+              lcount += 1
+              if lcount > 30: # killing in 30sec if proc is abnormal or not completed.
+                params.put("RunCustomCommand", "0")
+                p_order = 0
+                lcount = 0
+                result.kill()
+          elif p_order == 3:
+            rvalue=result.poll()
+            if rvalue == 0:
+              p_order = 4
+              result=subprocess.Popen(command4, shell=True)
+            else:
+              lcount += 1
+              if lcount > 30: # killing in 30sec if proc is abnormal or not completed.
+                params.put("RunCustomCommand", "0")
+                p_order = 0
+                lcount = 0
+                result.kill()
+          elif p_order == 4:
+            rvalue=result.poll()
+            if rvalue == 0:
+              p_order = 5
+              result=subprocess.Popen(command5, shell=True)
+            else:
+              lcount += 1
+              if lcount > 30: # killing in 30sec if proc is abnormal or not completed.
+                params.put("RunCustomCommand", "0")
+                p_order = 0
+                lcount = 0
+                result.kill()
+          elif p_order == 5:
+            rvalue=result.poll()
+            if rvalue == 0:
+              p_order = 0
+              params.put("RunCustomCommand", "0")
+            else:
+              lcount += 1
+              if lcount > 30: # killing in 30sec if proc is abnormal or not completed.
+                params.put("RunCustomCommand", "0")
+                p_order = 0
+                lcount = 0
+                result.kill()
     scount += 1
     time.sleep(DT_TRML)
 

@@ -606,6 +606,86 @@ void CarSelectCombo::refresh() {
   }
 }
 
+ModelSelectCombo::ModelSelectCombo() : AbstractControl("", "", "") 
+{
+  QStringList stringList;
+  QFile modellistfile("/data/openpilot/selfdrive/assets/addon/model/ModelList");
+  if (modellistfile.open(QIODevice::ReadOnly)) {
+    QTextStream modelname(&modellistfile);
+    while (!modelname.atEnd()) {
+      QString line = modelname.readLine();
+      stringList.append(line);
+    }
+    modellistfile.close();
+  }
+
+  hlayout->addStretch(1);
+
+  label.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
+  hlayout->addWidget(&label);
+
+  btn1.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 0px;
+    font-size: 50px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+
+  btn2.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+
+  btn1.setFixedSize(1150, 100);
+  btn2.setFixedSize(200, 100);
+  hlayout->addWidget(&btn1);
+  hlayout->addWidget(&btn2);
+  btn1.setText(QString::fromStdString(params.get("DrivingModel")));
+  btn2.setText(tr("Reset"));
+  label.setText(tr("Model"));
+
+  QObject::connect(&btn1, &QPushButton::clicked, [=]() {
+    QString cur = QString::fromStdString(params.get("DrivingModel"));
+    selection = MultiOptionDialog::getSelection(tr("Select Driving Model"), stringList, cur, this);
+    if (!selection.isEmpty()) {
+      if (selection != cur) {
+        if (ConfirmationDialog::confirm2("<" + selection + "> " + tr("Driving model will be changed. Downloading(50MB) takes a time. Will be reboot if done."), this)) {
+          params.put("DrivingModel", selection.toStdString());
+          QProcess::execute("touch /data/kisa_compiling");
+          params.put("RunCustomCommand", "4", 1);
+        }
+      }
+    }
+    btn1.setText(QString::fromStdString(params.get("DrivingModel")));
+    refresh();
+  });
+
+  QObject::connect(&btn2, &QPushButton::clicked, [=]() {
+    if (ConfirmationDialog::confirm2(tr("Do you want to restore original model?"), this)) {
+      params.remove("DrivingModel");
+      QProcess::execute("touch /data/kisa_compiling");
+      params.put("RunCustomCommand", "5", 1);
+      refresh();
+    }
+  });
+  refresh();
+}
+
+void ModelSelectCombo::refresh() {
+  QString selected_modelname = QString::fromStdString(params.get("DrivingModel"));
+  if (selected_modelname.length()) {
+    btn1.setText(selected_modelname);
+  } else {
+    btn1.setText(tr("Original Model"));
+  }
+}
+
 BranchSelectCombo::BranchSelectCombo() : AbstractControl("", "", "") 
 {
   hlayout->addStretch(1);

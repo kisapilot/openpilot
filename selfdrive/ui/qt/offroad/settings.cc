@@ -562,6 +562,8 @@ DeveloperPanel::DeveloperPanel(QWidget *parent) : QFrame(parent) {
   layout->addWidget(new CarSelectCombo());
   layout->addWidget(horizontal_line());
   layout->addWidget(new CPandaGroup());
+  layout->addWidget(horizontal_line());
+  layout->addWidget(new ModelSelectCombo());
 }
 
 TuningPanel::TuningPanel(QWidget *parent) : QFrame(parent) {
