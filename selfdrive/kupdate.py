@@ -27,6 +27,7 @@ def sw_update_thread(end_event, nv_queue):
             command1 = "git -C /data/openpilot clean -d -f -f"
             command2 = "git -C /data/openpilot remote set-branches --add origin " + selection
             command3 = "/data/openpilot/selfdrive/assets/addon/script/git_remove.sh"
+            command31 = "git -C /data/openpilot branch -D " + selection
             command4 = "git -C /data/openpilot fetch --progress origin"
             command5 = "git -C /data/openpilot checkout --track origin/" + selection
             command6 = "git -C /data/openpilot checkout " + selection
@@ -49,8 +50,20 @@ def sw_update_thread(end_event, nv_queue):
           elif p_order == 2:
             rvalue=result.poll()
             if rvalue == 0:
-              p_order = 3
+              p_order = 21
               result=subprocess.Popen(command3, shell=True)
+            else:
+              lcount += 1
+              if lcount > 30: # killing in 30sec if proc is abnormal or not completed.
+                params.put("RunCustomCommand", "0")
+                p_order = 0
+                lcount = 0
+                result.kill()
+          elif p_order == 21:
+            rvalue=result.poll()
+            if rvalue == 0:
+              p_order = 3
+              result=subprocess.Popen(command31, shell=True)
             else:
               lcount += 1
               if lcount > 30: # killing in 30sec if proc is abnormal or not completed.

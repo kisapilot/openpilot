@@ -424,6 +424,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"KisaCruiseGapSet", PERSISTENT},
     {"KisaPilotCurrentDescription", PERSISTENT},
     {"UseLegacyLaneModel", PERSISTENT},
+    {"GitCommitRemote", PERSISTENT},
 };
 
 } // namespace

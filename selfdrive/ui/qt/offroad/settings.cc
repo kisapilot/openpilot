@@ -316,7 +316,7 @@ void DevicePanel::poweroff() {
 SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   gitRemoteLbl = new LabelControl(tr("Git Remote"));
   gitBranchLbl = new LabelControl(tr("Git Branch"));
-  gitCommitLbl = new LabelControl(tr("Git Commit"));
+  gitCommitLbl = new LabelControl(tr("Commit(Local/Remote)"));
   versionLbl = new LabelControl(tr("Fork"));
   lastUpdateLbl = new LabelControl(tr("Last Update Check"), "", "");
   updateBtn = new ButtonControl(tr("Check for Updates"), "");
@@ -333,7 +333,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
       ConfirmationDialog::alert(desc, this);
     } else if (commit_local == commit_remote) {
       params.put("RunCustomCommand", "1", 1);
-      desc += tr("Local and remote match, but running check, try again in few seconds to make sure.");
+      desc += tr("Checking update takes a time. If Same message, no update required.");
       ConfirmationDialog::alert(desc, this);
     } else {
       if (QFileInfo::exists("/data/KisaPilot_Updates.txt")) {
@@ -363,6 +363,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
         }
       }
     }
+    updateLabels();
   });
 
   auto uninstallBtn = new ButtonControl(tr("Uninstall %1").arg(getBrand()), tr("UNINSTALL"));
@@ -373,12 +374,12 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   });
   connect(parent, SIGNAL(offroadTransition(bool)), uninstallBtn, SLOT(setEnabled(bool)));
 
-  QWidget *widgets[] = {versionLbl, gitRemoteLbl, gitBranchLbl, lastUpdateLbl, updateBtn};
+  QWidget *widgets[] = {versionLbl, gitRemoteLbl, gitBranchLbl, lastUpdateLbl, updateBtn, gitCommitLbl};
   for (QWidget* w : widgets) {
     addItem(w);
   }
 
-  addItem(new GitHash());
+  //addItem(new GitHash());
   addItem(new CPresetWidget());
   addItem(new CGitGroup());
   //addItem(new CUtilWidget(this));
@@ -396,6 +397,14 @@ void SoftwarePanel::updateLabels() {
   if (tm != "") {
     lastUpdate = timeAgo(QDateTime::fromString(tm, "yyyy-MM-dd HH:mm:ss"));
   }
+  QString lhash = QString::fromStdString(params.get("GitCommit").substr(0, 10));
+  QString rhash = QString::fromStdString(params.get("GitCommitRemote").substr(0, 10));
+
+  if (lhash == rhash) {
+    gitCommitLbl->setStyleSheet("color: #aaaaaa");
+  } else {
+    gitCommitLbl->setStyleSheet("color: #0099ff");
+  }
 
   versionLbl->setText("KisaPilot");
   lastUpdateLbl->setText(lastUpdate);
@@ -403,7 +412,7 @@ void SoftwarePanel::updateLabels() {
   updateBtn->setEnabled(true);
   gitRemoteLbl->setText(QString::fromStdString(params.get("GitRemote").substr(19)));
   gitBranchLbl->setText(QString::fromStdString(params.get("GitBranch")));
-  gitCommitLbl->setText(QString::fromStdString(params.get("GitCommit")).left(10));
+  gitCommitLbl->setText(lhash + "     " + rhash);
 }
 
 
