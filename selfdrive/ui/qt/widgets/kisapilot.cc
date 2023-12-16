@@ -642,7 +642,7 @@ ModelSelectCombo::ModelSelectCombo() : AbstractControl("", "", "")
     background-color: #393939;
   )");
 
-  btn1.setFixedSize(1150, 100);
+  btn1.setFixedSize(1100, 100);
   btn2.setFixedSize(200, 100);
   hlayout->addWidget(&btn1);
   hlayout->addWidget(&btn2);
@@ -5327,22 +5327,22 @@ LCTimingFactor::LCTimingFactor() : AbstractControl("", "", "") {
 
   hlayout->addWidget(&label1a);
   hlayout->addWidget(&label1);
-  btn1.setFixedSize(150, 100);
+  btn1.setFixedSize(145, 100);
   label1a.setText("30:");
   hlayout->addWidget(&btn1);
   hlayout->addWidget(&label2a);
   hlayout->addWidget(&label2);
-  btn2.setFixedSize(150, 100);
+  btn2.setFixedSize(145, 100);
   label2a.setText("60:");
   hlayout->addWidget(&btn2);
   hlayout->addWidget(&label3a);
   hlayout->addWidget(&label3);
-  btn3.setFixedSize(150, 100);
+  btn3.setFixedSize(145, 100);
   label3a.setText("80:");
   hlayout->addWidget(&btn3);
   hlayout->addWidget(&label4a);
   hlayout->addWidget(&label4);
-  btn4.setFixedSize(150, 100);
+  btn4.setFixedSize(145, 100);
   label4a.setText("110:");
   hlayout->addWidget(&btn4);
 
@@ -5644,6 +5644,8 @@ VCurvSpeed::VCurvSpeed() : AbstractControl("", "", "") {
     height: 120px;
   )");
   btn.setFixedSize(150, 100);
+  edit1.setFixedSize(650, 100);
+  edit2.setFixedSize(650, 100);
   edit1.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
   edit2.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 
@@ -5746,6 +5748,8 @@ OCurvSpeed::OCurvSpeed() : AbstractControl("", "", "") {
     height: 120px;
   )");
   btn.setFixedSize(150, 100);
+  edit1.setFixedSize(650, 100);
+  edit2.setFixedSize(650, 100);
   edit1.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
   edit2.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 
@@ -6658,6 +6662,8 @@ OSMCustomSpeedLimit::OSMCustomSpeedLimit() : AbstractControl("", "", "") {
   btn.setFixedSize(150, 100);
   edit1.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
   edit2.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
+  edit1.setFixedSize(650, 100);
+  edit2.setFixedSize(650, 100);
 
   hlayout->addWidget(&edit1);
   hlayout->addWidget(&edit2);
@@ -6957,6 +6963,8 @@ SpeedLaneWidth::SpeedLaneWidth() : AbstractControl("", "", "") {
     height: 120px;
   )");
   btn.setFixedSize(150, 100);
+  edit1.setFixedSize(650, 100);
+  edit2.setFixedSize(650, 100);
   edit1.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
   edit2.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 
@@ -7110,8 +7118,8 @@ KISAEdgeOffset::KISAEdgeOffset() : AbstractControl("", tr("low value to move car
     color: #E4E4E4;
     background-color: #393939;
   )");
-  btnminusl.setFixedSize(170, 100);
-  btnplusl.setFixedSize(170, 100);
+  btnminusl.setFixedSize(150, 100);
+  btnplusl.setFixedSize(150, 100);
   hlayout->addWidget(&btnminusl);
   hlayout->addWidget(&btnplusl);
 
@@ -7137,8 +7145,8 @@ KISAEdgeOffset::KISAEdgeOffset() : AbstractControl("", tr("low value to move car
     color: #E4E4E4;
     background-color: #393939;
   )");
-  btnminusr.setFixedSize(170, 100);
-  btnplusr.setFixedSize(170, 100);
+  btnminusr.setFixedSize(150, 100);
+  btnplusr.setFixedSize(150, 100);
   hlayout->addWidget(&btnminusr);
   hlayout->addWidget(&btnplusr);
 
@@ -7237,8 +7245,8 @@ ToAvoidLKASFault::ToAvoidLKASFault() : AbstractControl("", "", "") {
     color: #E4E4E4;
     background-color: #393939;
   )");
-  btnminusl.setFixedSize(170, 100);
-  btnplusl.setFixedSize(170, 100);
+  btnminusl.setFixedSize(150, 100);
+  btnplusl.setFixedSize(150, 100);
   hlayout->addWidget(&btnminusl);
   hlayout->addWidget(&btnplusl);
 
@@ -7264,8 +7272,8 @@ ToAvoidLKASFault::ToAvoidLKASFault() : AbstractControl("", "", "") {
     color: #E4E4E4;
     background-color: #393939;
   )");
-  btnminusr.setFixedSize(170, 100);
-  btnplusr.setFixedSize(170, 100);
+  btnminusr.setFixedSize(150, 100);
+  btnplusr.setFixedSize(150, 100);
   hlayout->addWidget(&btnminusr);
   hlayout->addWidget(&btnplusr);
 
@@ -7485,6 +7493,7 @@ UserSpecificFeature::UserSpecificFeature() : AbstractControl(tr("FeatureNumber")
     font-weight: 500;
     height: 120px;
   )");
+  edit.setFixedSize(900, 100);
   btn.setFixedSize(200, 100);
   hlayout->addWidget(&edit);
   hlayout->addWidget(&btn);
@@ -8201,6 +8210,7 @@ ExternalDeviceIP::ExternalDeviceIP() : AbstractControl(tr("ExternalDevIP"), tr("
     height: 120px;
   )");
 
+  edit.setFixedSize(1000, 100);
   btn.setFixedSize(150, 100);
   btn.setText(tr("SET"));
   edit.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
@@ -8743,6 +8753,7 @@ MapboxToken::MapboxToken() : AbstractControl(tr("MapboxToken"), tr("MapboxToken"
     font-weight: 500;
     height: 120px;
   )");
+  edit.setFixedSize(900, 100);
   btn.setFixedSize(200, 100);
   hlayout->addWidget(&edit);
   hlayout->addWidget(&btn);
