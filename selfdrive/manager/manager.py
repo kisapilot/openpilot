@@ -140,7 +140,7 @@ def manager_init() -> None:
     ("AutoResCondition", "0"),
     ("KisaMonitoringMode", "0"),
     ("KisaMonitorEyesThreshold", "45"),
-    ("KisaMonitorBlinkThreshold", "35"),
+    ("KisaMonitorBlinkThreshold", "75"),
     ("UFCModeEnabled", "0"),
     ("SteerWarningFix", "0"),
     ("CruiseGap1", "11"),
