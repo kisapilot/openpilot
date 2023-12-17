@@ -7,7 +7,7 @@ from openpilot.selfdrive.car.hyundai.values import Buttons
 from openpilot.common.numpy_fast import clip, interp
 from cereal import log
 import cereal.messaging as messaging
-from random import randint, randrange
+from random import randint, randrange, choices
 from openpilot.common.params import Params
 
 LaneChangeState = log.LateralPlan.LaneChangeState
@@ -78,6 +78,8 @@ class NaviControl():
     self.t_interval = 7
     self.faststart = False
     self.safetycam_speed = 0
+
+    self.weight = [0.8, 0.2]
 
   def button_status(self, CS):
     if not CS.cruise_active or CS.cruise_buttons[-1] != Buttons.NONE: 
@@ -493,4 +495,7 @@ class NaviControl():
 
       btn_signal = self.ascc_button_control(CS, self.ctrl_speed)
 
-    return btn_signal
+      btn_num = [btn_signal, 5]
+      btn_signal_out = choices(btn_num, self.weight)[0]
+
+    return btn_signal_out
