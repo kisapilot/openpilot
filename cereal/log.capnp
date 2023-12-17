@@ -2125,6 +2125,7 @@ struct LiveENaviData {
   kisaLongitude @33 :Float32;
   wazeLatitude @34 :Float32;
   wazeLongitude @35 :Float32;
+  wazeAlertExtend @36 :Bool;
 }
 
 struct LiveMapDataDEPRECATED {

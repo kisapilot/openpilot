@@ -33,6 +33,7 @@ class NaviControl():
     self.map_speed_block = False
     self.map_speed_dist = 0
     self.map_speed = 0
+    self.map_speed_dist_extend = False
     self.onSpeedControl = False
     self.onSpeedBumpControl = False
     self.onSpeedBumpControl2 = False
@@ -173,6 +174,7 @@ class NaviControl():
         if self.sm['liveENaviData'].wazeRoadSpeedLimit > 9:
           self.map_speed = self.sm['liveENaviData'].wazeRoadSpeedLimit
           self.map_speed_dist = max(0, self.sm['liveENaviData'].wazeAlertDistance)
+          self.map_speed_dist_extend = self.sm['liveENaviData'].wazeAlertExtend
           spdTarget = self.map_speed
           cam_distance_calc = 0
           cam_distance_calc = interp(self.map_speed * CV.MPH_TO_KPH if CS.is_set_speed_in_mph else 1, [30, 60, 110], [2.5, 3.0, 3.7])
@@ -183,6 +185,8 @@ class NaviControl():
             if self.map_speed_dist < final_cam_decel_start_dist:
               spdTarget = self.map_speed
             elif self.map_speed_dist < min_control_dist and self.map_speed_dist != 0:
+              spdTarget = self.map_speed
+            elif self.map_speed_dist_extend:
               spdTarget = self.map_speed
           else:
             self.onSpeedControl = False
@@ -320,6 +324,7 @@ class NaviControl():
       self.onSpeedControl = False
       self.map_speed = 0
       self.map_speed_dist = 0
+      self.map_speed_dist_extend = False
       if not self.speedlimit_decel_off and not self.sm['controlsState'].pauseSpdLimit:
         self.map_speed_block = False
       self.onSpeedBumpControl = False
