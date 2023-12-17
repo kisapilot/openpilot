@@ -479,6 +479,7 @@ class NaviControl():
       self.na_timer = 0
       self.speedlimit_decel_off = Params().get_bool("SpeedLimitDecelOff")
     btn_signal = None
+    btn_signal_out = None
     if not self.button_status(CS):  # 사용자가 버튼클릭하면 일정시간 기다린다.
       pass
     elif CS.cruise_active:
