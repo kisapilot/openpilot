@@ -115,7 +115,7 @@ class ENavi:
         self.count2 = self.count + 10
         self.result = []
         for address in self.ip_list_out:
-            p = subprocess.Popen(['ping', '-c', '3', '-W', '2', '-q', address])
+            p = subprocess.Popen(['ping', '-c', '1', '-W', '2', '-q', address])
             self.result.append(p)
       elif (self.count % self.count2) == 0:
         for ip, p in zip(self.ip_list_out, self.result):
