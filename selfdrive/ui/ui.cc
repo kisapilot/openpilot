@@ -407,6 +407,7 @@ static void update_state(UIState *s) {
       scene.liveENaviData.ewazenavsign = lme_data.getWazeNavSign();
       scene.liveENaviData.ewazenavdistance = lme_data.getWazeNavDistance();
       scene.liveENaviData.ewazealerttype = lme_data.getWazeAlertType();
+      scene.liveENaviData.ewazealertextend = lme_data.getWazeAlertExtend();
     }
   }
   if (sm.updated("liveMapData")) {

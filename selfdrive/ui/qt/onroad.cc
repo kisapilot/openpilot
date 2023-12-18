@@ -1355,7 +1355,10 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
             p.drawText(rect_d, Qt::AlignCenter, QString::number(s->scene.limitSpeedCameraDist/1000, 'f', 1) + "km");
           }
         } else {
-          if ((s->scene.limitSpeedCameraDist*3.28084) < 1000) { // 0m~304m
+          if (s->scene.liveENaviData.ewazealertextend) { // waze alert extend
+            p.setBrush(orangeColor(150));
+            p.drawText(rect_d, Qt::AlignCenter, "Limit");
+          } else if ((s->scene.limitSpeedCameraDist*3.28084) < 1000) { // 0m~304m
             p.drawText(rect_d, Qt::AlignCenter, QString::number(s->scene.limitSpeedCameraDist*3.28084, 'f', 0) + "ft");
           } else { // 305m~
             p.drawText(rect_d, Qt::AlignCenter, QString::number(round(s->scene.limitSpeedCameraDist*0.000621*100)/100, 'f', 2) + "mi");
