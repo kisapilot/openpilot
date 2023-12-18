@@ -268,6 +268,8 @@ typedef struct UIScene {
   int satelliteCount;
   float gpsAccuracy;
 
+  QString model_name;
+
   cereal::DeviceState::Reader deviceState;
   cereal::PeripheralState::Reader peripheralState;
   cereal::CarState::Reader car_state;
