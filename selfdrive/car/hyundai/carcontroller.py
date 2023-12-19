@@ -582,7 +582,8 @@ class CarController:
             self.acc_standstill = False
             if self.standstill_resume_alt: # for D.Fyffe, code from neokii
               self.standstill_res_button = True
-              can_sends.append(hyundaican.create_clu11(self.packer, self.resume_cnt, CS.clu11, Buttons.RES_ACCEL, clu11_speed, self.CP.sccBus))
+              btn_num_input = choices([Buttons.RES_ACCEL, 7], self.weightc)[0]
+              can_sends.append(hyundaican.create_clu11(self.packer, self.resume_cnt, CS.clu11, btn_num_input, clu11_speed, self.CP.sccBus))
               self.resume_cnt += 1
               if self.resume_cnt >= int(randint(4, 5) * 2):
                 self.resume_cnt = 0
@@ -920,8 +921,9 @@ class CarController:
       self.kisa_cruise_auto_res and kisa_cruise_auto_res_condition and (self.auto_res_limit_sec == 0 or self.auto_res_limit_timer < self.auto_res_limit_sec) and \
       (self.auto_res_delay == 0 or self.auto_res_delay_timer >= self.auto_res_delay):
         if self.kisa_cruise_auto_res_option == 0:
-          can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.RES_ACCEL)) if not self.longcontrol \
-          else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.RES_ACCEL, clu11_speed, self.CP.sccBus))  # auto res
+          btn_num_input = choices([Buttons.RES_ACCEL, 7], self.weightc)[0]
+          can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_num_input)) if not self.longcontrol \
+          else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_num_input, clu11_speed, self.CP.sccBus))  # auto res
           self.auto_res_starting = True
           self.res_speed = round(CS.VSetDis) if CS.is_set_speed_in_mph or self.osm_spdlimit_enabled else round(CS.clu_Vanz*1.1)
           self.res_speed_timer = 300
@@ -930,8 +932,9 @@ class CarController:
             self.resume_cnt = 0
             self.auto_res_timer = int(randint(20, 25) * 2)
         elif self.kisa_cruise_auto_res_option == 1:
-          can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.SET_DECEL)) if not self.longcontrol \
-          else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.SET_DECEL, clu11_speed, self.CP.sccBus)) # auto res but set_decel to set current speed
+          btn_num_input = choices([Buttons.SET_DECEL, 7], self.weightc)[0]
+          can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_num_input)) if not self.longcontrol \
+          else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_num_input, clu11_speed, self.CP.sccBus)) # auto res but set_decel to set current speed
           self.auto_res_starting = True
           self.v_cruise_kph_auto_res = round(CS.clu_Vanz)
           self.res_speed_timer = 50
@@ -941,11 +944,15 @@ class CarController:
             self.auto_res_timer = int(randint(20, 25) * 2)
         elif self.kisa_cruise_auto_res_option == 2:
           if not self.longcontrol:
-            can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.RES_ACCEL)) if 1 < CS.lead_distance < 149 \
-            else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.SET_DECEL))
+            btn_num_input = choices([Buttons.RES_ACCEL, 7], self.weightc)[0]
+            btn_num_input2 = choices([Buttons.SET_DECEL, 7], self.weightc)[0]
+            can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_num_input)) if 1 < CS.lead_distance < 149 \
+            else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_num_input2))
           else:
-            can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.RES_ACCEL, clu11_speed, self.CP.sccBus)) if 1 < CS.lead_distance < 149 \
-            else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.SET_DECEL, clu11_speed, self.CP.sccBus))
+            btn_num_input = choices([Buttons.RES_ACCEL, 7], self.weightc)[0]
+            btn_num_input2 = choices([Buttons.SET_DECEL, 7], self.weightc)[0]
+            can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_num_input, clu11_speed, self.CP.sccBus)) if 1 < CS.lead_distance < 149 \
+            else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_num_input2, clu11_speed, self.CP.sccBus))
           self.auto_res_starting = True
           self.v_cruise_kph_auto_res = round(CS.clu_Vanz)
           self.res_speed_timer = 50
