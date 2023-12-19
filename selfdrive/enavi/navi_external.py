@@ -65,6 +65,10 @@ class ENavi:
     self.result = []
   
     self.check_connection = False
+    self.check_connection_count = 0
+
+    self.message = ""
+
     try:
       self.ip_count = int(len(self.params.get("ExternalDeviceIP", encoding="utf8").split(',')))
       if self.ip_count > 0:
@@ -169,16 +173,18 @@ class ENavi:
         self.kisa_8 = ""
         self.kisa_9 = ""
 
-      
       self.socket.subscribe("")
-      self.message = str(self.socket.recv(), 'utf-8')
-
-      if (self.count % 30) == 0:
-        try:
-          rtext = subprocess.check_output(["netstat", "-n"])
-          self.check_connection = True if str(rtext).find('5555      ESTABLISHED') != -1 else False
-        except:
-          pass
+      try:
+        self.check_connection_count -= 1 if self.check_connection_count > 0 else 0
+        if self.check_connection_count > 5:
+          self.message = ""
+          self.check_connection = False
+        else:
+          self.check_connection = True
+        self.message = str(self.socket.recv(flags=zmq.NOBLOCK), 'utf-8')
+      except zmq.ZMQError:
+        self.check_connection_count = min(10, self.check_connection_count+1)
+        pass
       
       for line in self.message.split('\n'):
         if self.navi_selection == 1:
