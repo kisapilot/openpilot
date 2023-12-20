@@ -502,7 +502,7 @@ class NaviControl():
       btn_signal = self.ascc_button_control(CS, self.ctrl_speed)
 
       if btn_signal is not None:
-        btn_num = [btn_signal, 7]
+        btn_num = [btn_signal, randint(5,7)]
         btn_signal_out = choices(btn_num, self.weight)[0]
 
     return btn_signal_out
