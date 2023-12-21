@@ -440,7 +440,7 @@ class CarState(CarStateBase):
     if self.CP.carFingerprint in (HYBRID_CAR | EV_CAR):
       gear = cp.vl["ELECT_GEAR"]["Elect_Gear_Shifter"]
       if self.CP.carFingerprint == CAR.NEXO_FE:
-        gear = cp.vl["ELECT_GEAR"]["Elect_Gear_Shifter_NEXO"] # NEXO's gear info from neokii. If someone can send me a cabana, I will find more clear info.
+        gear = cp.vl["EMS20"]["Elect_Gear_Shifter_NEXO"] # kisa, NEXO gear by multikyd
       else:
         gear = cp.vl["ELECT_GEAR"]["Elect_Gear_Shifter"]
       ret.gearStep = cp.vl["ELECT_GEAR"]["Elect_Gear_Step"] # kisa
@@ -678,6 +678,8 @@ class CarState(CarStateBase):
 
     if CP.carFingerprint in (HYBRID_CAR | EV_CAR):
       messages.append(("ELECT_GEAR", 20))
+      if CP.carFingerprint == CAR.NEXO_FE:
+        messages.append(("EMS20", 20))
     elif CP.carFingerprint in CAN_GEARS["use_cluster_gears"]:
       pass
     elif CP.carFingerprint in CAN_GEARS["use_tcu_gears"]:
