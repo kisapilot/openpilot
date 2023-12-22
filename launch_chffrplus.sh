@@ -104,7 +104,15 @@ function launch {
 
   # KisaPilot Current Stat
   git log -n 1 --pretty=format:"* %cd/%h" --date=short > /data/params/d/KisaPilotCurrentDescription
-  
+
+  # KisaPilot Model check
+  Model_Size=$(stat --printf=%s /data/openpilot/selfdrive/modeld/models/supercombo.onnx)
+  if [ "$Model_Size" == "48457850" ]; then echo -en "New_Delhi" > /data/params/d/DrivingModel;
+  elif [ "$Model_Size" == "48457192" ]; then echo -en "Blue_Diamond" > /data/params/d/DrivingModel;
+  elif [ "$Model_Size" == "52524758" ]; then echo -en "Farmville" > /data/params/d/DrivingModel;
+  elif [ "$Model_Size" == "52939093" ]; then echo -en "New_Lemon_Pie" > /data/params/d/DrivingModel;
+  else echo -en "New_Delhi" > /data/params/d/DrivingModel; fi
+
   # start manager
   cd selfdrive/manager
   if [ -f "/data/params/d/OSMEnable" ]; then
