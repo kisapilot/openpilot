@@ -1,6 +1,6 @@
 <h1 style="text-align:center">Welcome to KisaPilot</h1>
 
-![](https://i.imgur.com/AyMRTBu.png)
+![](https://raw.githubusercontent.com/kisapilot/model/main/KisaPilot.png)
 
 
 Table of Contents
