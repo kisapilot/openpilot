@@ -267,7 +267,7 @@ class Controls:
     self.safety_speed = 0
     self.lkas_temporary_off = False
     self.gap_by_spd_on_temp = True
-    self.exp_mode_temp = True
+    self.exp_mode_temp = False
     self.btn_pressing = 0
     try:
       self.roadname_and_slc = self.params.get("RoadList", encoding="utf8").strip().splitlines()[1].split(',')

@@ -131,7 +131,7 @@ class ENavi:
             if p.wait() == 0:
                 res = subprocess.call(['nc', '-vz', ip, '5555'])
                 if res == 0:
-                  self.params.put("ExternalDeviceIPNow", ip)
+                  self.params.put_nonblocking("ExternalDeviceIPNow", ip)
                   self.ip_bind = True
                   self.check_connection = True
                   self.context = zmq.Context()
@@ -257,8 +257,8 @@ class ENavi:
             self.dest_changed_count += 1
             if self.dest_changed_count > 2:
               self.dest_changed = False
-              self.params.put("NavDestination", json.dumps(dest))
-              self.params.put("NavDestinationWaypoints", json.dumps(waypoints))
+              self.params.put_nonblocking("NavDestination", json.dumps(dest))
+              self.params.put_nonblocking("NavDestinationWaypoints", json.dumps(waypoints))
         elif self.navi_selection == 2:
           if "kisawazereportid" in line:
             arr = line.split('kisawazereportid: ')
@@ -362,8 +362,8 @@ class ENavi:
             self.dest_changed_count += 1
             if self.dest_changed_count > 2:
               self.dest_changed = False
-              self.params.put("NavDestination", json.dumps(dest))
-              self.params.put("NavDestinationWaypoints", json.dumps(waypoints))
+              self.params.put_nonblocking("NavDestination", json.dumps(dest))
+              self.params.put_nonblocking("NavDestinationWaypoints", json.dumps(waypoints))
 
         if self.KISA_Debug:
           try:

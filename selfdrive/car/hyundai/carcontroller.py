@@ -251,7 +251,7 @@ class CarController:
 
     self.btnsignal = 0
     self.second2 = 0
-    self.experimental_mode_temp = True
+    self.experimental_mode_temp = False
     self.exp_mode_push = False
     self.exp_mode_push_cnt = 0
 
@@ -526,6 +526,10 @@ class CarController:
         elif self.exp_mode_push_cnt == 2 and self.second2 > 50:
           self.exp_mode_push_cnt = 0
           self.experimental_mode_temp = not self.experimental_mode_temp
+          if self.experimental_mode_temp:
+            self.c_params.put_bool("ExperimentalMode", True)
+          else:
+            self.c_params.put_bool("ExperimentalMode", False)
         elif self.second2 > 50 and self.exp_mode_push_cnt > 0:
           self.exp_mode_push_cnt = 0
       else:
@@ -1052,7 +1056,7 @@ class CarController:
           elif self.radar_helper_option == 1: # Radar Only
             accel = aReqValue
           elif self.radar_helper_option >= 2: # KISA Custom(Radar+Vision), more smooth slowdown for cut-in or encountering being decellerated car.
-            if self.experimental_mode_temp and self.experimental_mode:
+            if self.experimental_mode_temp:
               self.stopped = False
               if stopping:
                 self.smooth_start = True
@@ -1087,7 +1091,6 @@ class CarController:
                 self.change_accel_fast = False
                 pass
               elif aReqValue >= 0.0:
-                # accel = interp(CS.lead_distance, [14.0, 15.0], [max(accel, aReqValue, faccel), aReqValue])
                 dRel1 = self.dRel if self.dRel > 0 else CS.lead_distance
                 if ((CS.lead_distance - dRel1 > 3.0) or self.NC.cutInControl) and accel < 0:
                   if aReqValue < accel:
@@ -1095,12 +1098,15 @@ class CarController:
                   else:
                     accel = interp(self.dRel, [0, 40], [accel*0.1, accel*0.7])
                 else:
-                  accel = aReqValue
+                  if aReqValue < accel:
+                    accel = interp(CS.lead_distance, [14.0, 15.0], [(accel+aReqValue)/2, aReqValue])
+                  else:
+                    accel = aReqValue
               elif aReqValue < 0.0 and CS.lead_distance < self.stoppingdist+0.5 and accel >= aReqValue and lead_objspd <= 0 and self.stopping_dist_adj_enabled:
                 if CS.lead_distance < 1.7:
-                  accel = self.accel - (DT_CTRL * 3.0)
+                  accel = self.accel - (DT_CTRL * 2.5)
                 elif CS.lead_distance < self.stoppingdist+0.5:
-                  accel = self.accel - (DT_CTRL * interp(CS.out.vEgo, [0.0, 1.0, 2.0], [0.05, 1.0, 5.0]))
+                  accel = self.accel - (DT_CTRL * interp(CS.out.vEgo, [0.0, 1.0, 2.0], [0.025, 1.0, 5.0]))
               elif aReqValue < 0.0:
                 dRel2 = self.dRel if self.dRel > 0 else CS.lead_distance
                 dist_by_drel = interp(CS.lead_distance, [10, 50], [3.0, 9.0])
@@ -1157,10 +1163,10 @@ class CarController:
                 stock_weight = 0.0
                 self.change_accel_fast = False
                 accel = accel * (1.0 - stock_weight) + aReqValue * stock_weight
-            elif 0.1 < self.dRel < (self.stoppingdist + 2.0) and int(self.vRel*3.6) < 0:
-              accel = self.accel - (DT_CTRL * interp(CS.out.vEgo, [0.0, 1.0, 2.0], [0.05, 0.5, 1.0]))
+            elif 0.1 < self.dRel < (self.stoppingdist + 1.5) and int(self.vRel*3.6) < 0:
+              accel = self.accel - (DT_CTRL * interp(CS.out.vEgo, [0.0, 1.0, 2.0], [0.04, 0.6, 1.1]))
               self.stopped = False
-            elif 0.1 < self.dRel < (self.stoppingdist + 2.0):
+            elif 0.1 < self.dRel < (self.stoppingdist + 1.5):
               accel = min(-0.6, faccel*0.5)
               if stopping:
                 self.stopped = True
@@ -1168,36 +1174,18 @@ class CarController:
                 self.stopped = False
             elif 0.1 < self.dRel < 90:
               self.stopped = False
-              ddrel_weight = interp(self.dRel, [self.stoppingdist+2.0, 30], [1.0, 1.0])
+              ddrel_weight = interp(self.dRel, [self.stoppingdist+1.5, 30], [1.0, 1.0])
               accel = faccel*ddrel_weight
             else:
               self.stopped = False
-              if self.experimental_mode:
-                if stopping:
-                  self.smooth_start = True
-                  accel = min(-0.5, accel, faccel*0.5)
-                elif self.smooth_start and CS.clu_Vanz < round(CS.VSetDis)*0.9:
-                  accel = interp(CS.clu_Vanz, [0, round(CS.VSetDis)], [min(accel*0.6, faccel*0.6), aReqValue])
-                else:
-                  self.smooth_start = False
-                  if self.sm['liveENaviData'].isHighway or CS.highway_cam != 0 or (not self.experimental_mode_temp):
-                    accel = aReqValue
-                  elif self.dRel < 0.1:
-                    accel = faccel
-              elif not self.experimental_mode_temp:
-                if stopping:
-                  self.smooth_start = True
-                  accel = min(-0.5, accel, faccel*0.5)
-                elif self.smooth_start and CS.clu_Vanz < round(CS.VSetDis)*0.9:
-                  accel = interp(CS.clu_Vanz, [0, round(CS.VSetDis)], [min(accel*0.6, faccel*0.6), aReqValue])
-                else:
-                  if self.smooth_start:
-                    self.smooth_start = False
-                    self.experimental_mode_temp = True
-                    accel = aReqValue
-                  elif self.dRel < 0.1:
-                    accel = faccel
+              if stopping:
+                self.smooth_start = True
+                accel = min(-0.5, accel, faccel*0.5)
+              elif self.smooth_start and CS.clu_Vanz < round(CS.VSetDis)*0.9:
+                accel = interp(CS.clu_Vanz, [0, round(CS.VSetDis)], [min(accel*0.6, faccel*0.6), aReqValue])
               else:
+                if self.smooth_start:
+                  self.smooth_start = False
                 accel = aReqValue
           else:
             self.stopped = False
@@ -1260,12 +1248,12 @@ class CarController:
       # self.standstill_res_count = int(self.c_params.get("RESCountatStandstill", encoding="utf8"))
       # self.kisa_cruisegap_auto_adj = self.c_params.get_bool("CruiseGapAdjust")
       # self.to_avoid_lkas_fault_enabled = self.c_params.get_bool("AvoidLKASFaultEnabled")
-      self.to_avoid_lkas_fault_max_angle = int(self.c_params.get("AvoidLKASFaultMaxAngle", encoding="utf8"))
-      self.to_avoid_lkas_fault_max_frame = int(self.c_params.get("AvoidLKASFaultMaxFrame", encoding="utf8"))
+      # self.to_avoid_lkas_fault_max_angle = int(self.c_params.get("AvoidLKASFaultMaxAngle", encoding="utf8"))
+      # self.to_avoid_lkas_fault_max_frame = int(self.c_params.get("AvoidLKASFaultMaxFrame", encoding="utf8"))
       # self.e2e_long_enabled = self.c_params.get_bool("E2ELong")
       # self.stopsign_enabled = self.c_params.get_bool("StopAtStopSign")
       # self.gap_by_spd_on = self.c_params.get_bool("CruiseGapBySpdOn")
-      self.experimental_mode = self.c_params.get_bool("ExperimentalMode")
+      # self.experimental_mode = self.c_params.get_bool("ExperimentalMode")
       # self.usf = int(Params().get("UserSpecificFeature", encoding="utf8"))
       if self.c_params.get_bool("KisaLiveTunePanelEnable"):
         if self.CP.lateralTuning.which() == 'pid':
