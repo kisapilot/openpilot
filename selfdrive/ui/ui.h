@@ -259,7 +259,7 @@ typedef struct UIScene {
 
   bool op_long_enabled = false;
   bool experimental_mode = false;
-  bool exp_mode_temp = true;
+  bool exp_mode_temp;
   int btn_pressing;
   bool low_ui_profile;
   bool multi_btn_touched = false;

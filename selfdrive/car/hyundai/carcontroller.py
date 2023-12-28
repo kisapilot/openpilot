@@ -239,6 +239,7 @@ class CarController:
     self.e2e_standstill = False
     self.e2e_standstill_stat = False
     self.e2e_standstill_timer = 0
+    self.e2e_standstill_timer2 = 0
     self.e2e_standstill_timer_buf = 0
 
     self.experimental_long_enabled = self.c_params.get_bool("ExperimentalLongitudinalEnabled")
@@ -251,7 +252,7 @@ class CarController:
 
     self.btnsignal = 0
     self.second2 = 0
-    self.experimental_mode_temp = False
+    self.experimental_mode_temp = self.experimental_mode
     self.exp_mode_push = False
     self.exp_mode_push_cnt = 0
 
@@ -840,6 +841,7 @@ class CarController:
         self.e2e_standstill = False
         self.e2e_standstill_stat = False
         self.e2e_standstill_timer = 0
+        self.e2e_standstill_timer2 = 0
         self.e2e_standstill_timer_buf = 0
       if CS.cruise_buttons[-1] == 4:
         self.cancel_counter += 1
@@ -860,6 +862,7 @@ class CarController:
         self.e2e_standstill = False
         self.e2e_standstill_stat = False
         self.e2e_standstill_timer = 0
+        self.e2e_standstill_timer2 = 0
         self.e2e_standstill_timer_buf = 0
         if self.res_speed_timer > 0:
           self.res_speed_timer -= 1
@@ -885,20 +888,24 @@ class CarController:
               if self.e2e_standstill_timer > 100:
                 self.e2e_standstill = False
                 self.e2e_standstill_timer = 0
-            elif CS.clu_Vanz > 0:
+            elif CS.clu_Vanz >= 1:
               self.e2e_standstill = False
               self.e2e_standstill_stat = False
               self.e2e_standstill_timer = 0
+              self.e2e_standstill_timer2 = 0
               self.e2e_standstill_timer_buf = 0
-            elif self.e2e_standstill_stat and self.e2e_x > (40 if 0 < self.dRel < 15 else 25) and CS.clu_Vanz == 0:
-              self.e2e_standstill = True
-              self.e2e_standstill_stat = False
-              self.e2e_standstill_timer = 0
-              self.e2e_standstill_timer_buf += 300
+            elif self.e2e_standstill_stat and self.e2e_x > (40 if 0 < self.dRel < 15 else 25) and CS.clu_Vanz < 1:
+              self.e2e_standstill_timer2 += 1
+              if self.e2e_standstill_timer2 > 20 and not CS.out.gasPressed:
+                self.e2e_standstill_timer2 = 0
+                self.e2e_standstill = True
+                self.e2e_standstill_stat = False
+                self.e2e_standstill_timer = 0
+                self.e2e_standstill_timer_buf += 500
             elif 0 < self.e2e_x < 10 and CS.clu_Vanz == 0:
               self.e2e_standstill_timer += 1
-              if self.e2e_standstill_timer > (300 + self.e2e_standstill_timer_buf):
-                self.e2e_standstill_timer = 101
+              self.e2e_standstill_timer2 = 0
+              if self.e2e_standstill_timer > (100 + self.e2e_standstill_timer_buf):
                 self.e2e_standstill_stat = True
             else:
               self.e2e_standstill_timer = 0
