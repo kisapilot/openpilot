@@ -429,7 +429,7 @@ class CarInterface(CarInterfaceBase):
 
     if ret.flags & HyundaiFlags.CANFD_CAMERA_SCC or candidate in CAMERA_SCC_CAR:
       ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_CAMERA_SCC
-    else:
+    elif candidate not in CANFD_CAR:
       if Params().get_bool("ExperimentalLongitudinalEnabled"):
         if candidate in LEGACY_SAFETY_MODE_CAR:
           # these cars require a special panda safety mode due to missing counters and checksums in the messages
