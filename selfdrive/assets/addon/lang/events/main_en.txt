@@ -63,7 +63,7 @@ E2E Long Enabled
 Be careful, It may work unexpectedly.
 Turning Blinker On at Low Speed
 Steering Assist is temporarily disabled. Please steer yourself.
-Hazard Flahser On
+Hazard Flasher On
 Driver is Steering
 Steer Assist is temporarily weakened.
 Take Control
