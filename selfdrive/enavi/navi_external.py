@@ -44,6 +44,8 @@ class ENavi:
 
     self.dest_changed = False
     self.dest_changed_count = 0
+    self.dest = {"latitude": 0.0, "longitude": 0.0,}
+    self.waypoints = [(0.0, 0.0),]
 
     self.KISA_Debug = self.params.get_bool("KISADebug")
     if self.KISA_Debug:
@@ -251,14 +253,14 @@ class ENavi:
             self.kisa_lon_prev = self.kisa_lon
             kisa_lat_ = float(self.kisa_lat)
             kisa_lon_ = float(self.kisa_lon)
-            dest = {"latitude": kisa_lat_, "longitude": kisa_lon_,}
-            waypoints = [(kisa_lon_, kisa_lat_),]
+            self.dest = {"latitude": kisa_lat_, "longitude": kisa_lon_,}
+            self.waypoints = [(kisa_lon_, kisa_lat_),]
           elif self.dest_changed:
             self.dest_changed_count += 1
             if self.dest_changed_count > 2:
               self.dest_changed = False
-              self.params.put_nonblocking("NavDestination", json.dumps(dest))
-              self.params.put_nonblocking("NavDestinationWaypoints", json.dumps(waypoints))
+              self.params.put_nonblocking("NavDestination", json.dumps(self.dest))
+              self.params.put_nonblocking("NavDestinationWaypoints", json.dumps(self.waypoints))
         elif self.navi_selection == 2:
           if "kisawazereportid" in line:
             arr = line.split('kisawazereportid: ')
@@ -356,14 +358,14 @@ class ENavi:
             self.waze_lon_prev = self.waze_lon
             waze_lat_ = float(self.waze_lat)
             waze_lon_ = float(self.waze_lon)
-            dest = {"latitude": waze_lat_, "longitude": waze_lon_,}
-            waypoints = [(waze_lon_, waze_lat_),]
+            self.dest = {"latitude": waze_lat_, "longitude": waze_lon_,}
+            self.waypoints = [(waze_lon_, waze_lat_),]
           elif self.dest_changed:
             self.dest_changed_count += 1
             if self.dest_changed_count > 2:
               self.dest_changed = False
-              self.params.put_nonblocking("NavDestination", json.dumps(dest))
-              self.params.put_nonblocking("NavDestinationWaypoints", json.dumps(waypoints))
+              self.params.put_nonblocking("NavDestination", json.dumps(self.dest))
+              self.params.put_nonblocking("NavDestinationWaypoints", json.dumps(self.waypoints))
 
         if self.KISA_Debug:
           try:
