@@ -310,7 +310,7 @@ def create_scc13(packer, scc13):
 
 def create_scc14(packer, enabled, scc14, aebcmdact, lead_visible, lead_dist, v_ego, standstill, car_fingerprint):
   values = scc14
-  if enabled and not aebcmdact and car_fingerprint == CAR.NIRO_EV_DE:
+  if enabled and not aebcmdact and car_fingerprint == CAR.NIRO_EV:
     if standstill:
       values["JerkUpperLimit"] = 0.5
       values["JerkLowerLimit"] = 10.
