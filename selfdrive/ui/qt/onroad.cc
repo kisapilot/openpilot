@@ -13,6 +13,7 @@
 #include <QProcess>
 #include <QTimer>
 
+#include "common/swaglog.h"
 #include "common/timing.h"
 #include "selfdrive/ui/qt/util.h"
 #include "selfdrive/ui/qt/widgets/input.h"
