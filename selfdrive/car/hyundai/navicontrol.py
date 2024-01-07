@@ -7,7 +7,7 @@ from openpilot.selfdrive.car.hyundai.values import Buttons
 from openpilot.common.numpy_fast import clip, interp
 from cereal import log
 import cereal.messaging as messaging
-from random import randint, randrange, choices
+from random import randint
 from openpilot.common.params import Params
 
 LaneChangeState = log.LateralPlan.LaneChangeState
@@ -79,8 +79,6 @@ class NaviControl():
     self.t_interval = 7
     self.faststart = False
     self.safetycam_speed = 0
-
-    self.weight = [0.8, 0.2]
 
   def button_status(self, CS):
     if not CS.cruise_active or CS.cruise_buttons[-1] != Buttons.NONE: 
@@ -480,7 +478,6 @@ class NaviControl():
       self.na_timer = 0
       self.speedlimit_decel_off = Params().get_bool("SpeedLimitDecelOff")
     btn_signal = None
-    btn_signal_out = None
     if not self.button_status(CS):  # 사용자가 버튼클릭하면 일정시간 기다린다.
       pass
     elif CS.cruise_active:
@@ -502,8 +499,4 @@ class NaviControl():
 
       btn_signal = self.ascc_button_control(CS, self.ctrl_speed)
 
-      if btn_signal is not None:
-        btn_num = [btn_signal, randint(5,7)]
-        btn_signal_out = choices(btn_num, self.weight)[0]
-
-    return btn_signal_out
+    return btn_signal
