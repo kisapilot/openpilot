@@ -1142,7 +1142,7 @@ class CarController:
                     else:
                       self.vrel_delta_timer = 0
                       self.vrel_delta_timer3 = 0
-                      stock_weight = interp(abs(lead_objspd), [0.05, 15.0], [1.0, 0.05])
+                      stock_weight = interp(abs(lead_objspd), [1.0, 15.0], [1.0, 0.2])
                 accel = accel * (1.0 - stock_weight) + aReqValue * stock_weight
                 accel = min(accel, -0.5) if CS.lead_distance <= self.stoppingdist+0.5 and not CS.out.standstill else accel
               # elif aReqValue < 0.0:
