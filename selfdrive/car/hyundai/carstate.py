@@ -341,7 +341,6 @@ class CarState(CarStateBase):
       ret.autoHold = ret.brakeHoldActive
 
     ret.parkingBrake = cp.vl["TCS13"]["PBRAKE_ACT"] == 1
-    ret.accFaulted = cp.vl["TCS13"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
 
     if ret.brakePressed:
       self.brake_check = True
@@ -403,6 +402,8 @@ class CarState(CarStateBase):
       ret.vSetDis = self.VSetDis
       lead_objspd = cp_scc.vl["SCC11"]["ACC_ObjRelSpd"]
       self.lead_objspd = lead_objspd * CV.MS_TO_KPH
+
+      ret.accFaulted = cp.vl["TCS13"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
 
     ret.cruiseState.accActive = self.acc_active
     ret.cruiseState.cruiseSwState = self.cruise_buttons[-1]
