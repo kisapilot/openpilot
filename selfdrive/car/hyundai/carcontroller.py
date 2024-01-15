@@ -261,6 +261,7 @@ class CarController:
 
     self.e2e_x = 0
     self.cut_in_decel_timer = 0
+    self.l_stat = 0
 
     # self.usf = 0
 
@@ -1030,34 +1031,44 @@ class CarController:
             if 0 < CS.lead_distance <= self.stoppingdist:
               stock_weight = interp(CS.lead_distance, [2.0, self.stoppingdist], [1., 0.])
               accel = accel * (1. - stock_weight) + aReqValue * stock_weight
+              self.l_stat = 1
             elif 0.1 < self.dRel < (self.stoppingdist + 2.0) and self.vRel < 0:
               accel = self.accel - (DT_CTRL * interp(CS.out.vEgo, [1.0, 3.0], [0.5, 2.0]))
               self.stopped = False
+              self.l_stat = 2
             elif 0.1 < self.dRel < (self.stoppingdist + 2.0):
               accel = min(-0.5, faccel*0.5)
               if stopping:
                 self.stopped = True
+                self.l_stat = 3
               else:
                 self.stopped = False
+                self.l_stat = 4
             else:
               self.stopped = False
               accel = faccel
+              self.l_stat = 5
           elif self.radar_helper_option == 1: # Radar Only
             accel = aReqValue
+            self.l_stat = 6
           elif self.radar_helper_option >= 2: # KISA Custom(Radar+Vision), more smooth slowdown for cut-in or encountering being decellerated car.
             if self.experimental_mode_temp:
               self.stopped = False
               if stopping:
                 self.smooth_start = True
                 accel = min(-0.5, accel, faccel*0.5)
+                self.l_stat = 7
               elif self.smooth_start and CS.clu_Vanz < round(CS.VSetDis)*0.9:
                 accel = interp(CS.clu_Vanz, [0, round(CS.VSetDis)], [min(accel*0.6, faccel*0.6), aReqValue])
+                self.l_stat = 8
               else:
                 self.smooth_start = False
                 accel = faccel
+                self.l_stat = 9
             elif 0 < CS.lead_distance <= 149 and CS.clu_Vanz > 3 and self.smooth_start:
               self.smooth_start = False
               accel = aReqValue
+              self.l_stat = 10
             elif 0 < CS.lead_distance <= 149 and not self.smooth_start: # prevent moving forward at exp stop
               stock_weight = 0.0
               self.smooth_start = False
@@ -1066,36 +1077,49 @@ class CarController:
                 self.vrel_delta_timer2 = 0
                 self.vrel_delta = (self.vRel*3.6) - self.vrel_delta_prev
                 self.vrel_delta_prev = self.vRel*3.6
+                self.l_stat = 11
               if accel > 0 and self.change_accel_fast and CS.out.vEgo < 11.:
                 if aReqValue >= accel:
                   self.change_accel_fast = False
+                  self.l_stat = 12
                 else:
                   accel = (aReqValue + accel) / 2
+                  self.l_stat = 13
               elif aReqValue < 0 and accel > 0 and accel - aReqValue > 0.3 and lead_objspd > 0 and CS.out.vEgo < 11.:
                 self.change_accel_fast = True
+                self.l_stat = 14
               elif 0.1 < self.dRel < 6 and CS.lead_distance < 30.0 and lead_objspd > 0 and aReqValue - accel > 0.8: # in case radar detection works during vision breaking at stop.
                 accel = interp(aReqValue, [0.0, 1.8], [0.0, -0.7])
                 self.change_accel_fast = False
+                self.l_stat = 15
               elif 0.1 < self.dRel <= 10.0 and CS.lead_distance - self.dRel >= 5.0 and aReqValue >= 0:
                 self.change_accel_fast = False
+                self.l_stat = 16
                 pass
               elif aReqValue >= 0.0:
                 dRel1 = self.dRel if self.dRel > 0 else CS.lead_distance
                 if ((CS.lead_distance - dRel1 > 3.0) or self.NC.cutInControl) and accel < 0:
                   if aReqValue < accel:
                     accel = interp(lead_objspd, [-1, 0, 5], [aReqValue, aReqValue, accel])
+                    self.l_stat = 17
                   else:
                     accel = interp(self.dRel, [0, 40], [accel*0.1, accel*0.7])
+                    self.l_stat = 18
                 else:
                   if aReqValue < accel:
                     accel = interp(CS.lead_distance, [5.0, 13.0, 20.0], [aReqValue, accel*0.8+aReqValue*0.2, aReqValue])
+                    self.l_stat = 19
                   else:
                     accel = aReqValue
+                    self.l_stat = 20
               elif aReqValue < 0.0 and CS.lead_distance < self.stoppingdist+0.5 and accel >= aReqValue and lead_objspd <= 0 and self.stopping_dist_adj_enabled:
+                self.l_stat = 21
                 if CS.lead_distance < 1.7:
                   accel = self.accel - (DT_CTRL * 2.5)
+                  self.l_stat = 22
                 elif CS.lead_distance < self.stoppingdist+0.5:
                   accel = self.accel - (DT_CTRL * interp(CS.out.vEgo, [0.0, 1.0, 2.0], [0.025, 1.0, 5.0]))
+                  self.l_stat = 23
               elif aReqValue < 0.0:
                 dRel2 = self.dRel if self.dRel > 0 else CS.lead_distance
                 dist_by_drel = interp(CS.lead_distance, [10, 50], [3.0, 9.0])
@@ -1106,43 +1130,54 @@ class CarController:
                   self.ed_rd_diff_on_timer2 = min(400, int(self.dRel * 5))
                   self.cut_in_decel_timer = 800
                   stock_weight = 1.0
+                  self.l_stat = 24
                 elif ((dRel2 - CS.lead_distance > dist_by_drel) or self.NC.cutInControl) and not self.ed_rd_diff_on:
                   self.ed_rd_diff_on = True
                   self.ed_rd_diff_on_timer = min(400, int(self.dRel * 10))
                   self.ed_rd_diff_on_timer2 = min(400, int(self.dRel * 10))
                   self.cut_in_decel_timer = 800
                   stock_weight = 1.0
+                  self.l_stat = 25
                 elif self.ed_rd_diff_on_timer or (self.cut_in_decel_timer and dRel2 < CS.clu_Vanz * d_ratio): # damping btw ED and RD for few secs.
                   stock_weight = interp(self.ed_rd_diff_on_timer, [0, self.ed_rd_diff_on_timer2], [0.1, 1.0])
                   self.ed_rd_diff_on_timer -= 1
                   self.cut_in_decel_timer -= 1
+                  self.l_stat = 26
                   if aReqValue <= accel:
                     stock_weight = 1.0
+                    self.l_stat = 27
                 else:
                   if not self.NC.cutInControl:
                     self.ed_rd_diff_on = False
+                    self.l_stat = 28
                   self.ed_rd_diff_on_timer = 0
                   self.ed_rd_diff_on_timer2 = 0
                   self.cut_in_decel_timer = 0
                   stock_weight = interp(abs(lead_objspd), [1.0, 5.0, 10.0, 20.0, 50.0], [0.15, 0.3, 1.0, 0.9, 0.2])
+                  self.l_stat = 29
                   if aReqValue <= accel:
                     self.vrel_delta_timer = 0
                     self.vrel_delta_timer3 = 0
                     stock_weight = min(1.0, interp(CS.out.vEgo, [8.0, 30.0], [stock_weight, stock_weight*5.0]))
+                    self.l_stat = 30
                     if not self.stopping_dist_adj_enabled:
                       stock_weight = min(1.0, interp(CS.lead_distance, [0.0, 10.0], [stock_weight*5.0, stock_weight]))
+                      self.l_stat = 31
                   elif aReqValue > accel:
                     if self.vrel_delta < -5 and self.vrel_delta_timer == 0:
                       self.vrel_delta_timer = min(400, int(self.dRel*10))
                       self.vrel_delta_timer3 = min(400, int(self.dRel*10))
                       stock_weight = 1.0
+                      self.l_stat = 32
                     elif self.vrel_delta_timer > 0:
                       self.vrel_delta_timer -= 1
                       stock_weight = interp(self.vrel_delta_timer, [0, self.vrel_delta_timer3], [0.1, 1.0])
+                      self.l_stat = 33
                     else:
                       self.vrel_delta_timer = 0
                       self.vrel_delta_timer3 = 0
-                      stock_weight = interp(abs(lead_objspd), [1.0, 15.0], [1.0, 0.2])
+                      stock_weight = interp(abs(lead_objspd), [1.0, 15.0], [1.0, 0.1])
+                      self.l_stat = 34
                 accel = accel * (1.0 - stock_weight) + aReqValue * stock_weight
                 accel = min(accel, -0.5) if CS.lead_distance <= self.stoppingdist+0.5 and not CS.out.standstill else accel
               # elif aReqValue < 0.0:
@@ -1152,33 +1187,43 @@ class CarController:
                 stock_weight = 0.0
                 self.change_accel_fast = False
                 accel = accel * (1.0 - stock_weight) + aReqValue * stock_weight
+                self.l_stat = 35
             elif 0.1 < self.dRel < (self.stoppingdist + 1.5) and int(self.vRel*3.6) < 0:
               accel = self.accel - (DT_CTRL * interp(CS.out.vEgo, [0.0, 1.0, 2.0], [0.04, 0.6, 1.1]))
               self.stopped = False
+              self.l_stat = 36
             elif 0.1 < self.dRel < (self.stoppingdist + 1.5):
               accel = min(-0.6, faccel*0.5)
               if stopping:
                 self.stopped = True
+                self.l_stat = 37
               else:
                 self.stopped = False
+                self.l_stat = 38
             elif 0.1 < self.dRel < 90:
               self.stopped = False
               ddrel_weight = interp(self.dRel, [self.stoppingdist+1.5, 30], [1.0, 1.0])
               accel = faccel*ddrel_weight
+              self.l_stat = 39
             else:
               self.stopped = False
               if stopping:
                 self.smooth_start = True
                 accel = min(-0.5, accel, faccel*0.5)
+                self.l_stat = 40
               elif self.smooth_start and CS.clu_Vanz < round(CS.VSetDis)*0.9:
                 accel = interp(CS.clu_Vanz, [0, round(CS.VSetDis)], [min(accel*0.6, faccel*0.6), aReqValue])
+                self.l_stat = 41
               else:
+                self.l_stat = 42
                 if self.smooth_start:
                   self.smooth_start = False
+                  self.l_stat = 43
                 accel = aReqValue
           else:
             self.stopped = False
             stock_weight = 0.
+            self.l_stat = 44
 
           if self.stock_safety_decel_enabled:
             if CS.highway_cam == 2 and accel > aReqValue:
@@ -1219,8 +1264,8 @@ class CarController:
       str_log1 = 'EN/LA/LO={}/{}{}/{}  MD={}  BS={:1.0f}/{:1.0f}  CV={:03.0f}/{:0.4f}  TQ={:03.0f}/{:03.0f}  VF={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}'.format(
         int(CC.enabled), int(CC.latActive), int(lat_active), int(CC.longActive), CS.out.cruiseState.modeSel, self.CP.mdpsBus, self.CP.sccBus, self.model_speed, abs(self.sm['controlsState'].curvature), abs(new_steer), abs(CS.out.steeringTorque), self.vFuture, self.params.STEER_MAX, self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN)
       if CS.out.cruiseState.accActive:
-        str_log2 = 'AQ={:+04.2f}  SS={:03.0f}  VF={:03.0f}/{:03.0f}  TS/VS={:03.0f}/{:03.0f}  RD/ED/C/T={:04.1f}/{:04.1f}/{}/{}  C={:1.0f}/{:1.0f}/{}'.format(
-        self.aq_value if self.longcontrol else CS.scc12["aReqValue"], set_speed_in_units, self.vFuture, self.vFutureA, self.NC.ctrl_speed, round(CS.VSetDis), CS.lead_distance, self.dRel, int(self.NC.cut_in), self.NC.cut_in_run_timer, CS.cruiseGapSet, self.btnsignal if self.btnsignal is not None else 0, self.NC.t_interval)
+        str_log2 = 'AQ={:+04.2f}  SS={:03.0f}  VF={:03.0f}/{:03.0f}  TS/VS={:03.0f}/{:03.0f}  RD/ED/C/T={:04.1f}/{:04.1f}/{}/{}  C={:1.0f}/{:1.0f}/{}/{:1.0f}'.format(
+        self.aq_value if self.longcontrol else CS.scc12["aReqValue"], set_speed_in_units, self.vFuture, self.vFutureA, self.NC.ctrl_speed, round(CS.VSetDis), CS.lead_distance, self.dRel, int(self.NC.cut_in), self.NC.cut_in_run_timer, CS.cruiseGapSet, self.btnsignal if self.btnsignal is not None else 0, self.NC.t_interval, self.l_stat)
       else:
         str_log2 = 'MDPS={}  LKAS={:1.0f}  LEAD={}  AQ={:+04.2f}  VF={:03.0f}/{:03.0f}  CG={:1.0f}'.format(
         int(not CS.out.steerFaultTemporary), CS.lkas_button_on, int(bool(0 < CS.lead_distance < 149)), self.aq_value if self.longcontrol else CS.scc12["aReqValue"], self.vFuture, self.vFutureA, CS.cruiseGapSet)

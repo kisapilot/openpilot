@@ -184,6 +184,6 @@ class LongControl:
       str_log3 = 'LS={:s}  LP={:s}  AQ/AR/AT/FA={:+04.2f}/{:+04.2f}/{:+04.2f}/{:+04.2f}  GB={}  ED/RD={:04.1f}/{:04.1f}  TG={:03.0f}/{:03.0f}'.format(self.long_stat, \
        self.long_plan_source, CP.aqValue, CP.aqValueRaw, a_target, self.last_output_accel, int(CS.gasPressed or CS.brakePressed), dRel, CS.radarDistance, \
        (v_target*CV.MS_TO_MPH) if CS.isMph else (v_target*CV.MS_TO_KPH), (v_target_1sec*CV.MS_TO_MPH) if CS.isMph else (v_target_1sec*CV.MS_TO_KPH))
-      trace1.printf2('{}'.format(str_log3))
+      trace1.printf3('{}'.format(str_log3))
 
     return self.last_output_accel, a_target
