@@ -260,7 +260,6 @@ class CarController:
     self.radarDisableOverlapTimer = 0
 
     self.e2e_x = 0
-    self.cut_in_decel_timer = 0
     self.l_stat = 0
 
     # self.usf = 0
@@ -1123,25 +1122,23 @@ class CarController:
               elif aReqValue < 0.0:
                 dRel2 = self.dRel if self.dRel > 0 else CS.lead_distance
                 dist_by_drel = interp(CS.lead_distance, [10, 50], [3.0, 9.0])
-                d_ratio = interp(CS.clu_Vanz, [40, 110], [0.29, 0.19])
+                d_ratio = interp(CS.clu_Vanz, [40, 110], [0.3, 0.19])
+                d_ratio2 = interp(CS.clu_Vanz, [40, 110], [1.0, 4.0])
                 if ((CS.lead_distance - dRel2 > dist_by_drel) or self.NC.cutInControl) and accel < 0 and not self.ed_rd_diff_on:
                   self.ed_rd_diff_on = True
-                  self.ed_rd_diff_on_timer = min(400, int(self.dRel * 5))
-                  self.ed_rd_diff_on_timer2 = min(400, int(self.dRel * 5))
-                  self.cut_in_decel_timer = 800
+                  self.ed_rd_diff_on_timer = min(400, int(self.dRel * 5 * d_ratio2))
+                  self.ed_rd_diff_on_timer2 = min(400, int(self.dRel * 5 * d_ratio2))
                   stock_weight = 1.0
                   self.l_stat = 24
                 elif ((dRel2 - CS.lead_distance > dist_by_drel) or self.NC.cutInControl) and not self.ed_rd_diff_on:
                   self.ed_rd_diff_on = True
-                  self.ed_rd_diff_on_timer = min(400, int(self.dRel * 10))
-                  self.ed_rd_diff_on_timer2 = min(400, int(self.dRel * 10))
-                  self.cut_in_decel_timer = 800
+                  self.ed_rd_diff_on_timer = min(400, int(self.dRel * 10 * d_ratio2))
+                  self.ed_rd_diff_on_timer2 = min(400, int(self.dRel * 10 * d_ratio2))
                   stock_weight = 1.0
                   self.l_stat = 25
-                elif self.ed_rd_diff_on_timer or (self.cut_in_decel_timer and dRel2 < CS.clu_Vanz * d_ratio): # damping btw ED and RD for few secs.
+                elif self.ed_rd_diff_on_timer or (self.NC.cut_in_run_timer and dRel2 < CS.clu_Vanz * d_ratio): # damping btw ED and RD for few secs.
                   stock_weight = interp(self.ed_rd_diff_on_timer, [0, self.ed_rd_diff_on_timer2], [0.1, 1.0])
                   self.ed_rd_diff_on_timer -= 1
-                  self.cut_in_decel_timer -= 1
                   self.l_stat = 26
                   if aReqValue <= accel:
                     stock_weight = 1.0
@@ -1152,7 +1149,6 @@ class CarController:
                     self.l_stat = 28
                   self.ed_rd_diff_on_timer = 0
                   self.ed_rd_diff_on_timer2 = 0
-                  self.cut_in_decel_timer = 0
                   stock_weight = interp(abs(lead_objspd), [1.0, 5.0, 10.0, 20.0, 50.0], [0.15, 0.3, 1.0, 0.9, 0.2])
                   self.l_stat = 29
                   if aReqValue <= accel:

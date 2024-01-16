@@ -395,13 +395,13 @@ class NaviControl():
         # dRel = CS.lead_distance if 0 < CS.lead_distance < 149 and not self.cut_in_run_timer else int(self.lead_0.dRel)
         # vRel = CS.lead_objspd * (CV.KPH_TO_MPH if CS.is_set_speed_in_mph else 1) if 0 < CS.lead_distance < 149 and \
         #  not self.cut_in_run_timer else int(self.lead_0.vRel * (CV.MS_TO_MPH if CS.is_set_speed_in_mph else CV.MS_TO_KPH))
-        dRel = int(self.lead_0.dRel)
+        dRel = self.lead_0.dRel
         vRel = int(self.lead_0.vRel * (CV.MS_TO_MPH if CS.is_set_speed_in_mph else CV.MS_TO_KPH))
         if self.cut_in_run_timer > 0:
           self.cut_in_run_timer -= 1
         elif self.cut_in:
           self.cut_in_run_timer = 1500
-        d_ratio = interp(CS.clu_Vanz, [40, 110], [0.3, 0.2])
+        d_ratio = interp(CS.clu_Vanz, [40, 110], [0.3, 0.19])
         if self.cut_in_run_timer and dRel < CS.clu_Vanz * d_ratio: # keep decel when cut_in, max running time 15sec
           self.t_interval = randint(10, 12) if CS.is_set_speed_in_mph else randint(7, 9)
           self.cutInControl = True
