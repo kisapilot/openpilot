@@ -635,7 +635,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   // debug
   int debug_y1 = 1015-UI_BORDER_SIZE+(s->scene.mapbox_running ? 18:0)-(s->scene.animated_rpm?60:0);
   int debug_y2 = 1050-UI_BORDER_SIZE+(s->scene.mapbox_running ? 8:0)-(s->scene.animated_rpm?60:0);
-  int debug_y3 = 980-UI_BORDER_SIZE+(s->scene.mapbox_running ? 27:0)-(s->scene.animated_rpm?60:0);
+  int debug_y3 = 981-UI_BORDER_SIZE+(s->scene.mapbox_running ? 28:0)-(s->scene.animated_rpm?60:0);
   if (s->scene.nDebugUi1 && s->scene.comma_stock_ui != 1) {
     p.setFont(InterFont(s->scene.mapbox_running?25:30, QFont::DemiBold));
     uiText(p, s->scene.low_ui_profile?(s->scene.mapbox_running?275:320):205, debug_y1, s->scene.alertTextMsg1.c_str());
