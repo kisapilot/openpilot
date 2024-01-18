@@ -1096,6 +1096,8 @@ class CarController:
                 self.l_stat = 16
                 pass
               elif aReqValue >= 0.0:
+                self.ed_rd_diff_on_timer = 0
+                self.ed_rd_diff_on_timer2 = 0
                 dRel1 = self.dRel if self.dRel > 0 else CS.lead_distance
                 if ((CS.lead_distance - dRel1 > 3.0) or self.NC.cutInControl) and accel < 0:
                   if aReqValue < accel:
@@ -1144,12 +1146,13 @@ class CarController:
                     stock_weight = 1.0
                     self.l_stat = 27
                 else:
+                  accel = (accel + faccel)/2
                   if not self.NC.cutInControl:
                     self.ed_rd_diff_on = False
                     self.l_stat = 28
                   self.ed_rd_diff_on_timer = 0
                   self.ed_rd_diff_on_timer2 = 0
-                  stock_weight = interp(abs(lead_objspd), [1.0, 5.0, 10.0, 20.0, 50.0], [0.15, 0.3, 1.0, 0.9, 0.2])
+                  stock_weight = interp(abs(lead_objspd), [1.0, 5.0, 10.0, 20.0, 50.0], [0.15, 0.5, 1.0, 0.9, 0.2])
                   self.l_stat = 29
                   if aReqValue <= accel:
                     self.vrel_delta_timer = 0
@@ -1260,8 +1263,8 @@ class CarController:
       str_log1 = 'EN/LA/LO={}/{}{}/{}  MD={}  BS={:1.0f}/{:1.0f}  CV={:03.0f}/{:0.4f}  TQ={:03.0f}/{:03.0f}  VF={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}'.format(
         int(CC.enabled), int(CC.latActive), int(lat_active), int(CC.longActive), CS.out.cruiseState.modeSel, self.CP.mdpsBus, self.CP.sccBus, self.model_speed, abs(self.sm['controlsState'].curvature), abs(new_steer), abs(CS.out.steeringTorque), self.vFuture, self.params.STEER_MAX, self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN)
       if CS.out.cruiseState.accActive:
-        str_log2 = 'AQ={:+04.2f}  SS={:03.0f}  VF={:03.0f}/{:03.0f}  TS/VS={:03.0f}/{:03.0f}  RD/ED/C/T={:04.1f}/{:04.1f}/{}/{}  C={:1.0f}/{:1.0f}/{}/{:1.0f}'.format(
-        self.aq_value if self.longcontrol else CS.scc12["aReqValue"], set_speed_in_units, self.vFuture, self.vFutureA, self.NC.ctrl_speed, round(CS.VSetDis), CS.lead_distance, self.dRel, int(self.NC.cut_in), self.NC.cut_in_run_timer, CS.cruiseGapSet, self.btnsignal if self.btnsignal is not None else 0, self.NC.t_interval, self.l_stat)
+        str_log2 = 'AQ={:+04.2f}  SS={:03.0f}  VF={:03.0f}/{:03.0f}  TS/VS={:03.0f}/{:03.0f}  RD/ED/C/T={:04.1f}/{:04.1f}/{}/{}/{}  C={:1.0f}/{:1.0f}/{}/{:1.0f}'.format(
+        self.aq_value if self.longcontrol else CS.scc12["aReqValue"], set_speed_in_units, self.vFuture, self.vFutureA, self.NC.ctrl_speed, round(CS.VSetDis), CS.lead_distance, self.dRel, int(self.NC.cut_in), self.NC.cut_in_run_timer, self.ed_rd_diff_on_timer, CS.cruiseGapSet, self.btnsignal if self.btnsignal is not None else 0, self.NC.t_interval, self.l_stat)
       else:
         str_log2 = 'MDPS={}  LKAS={:1.0f}  LEAD={}  AQ={:+04.2f}  VF={:03.0f}/{:03.0f}  CG={:1.0f}'.format(
         int(not CS.out.steerFaultTemporary), CS.lkas_button_on, int(bool(0 < CS.lead_distance < 149)), self.aq_value if self.longcontrol else CS.scc12["aReqValue"], self.vFuture, self.vFutureA, CS.cruiseGapSet)
