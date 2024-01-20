@@ -1146,7 +1146,7 @@ class CarController:
                     stock_weight = 1.0
                     self.l_stat = 27
                 else:
-                  accel = (accel + faccel)/2
+                  accel = interp(CS.clu_Vanz, [3.0, 10.0, 30.0], [max(accel, faccel), (accel + faccel)/2, min(accel, faccel)])
                   if not self.NC.cutInControl:
                     self.ed_rd_diff_on = False
                     self.l_stat = 28
