@@ -708,7 +708,7 @@ class CarController:
                 self.switch_timer2 = int(randint(20, 25) * 2)
             elif self.switch_timer > 0 and not self.try_early_stop_retrieve:
               self.switch_timer -= 1
-            elif CS.cruiseGapSet != self.gap_by_spd_gap[0] and ((CS.clu_Vanz < self.gap_by_spd_spd[0]+self.gap_by_spd_on_buffer1) or self.gap_by_spd_gap1) and not self.try_early_stop_retrieve:
+            elif CS.cruiseGapSet != self.gap_by_spd_gap[0] and ((CS.clu_Vanz < self.gap_by_spd_spd[0]+self.gap_by_spd_on_buffer1) or self.gap_by_spd_gap1) and not self.try_early_stop_retrieve and not CS.lead_objspd < -4:
               self.gap_by_spd_gap1 = True
               self.gap_by_spd_gap2 = False
               self.gap_by_spd_gap3 = False
@@ -721,7 +721,7 @@ class CarController:
               if self.resume_cnt >= int(randint(4, 5) * 2):
                 self.resume_cnt = 0
                 self.switch_timer = int(randint(20, 25) * 2)
-            elif CS.cruiseGapSet != self.gap_by_spd_gap[1] and ((self.gap_by_spd_spd[0] <= CS.clu_Vanz < self.gap_by_spd_spd[1]+self.gap_by_spd_on_buffer2) or self.gap_by_spd_gap2) and not self.try_early_stop_retrieve:
+            elif CS.cruiseGapSet != self.gap_by_spd_gap[1] and ((self.gap_by_spd_spd[0] <= CS.clu_Vanz < self.gap_by_spd_spd[1]+self.gap_by_spd_on_buffer2) or self.gap_by_spd_gap2) and not self.try_early_stop_retrieve and not CS.lead_objspd < -4:
               self.gap_by_spd_gap1 = False
               self.gap_by_spd_gap2 = True
               self.gap_by_spd_gap3 = False
@@ -734,7 +734,7 @@ class CarController:
               if self.resume_cnt >= int(randint(4, 5) * 2):
                 self.resume_cnt = 0
                 self.switch_timer = int(randint(20, 25) * 2)
-            elif CS.cruiseGapSet != self.gap_by_spd_gap[2] and ((self.gap_by_spd_spd[1] <= CS.clu_Vanz < self.gap_by_spd_spd[2]+self.gap_by_spd_on_buffer3) or self.gap_by_spd_gap3) and not self.try_early_stop_retrieve:
+            elif CS.cruiseGapSet != self.gap_by_spd_gap[2] and ((self.gap_by_spd_spd[1] <= CS.clu_Vanz < self.gap_by_spd_spd[2]+self.gap_by_spd_on_buffer3) or self.gap_by_spd_gap3) and not self.try_early_stop_retrieve and not CS.lead_objspd < -4:
               self.gap_by_spd_gap1 = False
               self.gap_by_spd_gap2 = False
               self.gap_by_spd_gap3 = True
@@ -746,7 +746,7 @@ class CarController:
               if self.resume_cnt >= int(randint(4, 5) * 2):
                 self.resume_cnt = 0
                 self.switch_timer = int(randint(20, 25) * 2)
-            elif CS.cruiseGapSet != self.gap_by_spd_gap[3] and ((self.gap_by_spd_spd[2] <= CS.clu_Vanz) or self.gap_by_spd_gap4) and not self.try_early_stop_retrieve:
+            elif CS.cruiseGapSet != self.gap_by_spd_gap[3] and ((self.gap_by_spd_spd[2] <= CS.clu_Vanz) or self.gap_by_spd_gap4) and not self.try_early_stop_retrieve and not CS.lead_objspd < -4:
               self.gap_by_spd_gap1 = False
               self.gap_by_spd_gap2 = False
               self.gap_by_spd_gap3 = False
