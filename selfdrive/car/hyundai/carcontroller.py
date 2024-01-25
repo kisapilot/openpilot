@@ -1125,7 +1125,7 @@ class CarController:
                 dRel2 = self.dRel if self.dRel > 0 else CS.lead_distance
                 dist_by_drel = interp(CS.lead_distance, [10, 50], [3.0, 9.0])
                 d_ratio = interp(CS.clu_Vanz, [40, 110], [0.3, 0.19])
-                d_ratio2 = interp(CS.clu_Vanz, [40, 110], [1.0, 4.0])
+                d_ratio2 = interp(CS.clu_Vanz, [40, 110], [1.0, 2.0])
                 if ((CS.lead_distance - dRel2 > dist_by_drel) or self.NC.cutInControl) and accel < 0 and not self.ed_rd_diff_on:
                   self.ed_rd_diff_on = True
                   self.ed_rd_diff_on_timer = min(400, int(self.dRel * 5 * d_ratio2))
