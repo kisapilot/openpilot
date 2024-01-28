@@ -37,7 +37,7 @@ CameraOffsetAdj:40
 PathOffsetAdj:0
 SteerRatioAdj:1375
 SteerRatioMaxAdj:1750
-SteerActuatorDelayAdj:36
+SteerActuatorDelayAdj:15
 SteerLimitTimerAdj:100
 TireStiffnessFactorAdj:85
 SteerMaxBaseAdj:384

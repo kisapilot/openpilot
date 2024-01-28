@@ -33,12 +33,12 @@ LATERAL_JERK_COST = 0.04
 # speed lateral control is stable on all cars
 STEERING_RATE_COST = 700.0
 
-USE_LEGACY_LANE_MODEL = Params().get_bool("UseLegacyLaneModel") if Params().get_bool("UseLegacyLaneModel") is not None else False
-
-
 class LateralPlanner:
   def __init__(self, CP, debug=False):
     self.DH = DesireHelper(CP)
+
+    self.params = Params()
+    self.legacy_lane_mode = self.params.get_bool("UseLegacyLaneModel")
 
     # Vehicle model parameters used to calculate lateral movement of car
     self.factor1 = CP.wheelbase - CP.centerToFront
@@ -49,16 +49,12 @@ class LateralPlanner:
     self.path_xyz = np.zeros((TRAJECTORY_SIZE, 3))
     self.velocity_xyz = np.zeros((TRAJECTORY_SIZE, 3))
     self.v_plan = np.zeros((TRAJECTORY_SIZE,))
-    if USE_LEGACY_LANE_MODEL:
+    if self.legacy_lane_mode:
       self.plan_yaw = np.zeros((TRAJECTORY_SIZE,))
       self.plan_yaw_rate = np.zeros((TRAJECTORY_SIZE,))
       self.t_idxs = np.arange(TRAJECTORY_SIZE)
       self.y_pts = np.zeros((TRAJECTORY_SIZE,))
       self.v_ego = 0.0
-    else:
-      self.x_sol = np.zeros((TRAJECTORY_SIZE, 4), dtype=np.float32)
-      self.v_ego = MIN_SPEED
-
 
     self.l_lane_change_prob = 0.0
     self.r_lane_change_prob = 0.0
@@ -86,7 +82,6 @@ class LateralPlanner:
     self.ll_x = np.zeros((TRAJECTORY_SIZE,))
     self.lll_y = np.zeros((TRAJECTORY_SIZE,))
     self.rll_y = np.zeros((TRAJECTORY_SIZE,))
-    self.params = Params()
     self.lane_width_estimate = FirstOrderFilter(float(Decimal(self.params.get("LaneWidth", encoding="utf8")) * Decimal('0.1')), 9.95, DT_MDL)
     self.lane_width_certainty = FirstOrderFilter(1.0, 0.95, DT_MDL)
     self.lane_width = float(Decimal(self.params.get("LaneWidth", encoding="utf8")) * Decimal('0.1'))
@@ -332,7 +327,6 @@ class LateralPlanner:
     self.v_cruise_kph = sm['controlsState'].vCruise
     self.stand_still = sm['carState'].standStill
 
-  
     v_ego = sm['carState'].vEgo
     if sm.frame % 5 == 0:
       self.model_speed = self.curve_speed(sm, v_ego)
@@ -343,7 +337,7 @@ class LateralPlanner:
 
     # Parse model predictions
     md = sm['modelV2']
-    if USE_LEGACY_LANE_MODEL:
+    if self.legacy_lane_mode:
       self.parse_model(md, sm, v_ego)
       if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
         self.path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
@@ -354,24 +348,15 @@ class LateralPlanner:
         car_speed = np.linalg.norm(self.velocity_xyz, axis=1) - get_speed_error(md, v_ego_car)
         self.v_plan = np.clip(car_speed, MIN_SPEED, np.inf)
         self.v_ego = self.v_plan[0]
-    else:
-      if len(md.position.x) == TRAJECTORY_SIZE and len(md.velocity.x) == TRAJECTORY_SIZE and len(md.lateralPlannerSolution.x) == TRAJECTORY_SIZE:
-        self.path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
-        self.velocity_xyz = np.column_stack([md.velocity.x, md.velocity.y, md.velocity.z])
-        car_speed = np.linalg.norm(self.velocity_xyz, axis=1) - get_speed_error(md, v_ego_car)
-        self.v_plan = np.clip(car_speed, MIN_SPEED, np.inf)
-        self.v_ego = self.v_plan[0]
-        self.x_sol = np.column_stack([md.lateralPlannerSolution.x, md.lateralPlannerSolution.y, md.lateralPlannerSolution.yaw, md.lateralPlannerSolution.yawRate])
 
-    # Lane change logic
-    desire_state = md.meta.desireState
-    if len(desire_state):
-      self.l_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeLeft]
-      self.r_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeRight]
-    lane_change_prob = self.l_lane_change_prob + self.r_lane_change_prob
-    self.DH.update(CP, sm['carState'], sm['controlsState'], sm['carControl'].latActive, lane_change_prob, md)
+      # Lane change logic
+      desire_state = md.meta.desireState
+      if len(desire_state):
+        self.l_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeLeft]
+        self.r_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeRight]
+      lane_change_prob = self.l_lane_change_prob + self.r_lane_change_prob
+      self.DH.update(sm['carState'], sm['carControl'].latActive, lane_change_prob, CP, sm['controlsState'], md)
 
-    if USE_LEGACY_LANE_MODEL:
       self.lat_mpc.set_weights(PATH_COST, LATERAL_MOTION_COST,
                               LATERAL_ACCEL_COST, LATERAL_JERK_COST,
                               STEERING_RATE_COST)
@@ -447,14 +432,14 @@ class LateralPlanner:
         self.solution_invalid_cnt = 0
 
   def publish(self, sm, pm):
-    if USE_LEGACY_LANE_MODEL:
+    if self.legacy_lane_mode:
       plan_solution_valid = self.solution_invalid_cnt < 2
     plan_send = messaging.new_message('lateralPlan')
     plan_send.valid = sm.all_checks(service_list=['carState', 'controlsState', 'modelV2'])
 
     lateralPlan = plan_send.lateralPlan
     lateralPlan.modelMonoTime = sm.logMonoTime['modelV2']
-    if USE_LEGACY_LANE_MODEL:
+    if self.legacy_lane_mode:
       lateralPlan.laneWidth = float(self.lane_width)
       lateralPlan.dPathPoints = self.y_pts.tolist()
       lateralPlan.psis = self.lat_mpc.x_sol[0:CONTROL_N, 2].tolist()
@@ -467,24 +452,13 @@ class LateralPlanner:
 
       lateralPlan.mpcSolutionValid = bool(plan_solution_valid)
       lateralPlan.solverExecutionTime = self.lat_mpc.solve_time
-    else:
-      lateralPlan.dPathPoints = self.path_xyz[:,1].tolist()
-      lateralPlan.psis = self.x_sol[0:CONTROL_N, 2].tolist()
 
-      lateralPlan.curvatures = (self.x_sol[0:CONTROL_N, 3]/self.v_ego).tolist()
-      lateralPlan.curvatureRates = [float(0) for _ in range(CONTROL_N-1)] # TODO: unused
-
-      lateralPlan.mpcSolutionValid = bool(1)
-      lateralPlan.solverExecutionTime = 0.0
     if self.debug_mode:
-      if USE_LEGACY_LANE_MODEL:
+      if self.legacy_lane_mode:
         lateralPlan.solverCost = self.lat_mpc.cost
       lateralPlan.solverState = log.LateralPlan.SolverState.new_message()
-      if USE_LEGACY_LANE_MODEL:
+      if self.legacy_lane_mode:
         lateralPlan.solverState.x = self.lat_mpc.x_sol.tolist()
-      else:
-        lateralPlan.solverState.x = self.x_sol.tolist()
-      if USE_LEGACY_LANE_MODEL:
         lateralPlan.solverState.u = self.lat_mpc.u_sol.flatten().tolist()
 
     lateralPlan.desire = self.DH.desire

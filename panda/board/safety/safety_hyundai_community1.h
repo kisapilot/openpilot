@@ -89,7 +89,7 @@ RxCheck hyundai_community1_legacy_rx_checks[] = {
 
 bool hyundai_community1_legacy = false;
 
-static void hyundai_community1_rx_hook(CANPacket_t *to_push) {
+static void hyundai_community1_rx_hook(const CANPacket_t *to_push) {
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
 
@@ -158,7 +158,7 @@ uint32_t last_ts_scc12_from_op = 0;
 uint32_t last_ts_mdps12_from_op = 0;
 uint32_t last_ts_fca11_from_op = 0;
 
-static bool hyundai_community1_tx_hook(CANPacket_t *to_send) {
+static bool hyundai_community1_tx_hook(const CANPacket_t *to_send) {
   bool tx = true;
   int addr = GET_ADDR(to_send);
 

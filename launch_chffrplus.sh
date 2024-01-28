@@ -55,9 +55,6 @@ function launch {
   # Remove orphaned git lock if it exists on boot
   [ -f "$DIR/.git/index.lock" ] && rm -f $DIR/.git/index.lock
 
-  # Pull time from panda
-  $DIR/selfdrive/boardd/set_time.py
-
   # Check to see if there's a valid overlay-based update available. Conditions
   # are as follows:
   #
@@ -97,7 +94,9 @@ function launch {
   export PYTHONPATH="$PWD"
 
   # hardware specific init
-  agnos_init
+  if [ -f /AGNOS ]; then
+    agnos_init
+  fi
 
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
@@ -107,11 +106,12 @@ function launch {
 
   # KisaPilot Model check
   Model_Size=$(stat --printf=%s /data/openpilot/selfdrive/modeld/models/supercombo.onnx)
-  if [ "$Model_Size" == "48457850" ]; then echo -en "New_Delhi" > /data/params/d/DrivingModel;
+  if [ "$Model_Size" == "48219112" ]; then echo -en "Los_Angeles" > /data/params/d/DrivingModel;
+  elif [ "$Model_Size" == "48457850" ]; then echo -en "New_Delhi" > /data/params/d/DrivingModel;
   elif [ "$Model_Size" == "48457192" ]; then echo -en "Blue_Diamond" > /data/params/d/DrivingModel;
   elif [ "$Model_Size" == "52524758" ]; then echo -en "Farmville" > /data/params/d/DrivingModel;
   elif [ "$Model_Size" == "52939093" ]; then echo -en "New_Lemon_Pie" > /data/params/d/DrivingModel;
-  else echo -en "New_Delhi" > /data/params/d/DrivingModel; fi
+  else echo -en "Los_Angeles" > /data/params/d/DrivingModel; fi
 
   # start manager
   cd selfdrive/manager
@@ -130,13 +130,16 @@ function launch {
 
   if [ "$OSM_ENABLE" == "1" ] || [ "$OSM_SL_ENABLE" == "1" ] || [ "$OSM_CURV_ENABLE" == "1" ] || [ "$OSM_CURV_ENABLE" == "3" ]; then
     if [ "$OSM_OFFLINE_ENABLE" == "1" ]; then
-      ./custom_dep.py && ./build.py && ./local_osm_install.py && ./manager.py
+      ./custom_dep.py && ./local_osm_install.py
     else
-      ./custom_dep.py && ./build.py && ./manager.py
+      ./custom_dep.py
     fi
-  else
-    ./build.py && ./manager.py
   fi
+
+  if [ ! -f $DIR/prebuilt ]; then
+    ./build.py
+  fi
+  ./manager.py
 
   # if broken, keep on screen error
   while true; do sleep 1; done

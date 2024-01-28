@@ -40,7 +40,7 @@ RxCheck hyundai_community2_rx_checks[] = {
   // {.msg = {{916, 0, 8, .frequency = 50U}}}, some Santa Fe does not have this msg, need to find alternative
 };
 
-static void hyundai_community2_rx_hook(CANPacket_t *to_push) {
+static void hyundai_community2_rx_hook(const CANPacket_t *to_push) {
 
   int addr = GET_ADDR(to_push);
   int bus = GET_BUS(to_push);
@@ -113,7 +113,7 @@ static void hyundai_community2_rx_hook(CANPacket_t *to_push) {
   generic_rx_checks((addr == 0x340 && bus == 0));
 }
 
-static bool hyundai_community2_tx_hook(CANPacket_t *to_send) {
+static bool hyundai_community2_tx_hook(const CANPacket_t *to_send) {
 
   bool tx = true;
   int addr = GET_ADDR(to_send);

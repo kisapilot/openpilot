@@ -376,6 +376,7 @@ class CarState(CarStateBase):
       ret.cruiseState.available = cp_scc.vl["SCC11"]["MainMode_ACC"] != 0
       ret.cruiseState.enabled = cp_scc.vl["SCC12"]["ACCMode"] != 0
       ret.cruiseState.standstill = cp_scc.vl["SCC11"]["SCCInfoDisplay"] == 4.
+      ret.cruiseState.nonAdaptive = cp_cruise.vl["SCC11"]["SCCInfoDisplay"] == 2.  # Shows 'Cruise Control' on dash
 
       self.acc_active = cp_scc.vl["SCC12"]['ACCMode'] != 0
       if self.acc_active:
@@ -469,13 +470,10 @@ class CarState(CarStateBase):
     if not self.CP.openpilotLongitudinalControl or self.CP.sccBus == 2:
       aeb_src = "FCA11" if self.CP.flags & HyundaiFlags.USE_FCA.value else "SCC12"
       aeb_sig = "FCA_CmdAct" if self.CP.flags & HyundaiFlags.USE_FCA.value else "AEB_CmdAct"
-      if aeb_src == "FCA11":
-        aeb_warning = cp_cruise.vl[aeb_src]["CF_VSM_Warn"] != 0
-        aeb_braking = cp_cruise.vl[aeb_src]["CF_VSM_DecCmdAct"] != 0 or cp_cruise.vl[aeb_src][aeb_sig] != 0
-      else:
-        aeb_warning = cp_scc.vl[aeb_src]["CF_VSM_Warn"] != 0
-        aeb_braking = cp_scc.vl[aeb_src]["CF_VSM_DecCmdAct"] != 0 or cp_scc.vl[aeb_src][aeb_sig] != 0
-      ret.stockFcw = aeb_warning and not aeb_braking
+      aeb_warning = cp_cruise.vl[aeb_src]["CF_VSM_Warn"] != 0
+      scc_warning = cp_cruise.vl["SCC12"]["TakeOverReq"] == 1  # sometimes only SCC system shows an FCW
+      aeb_braking = cp_cruise.vl[aeb_src]["CF_VSM_DecCmdAct"] != 0 or cp_cruise.vl[aeb_src][aeb_sig] != 0
+      ret.stockFcw = (aeb_warning or scc_warning) and not aeb_braking
       ret.stockAeb = aeb_warning and aeb_braking
 
     if self.CP.enableBsm:

@@ -1,4 +1,4 @@
-from cereal import car, log, messaging
+from cereal import car, messaging
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.numpy_fast import clip, interp
 from openpilot.common.realtime import DT_CTRL
@@ -20,9 +20,6 @@ from decimal import Decimal
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 LongCtrlState = car.CarControl.Actuators.LongControlState
-
-LongitudinalPlanSource = log.LongitudinalPlan.LongitudinalPlanSource
-LaneChangeState = log.LateralPlan.LaneChangeState
 
 # EPS faults if you apply torque while the steering angle is above 90 degrees for more than 1 second
 # All slightly below EPS thresholds to avoid fault
@@ -275,7 +272,7 @@ class CarController:
     elif CP.lateralTuning.which() == 'torque':
       self.str_log2 = 'T={:0.2f}/{:0.2f}/{:0.2f}/{:0.3f}'.format(CP.lateralTuning.torque.kp, CP.lateralTuning.torque.kf, CP.lateralTuning.torque.ki, CP.lateralTuning.torque.friction)
 
-    self.sm = messaging.SubMaster(['controlsState', 'radarState', 'lateralPlan', 'longitudinalPlan', 'liveTorqueParameters', 'liveENaviData'])
+    self.sm = messaging.SubMaster(['controlsState', 'radarState', 'lateralPlan', 'longitudinalPlan', 'liveTorqueParameters'])
 
 
   def smooth_steer( self, apply_torque, CS ):
