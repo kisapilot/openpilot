@@ -1115,11 +1115,11 @@ class CarController:
                     self.l_stat = 20
               elif aReqValue < 0.0 and CS.lead_distance < self.stoppingdist+0.5 and accel >= aReqValue and lead_objspd <= 0 and self.stopping_dist_adj_enabled:
                 self.l_stat = 21
-                if CS.lead_distance < 1.6:
+                if CS.lead_distance < 1.5:
                   accel = self.accel - (DT_CTRL * 2.5)
                   self.l_stat = 22
-                elif CS.lead_distance < self.stoppingdist+0.5:
-                  accel = self.accel - (DT_CTRL * interp(CS.out.vEgo, [0.0, 1.0, 2.0], [0.025, 1.0, 5.0]))
+                elif CS.lead_distance < self.stoppingdist+0.8:
+                  accel = self.accel - (DT_CTRL * interp(CS.out.vEgo, [0.0, 1.0, 2.0], [0.02, 0.8, 4.5]))
                   self.l_stat = 23
               elif aReqValue < 0.0:
                 dRel2 = self.dRel if self.dRel > 0 else CS.lead_distance
@@ -1146,7 +1146,7 @@ class CarController:
                     stock_weight = 1.0
                     self.l_stat = 27
                 else:
-                  accel = interp(CS.clu_Vanz, [3.0, 10.0, 30.0], [max(accel, faccel), (accel + faccel)/2, min(accel, faccel)])
+                  accel = interp(CS.clu_Vanz, [4.0, 10.0, 30.0], [max(accel, faccel), ((min(accel, faccel)*0.6)+(max(accel, faccel)*0.4)), min(accel, faccel)])
                   if not self.NC.cutInControl:
                     self.ed_rd_diff_on = False
                     self.l_stat = 28
