@@ -35,7 +35,7 @@ STEERING_RATE_COST = 700.0
 
 class LateralPlanner:
   def __init__(self, CP, debug=False):
-    self.DH = DesireHelper(CP)
+    self.DH = DesireHelper()
 
     self.params = Params()
     self.legacy_lane_mode = self.params.get_bool("UseLegacyLaneModel")
@@ -318,7 +318,7 @@ class LateralPlanner:
     self.x0 = x0
     self.lat_mpc.reset(x0=self.x0)
 
-  def update(self, sm, CP):
+  def update(self, sm):
     self.second += DT_MDL
     if self.second > 1.0:
       self.laneless_mode = int(Params().get("LanelessMode", encoding="utf8"))
@@ -355,7 +355,7 @@ class LateralPlanner:
         self.l_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeLeft]
         self.r_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeRight]
       lane_change_prob = self.l_lane_change_prob + self.r_lane_change_prob
-      self.DH.update(sm['carState'], sm['carControl'].latActive, lane_change_prob, CP, sm['controlsState'], md)
+      self.DH.update(sm['carState'], sm['carControl'].latActive, lane_change_prob, sm['controlsState'], md)
 
       self.lat_mpc.set_weights(PATH_COST, LATERAL_MOTION_COST,
                               LATERAL_ACCEL_COST, LATERAL_JERK_COST,

@@ -461,7 +461,7 @@ void UIState::updateStatus() {
     if (Params().getBool("GitPullOnBoot")) {
       scene.auto_gitpull = true;
       Params().put("RunCustomCommand", "2", 1);
-    } else if (sm->frame - scene.started_frame > 60*UI_FREQ) {
+    } else if (sm->frame - scene.started_frame > 300*UI_FREQ) {
       scene.auto_gitpull = true;
       Params().put("RunCustomCommand", "1", 1);
     }

@@ -1,14 +1,18 @@
-2023-11-10
-- KisaPilot Launched
-2023-11-12
-- Legacy Lane Mode
-- Enhanced Driver Monitoring
-2023-11-25
-- Blue Diamond model
+2024-02-01
+- Los Angeles model
+- Support legacy lane mode
+- Fix the feature of changing branch
+2023-12-22
+- NEXO gear shifter support
+- New Delhi model
 2023-12-14
 - Sound volume adjust(more precisely)
 - Waze unit(can use mile unit on ext navi)
 - Easy ext IP address
-2023-12-22
-- NEXO gear shifter support
-- New Delhi model
+2023-11-25
+- Blue Diamond model
+2023-11-12
+- Legacy Lane Mode
+- Enhanced Driver Monitoring
+2023-11-10
+- KisaPilot Launched

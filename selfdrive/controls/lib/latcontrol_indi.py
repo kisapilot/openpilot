@@ -76,7 +76,7 @@ class LatControlINDI(LatControl):
         
       self.mpc_frame = 0
 
-  def update(self, active, CS, VM, params, steer_limited, desired_curvature, llk):
+  def update(self, active, CS, VM, params, steer_limited, desired_curvature, desired_curvature_rate, llk):
     self.speed = CS.vEgo
 
     self.li_timer += 1
@@ -99,6 +99,9 @@ class LatControlINDI(LatControl):
     steers_des += math.radians(params.angleOffsetDeg)
     indi_log.steeringAngleDesiredDeg = math.degrees(steers_des)
 
+    rate_des = VM.get_steer_from_curvature(-desired_curvature_rate, CS.vEgo, 0)
+    indi_log.steeringRateDesiredDeg = math.degrees(rate_des)
+
     if not active:
       indi_log.active = False
       self.steer_filter.x = 0.0
@@ -108,7 +111,7 @@ class LatControlINDI(LatControl):
       self.steer_filter.update_alpha(self.RC)
 
       # Compute acceleration error
-      rate_sp = self.outer_loop_gain * (steers_des - self.x[0])
+      rate_sp = self.outer_loop_gain * (steers_des - self.x[0]) + rate_des
       accel_sp = self.inner_loop_gain * (rate_sp - self.x[1])
       accel_error = accel_sp - self.x[2]
 

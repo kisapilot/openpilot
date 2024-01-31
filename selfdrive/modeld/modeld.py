@@ -24,6 +24,8 @@ from openpilot.selfdrive.modeld.fill_model_msg import fill_model_msg, fill_pose_
 from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.selfdrive.modeld.models.commonmodel_pyx import ModelFrame, CLContext
 
+USE_LEGACY_LANE_MODEL = Params().get_bool("UseLegacyLaneModel") if Params().get_bool("UseLegacyLaneModel") is not None else False
+
 PROCESS_NAME = "selfdrive.modeld.modeld"
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
@@ -150,8 +152,10 @@ def main(demo=False):
 
   # messaging
   pm = PubMaster(["modelV2", "cameraOdometry"])
-  sm = SubMaster(["carState", "roadCameraState", "liveCalibration", "driverMonitoringState", "navModel", "navInstruction", "carControl"])
-
+  if USE_LEGACY_LANE_MODEL:
+    sm = SubMaster(["lateralPlan", "carState", "roadCameraState", "liveCalibration", "driverMonitoringState", "navModel", "navInstruction"])
+  else:
+    sm = SubMaster(["carState", "roadCameraState", "liveCalibration", "driverMonitoringState", "navModel", "navInstruction", "carControl"])
 
   publish_state = PublishState()
   params = Params()
@@ -221,7 +225,10 @@ def main(demo=False):
 
     # TODO: path planner timeout?
     sm.update(0)
-    desire = DH.desire
+    if USE_LEGACY_LANE_MODEL:
+      desire = sm["lateralPlan"].desire.raw
+    else:
+      desire = DH.desire
     v_ego = sm["carState"].vEgo
     is_rhd = sm["driverMonitoringState"].isRHD
     frame_id = sm["roadCameraState"].frameId
@@ -295,12 +302,12 @@ def main(demo=False):
       fill_model_msg(modelv2_send, model_output, publish_state, meta_main.frame_id, meta_extra.frame_id, frame_id, frame_drop_ratio,
                       meta_main.timestamp_eof, timestamp_llk, model_execution_time, nav_enabled, v_ego, steer_delay, live_calib_seen)
 
-      if not params.get_bool("UseLegacyLaneModel"):
+      if not USE_LEGACY_LANE_MODEL:
         desire_state = modelv2_send.modelV2.meta.desireState
         l_lane_change_prob = desire_state[log.Desire.laneChangeLeft]
         r_lane_change_prob = desire_state[log.Desire.laneChangeRight]
         lane_change_prob = l_lane_change_prob + r_lane_change_prob
-        DH.update(sm['carState'], sm['carControl'].latActive, lane_change_prob, CP, sm['controlsState'], sm['modelV2'])
+        DH.update(sm['carState'], sm['carControl'].latActive, lane_change_prob)
         modelv2_send.modelV2.meta.laneChangeState = DH.lane_change_state
         modelv2_send.modelV2.meta.laneChangeDirection = DH.lane_change_direction
 

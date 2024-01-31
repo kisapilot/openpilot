@@ -35,6 +35,8 @@ from decimal import Decimal
 
 import openpilot.common.log as trace1
 
+USE_LEGACY_LANE_MODEL = Params().get_bool("UseLegacyLaneModel") if Params().get_bool("UseLegacyLaneModel") is not None else False
+
 SOFT_DISABLE_TIME = 3  # seconds
 LDW_MIN_SPEED = 50 * CV.KPH_TO_MS if Params().get_bool("IsMetric") else 31 * CV.MPH_TO_MS
 LANE_DEPARTURE_THRESHOLD = 0.1
@@ -49,9 +51,14 @@ IGNORE_PROCESSES = {"loggerd", "encoderd", "statsd", "mapd", "navd"}
 ThermalStatus = log.DeviceState.ThermalStatus
 State = log.ControlsState.OpenpilotState
 PandaType = log.PandaState.PandaType
-Desire = log.Desire
-LaneChangeState = log.LaneChangeState
-LaneChangeDirection = log.LaneChangeDirection
+if USE_LEGACY_LANE_MODEL:
+  Desire = log.LateralPlan.Desire
+  LaneChangeState = log.LateralPlan.LaneChangeState
+  LaneChangeDirection = log.LateralPlan.LaneChangeDirection
+else:
+  Desire = log.Desire
+  LaneChangeState = log.LaneChangeState
+  LaneChangeDirection = log.LaneChangeDirection
 EventName = car.CarEvent.EventName
 ButtonType = car.CarState.ButtonEvent.Type
 SafetyModel = car.CarParams.SafetyModel
@@ -208,6 +215,7 @@ class Controls:
     self.last_actuators = car.CarControl.Actuators.new_message()
     self.steer_limited = False
     self.desired_curvature = 0.0
+    self.desired_curvature_rate = 0.0
     self.experimental_mode = False
     self.v_cruise_helper = VCruiseHelper(self.CP)
     self.recalibrating_seen = False
@@ -392,9 +400,9 @@ class Controls:
 
     # Handle lane change
     if not self.lkas_temporary_off:
-      select_type = self.sm['lateralPlan'] if self.legacy_lane_mode else self.sm['modelV2'].meta
-      if select_type.laneChangeState == LaneChangeState.preLaneChange:
-        direction = select_type.laneChangeDirection
+      latplan_type = self.sm['lateralPlan'] if self.legacy_lane_mode else self.sm['modelV2'].meta
+      if latplan_type.laneChangeState == LaneChangeState.preLaneChange:
+        direction = latplan_type.laneChangeDirection
         if (CS.leftBlindspot and direction == LaneChangeDirection.left) or \
           (CS.rightBlindspot and direction == LaneChangeDirection.right):
           self.events.add(EventName.laneChangeBlocked)
@@ -409,7 +417,7 @@ class Controls:
               self.events.add(EventName.preLaneChangeRight)
             else:
               self.events.add(EventName.laneChange)
-      elif select_type.laneChangeState in (LaneChangeState.laneChangeStarting,
+      elif latplan_type.laneChangeState in (LaneChangeState.laneChangeStarting,
                                                       LaneChangeState.laneChangeFinishing):
         self.events.add(EventName.laneChange)
 
@@ -514,6 +522,8 @@ class Controls:
       self.logged_comm_issue = None
 
     if not (self.CP.notCar and self.joystick_mode):
+      if not self.sm['lateralPlan'].mpcSolutionValid and self.legacy_lane_mode:
+        self.events.add(EventName.plannerError)
       if not self.sm['liveLocationKalman'].posenetOK:
         self.events.add(EventName.posenetInvalid)
       if not self.sm['liveLocationKalman'].deviceStable:
@@ -769,13 +779,13 @@ class Controls:
 
       # Steering PID loop and lateral MPC
       if self.legacy_lane_mode:
-        self.desired_curvature = get_lag_adjusted_curvature(self.CP, CS.vEgo, lat_plan.psis, lat_plan.curvatures)
+        self.desired_curvature, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo, lat_plan.psis, lat_plan.curvatures, lat_plan.curvatureRates)
       else:
         self.desired_curvature = clip_curvature(CS.vEgo, self.desired_curvature, model_v2.action.desiredCurvature)
-      actuators.curvature = self.desired_curvature
       actuators.steer, actuators.steeringAngleDeg, lac_log = self.LaC.update(CC.latActive, CS, self.VM, lp,
                                                                              self.steer_limited, self.desired_curvature,
-                                                                             self.sm['liveLocationKalman'])
+                                                                             self.desired_curvature_rate, self.sm['liveLocationKalman'])
+      actuators.curvature = self.desired_curvature
       self.desired_angle_deg = actuators.steeringAngleDeg
     else:
       lac_log = log.ControlsState.LateralDebugState.new_message()
@@ -1004,6 +1014,7 @@ class Controls:
     controlsState.active = self.active
     controlsState.curvature = curvature
     controlsState.desiredCurvature = self.desired_curvature
+    controlsState.desiredCurvatureRate = self.desired_curvature_rate
     controlsState.state = self.state
     controlsState.engageable = not self.events.contains(ET.NO_ENTRY)
     controlsState.longControlState = self.LoC.long_control_state

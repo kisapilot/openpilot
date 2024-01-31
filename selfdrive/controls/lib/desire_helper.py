@@ -7,8 +7,16 @@ from openpilot.common.numpy_fast import interp
 from openpilot.common.params import Params
 from decimal import Decimal
 
-LaneChangeState = log.LaneChangeState
-LaneChangeDirection = log.LaneChangeDirection
+from openpilot.common.params import Params
+
+USE_LEGACY_LANE_MODEL = Params().get_bool("UseLegacyLaneModel") if Params().get_bool("UseLegacyLaneModel") is not None else False
+
+if USE_LEGACY_LANE_MODEL:
+  LaneChangeState = log.LateralPlan.LaneChangeState
+  LaneChangeDirection = log.LateralPlan.LaneChangeDirection
+else:
+  LaneChangeState = log.LaneChangeState
+  LaneChangeDirection = log.LaneChangeDirection
 
 if int(Params().get("KisaLaneChangeSpeed", encoding="utf8")) < 1:
   LANE_CHANGE_SPEED_MIN = -1
@@ -18,37 +26,59 @@ else:
   LANE_CHANGE_SPEED_MIN = float(int(Params().get("KisaLaneChangeSpeed", encoding="utf8")) * CV.MPH_TO_MS)
 LANE_CHANGE_TIME_MAX = 10.
 
-DESIRES = {
-  LaneChangeDirection.none: {
-    LaneChangeState.off: log.Desire.none,
-    LaneChangeState.preLaneChange: log.Desire.none,
-    LaneChangeState.laneChangeStarting: log.Desire.none,
-    LaneChangeState.laneChangeFinishing: log.Desire.none,
-  },
-  LaneChangeDirection.left: {
-    LaneChangeState.off: log.Desire.none,
-    LaneChangeState.preLaneChange: log.Desire.none,
-    LaneChangeState.laneChangeStarting: log.Desire.laneChangeLeft,
-    LaneChangeState.laneChangeFinishing: log.Desire.laneChangeLeft,
-  },
-  LaneChangeDirection.right: {
-    LaneChangeState.off: log.Desire.none,
-    LaneChangeState.preLaneChange: log.Desire.none,
-    LaneChangeState.laneChangeStarting: log.Desire.laneChangeRight,
-    LaneChangeState.laneChangeFinishing: log.Desire.laneChangeRight,
-  },
-}
+if USE_LEGACY_LANE_MODEL:
+  DESIRES = {
+    LaneChangeDirection.none: {
+      LaneChangeState.off: log.LateralPlan.Desire.none,
+      LaneChangeState.preLaneChange: log.LateralPlan.Desire.none,
+      LaneChangeState.laneChangeStarting: log.LateralPlan.Desire.none,
+      LaneChangeState.laneChangeFinishing: log.LateralPlan.Desire.none,
+    },
+    LaneChangeDirection.left: {
+      LaneChangeState.off: log.LateralPlan.Desire.none,
+      LaneChangeState.preLaneChange: log.LateralPlan.Desire.none,
+      LaneChangeState.laneChangeStarting: log.LateralPlan.Desire.laneChangeLeft,
+      LaneChangeState.laneChangeFinishing: log.LateralPlan.Desire.laneChangeLeft,
+    },
+    LaneChangeDirection.right: {
+      LaneChangeState.off: log.LateralPlan.Desire.none,
+      LaneChangeState.preLaneChange: log.LateralPlan.Desire.none,
+      LaneChangeState.laneChangeStarting: log.LateralPlan.Desire.laneChangeRight,
+      LaneChangeState.laneChangeFinishing: log.LateralPlan.Desire.laneChangeRight,
+    },
+  }
+else:
+  DESIRES = {
+    LaneChangeDirection.none: {
+      LaneChangeState.off: log.Desire.none,
+      LaneChangeState.preLaneChange: log.Desire.none,
+      LaneChangeState.laneChangeStarting: log.Desire.none,
+      LaneChangeState.laneChangeFinishing: log.Desire.none,
+    },
+    LaneChangeDirection.left: {
+      LaneChangeState.off: log.Desire.none,
+      LaneChangeState.preLaneChange: log.Desire.none,
+      LaneChangeState.laneChangeStarting: log.Desire.laneChangeLeft,
+      LaneChangeState.laneChangeFinishing: log.Desire.laneChangeLeft,
+    },
+    LaneChangeDirection.right: {
+      LaneChangeState.off: log.Desire.none,
+      LaneChangeState.preLaneChange: log.Desire.none,
+      LaneChangeState.laneChangeStarting: log.Desire.laneChangeRight,
+      LaneChangeState.laneChangeFinishing: log.Desire.laneChangeRight,
+    },
+  }
 
 
 class DesireHelper:
-  def __init__(self, CP):
+  def __init__(self):
     self.lane_change_state = LaneChangeState.off
     self.lane_change_direction = LaneChangeDirection.none
     self.lane_change_timer = 0.0
     self.lane_change_ll_prob = 1.0
     self.keep_pulse_timer = 0.0
     self.prev_one_blinker = False
-    self.desire = log.Desire.none
+    self.desire = log.LateralPlan.Desire.none if USE_LEGACY_LANE_MODEL else log.Desire.none
 
     self.lane_change_delay = int(Params().get("KisaAutoLaneChangeDelay", encoding="utf8"))
     self.lane_change_auto_delay = 0.0 if self.lane_change_delay == 0 else 0.2 if self.lane_change_delay == 1 else 0.5 if self.lane_change_delay == 2 \
@@ -65,37 +95,39 @@ class DesireHelper:
     self.output_scale = 0.0
     self.ready_to_change = False
 
-  def update(self, carstate, lateral_active, lane_change_prob, CP, controlsstate, md):
-    try:
-      if CP.lateralTuning.which() == 'pid':
+  def update(self, carstate, lateral_active, lane_change_prob, controlsstate=None, md=None):
+    if controlsstate is not None:
+      if controlsstate.lateralControlMethod == 0:
         self.output_scale = controlsstate.lateralControlState.pidState.output
-      elif CP.lateralTuning.which() == 'indi':
+      elif controlsstate.lateralControlMethod == 1:
         self.output_scale = controlsstate.lateralControlState.indiState.output
-      elif CP.lateralTuning.which() == 'lqr':
+      elif controlsstate.lateralControlMethod == 2:
         self.output_scale = controlsstate.lateralControlState.lqrState.output
-      elif CP.lateralTuning.which() == 'torque':
+      elif controlsstate.lateralControlMethod == 3:
         self.output_scale = controlsstate.lateralControlState.torqueState.output
-      elif CP.lateralTuning.which() == 'atom':
+      elif controlsstate.lateralControlMethod == 4:
         self.output_scale = controlsstate.lateralControlState.atomState.output
-    except:
-      pass
     v_ego = carstate.vEgo
     one_blinker = carstate.leftBlinker != carstate.rightBlinker
     below_lane_change_speed = (v_ego < LANE_CHANGE_SPEED_MIN) or (LANE_CHANGE_SPEED_MIN == -1)
 
-    left_edge_prob = np.clip(1.0 - md.roadEdgeStds[0], 0.0, 1.0)
-    left_nearside_prob = md.laneLineProbs[0]
-    left_close_prob = md.laneLineProbs[1]
-    right_close_prob = md.laneLineProbs[2]
-    right_nearside_prob = md.laneLineProbs[3]
-    right_edge_prob = np.clip(1.0 - md.roadEdgeStds[1], 0.0, 1.0)
+    if md is not None:
+      left_edge_prob = np.clip(1.0 - md.roadEdgeStds[0], 0.0, 1.0)
+      left_nearside_prob = md.laneLineProbs[0]
+      left_close_prob = md.laneLineProbs[1]
+      right_close_prob = md.laneLineProbs[2]
+      right_nearside_prob = md.laneLineProbs[3]
+      right_edge_prob = np.clip(1.0 - md.roadEdgeStds[1], 0.0, 1.0)
 
-    if right_edge_prob > 0.35 and right_nearside_prob < 0.2 and left_nearside_prob >= right_nearside_prob:
-      road_edge_stat = 1
-    elif left_edge_prob > 0.35 and left_nearside_prob < 0.2 and right_nearside_prob >= left_nearside_prob:
-      road_edge_stat = -1
+      if right_edge_prob > 0.35 and right_nearside_prob < 0.2 and left_nearside_prob >= right_nearside_prob:
+        road_edge_stat = 1
+      elif left_edge_prob > 0.35 and left_nearside_prob < 0.2 and right_nearside_prob >= left_nearside_prob:
+        road_edge_stat = -1
+      else:
+        road_edge_stat = 0
     else:
       road_edge_stat = 0
+
 
     if carstate.leftBlinker:
       self.lane_change_direction = LaneChangeDirection.left
@@ -125,10 +157,13 @@ class DesireHelper:
         self.lane_change_ll_prob = 1.0
         self.lane_change_wait_timer = 0 if not self.ready_to_change else self.lane_change_auto_delay
         if self.lane_change_adjust_enable:
-          if controlsstate.curvature > 0.0005 and self.lane_change_direction == LaneChangeDirection.left: # left curve
-            self.lane_change_adjust_new = min(2.0, interp(v_ego, self.lane_change_adjust_vel, self.lane_change_adjust)*1.5)
-          elif controlsstate.curvature < -0.0005 and self.lane_change_direction == LaneChangeDirection.right: # right curve
-            self.lane_change_adjust_new = min(2.0, interp(v_ego, self.lane_change_adjust_vel, self.lane_change_adjust)*1.5)
+          if controlsstate is not None:
+            if controlsstate.curvature > 0.0005 and self.lane_change_direction == LaneChangeDirection.left: # left curve
+              self.lane_change_adjust_new = min(2.0, interp(v_ego, self.lane_change_adjust_vel, self.lane_change_adjust)*1.5)
+            elif controlsstate.curvature < -0.0005 and self.lane_change_direction == LaneChangeDirection.right: # right curve
+              self.lane_change_adjust_new = min(2.0, interp(v_ego, self.lane_change_adjust_vel, self.lane_change_adjust)*1.5)
+            else:
+              self.lane_change_adjust_new = interp(v_ego, self.lane_change_adjust_vel, self.lane_change_adjust)
           else:
             self.lane_change_adjust_new = interp(v_ego, self.lane_change_adjust_vel, self.lane_change_adjust)
       # LaneChangeState.preLaneChange
@@ -177,5 +212,7 @@ class DesireHelper:
       self.keep_pulse_timer += DT_MDL
       if self.keep_pulse_timer > 1.0:
         self.keep_pulse_timer = 0.0
-      elif self.desire in (log.Desire.keepLeft, log.Desire.keepRight):
+      elif USE_LEGACY_LANE_MODEL and self.desire in (log.LateralPlan.Desire.keepLeft, log.LateralPlan.Desire.keepRight):
+        self.desire = log.LateralPlan.Desire.none
+      elif not USE_LEGACY_LANE_MODEL and self.desire in (log.Desire.keepLeft, log.Desire.keepRight):
         self.desire = log.Desire.none

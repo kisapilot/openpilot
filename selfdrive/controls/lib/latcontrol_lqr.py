@@ -51,7 +51,7 @@ class LatControlLQR(LatControl):
         
       self.mpc_frame = 0
 
-  def update(self, active, CS, VM, params, steer_limited, desired_curvature, llk):
+  def update(self, active, CS, VM, params, steer_limited, desired_curvature, desired_curvature_rate, llk):
     self.ll_timer += 1
     if self.ll_timer > 100:
       self.ll_timer = 0
