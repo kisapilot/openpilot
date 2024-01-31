@@ -75,7 +75,8 @@ def sw_update_thread(end_event, nv_queue):
                 result.kill()
           elif p_order == 3:
             rvalue=result.poll()
-            if rvalue == 0 or lcount > 3:
+            print(lcount)
+            if rvalue == 0 or lcount > 5:
               p_order = 31
               result=subprocess.Popen(command4, shell=True)
             else:
