@@ -29,6 +29,8 @@ def sw_update_thread(end_event, nv_queue):
             command3 = "/data/openpilot/selfdrive/assets/addon/script/git_remove.sh"
             command31 = "git -C /data/openpilot branch -D " + selection
             command4 = "git -C /data/openpilot fetch --progress origin"
+            command41 = "git -C /data/openpilot stash"
+            command42 = "git -C /data/openpilot stash clear"
             command5 = "git -C /data/openpilot checkout --track origin/" + selection
             command6 = "git -C /data/openpilot checkout " + selection
             command7 = "/data/openpilot/selfdrive/assets/addon/script/git_reset.sh"
@@ -73,9 +75,33 @@ def sw_update_thread(end_event, nv_queue):
                 result.kill()
           elif p_order == 3:
             rvalue=result.poll()
+            if rvalue == 0 or lcount > 3:
+              p_order = 31
+              result=subprocess.Popen(command4, shell=True)
+            else:
+              lcount += 1
+              if lcount > 30: # killing in 30sec if proc is abnormal or not completed.
+                params.put("RunCustomCommand", "0")
+                p_order = 0
+                lcount = 0
+                result.kill()
+          elif p_order == 31:
+            rvalue=result.poll()
+            if rvalue == 0:
+              p_order = 32
+              result=subprocess.Popen(command41, shell=True)
+            else:
+              lcount += 1
+              if lcount > 30: # killing in 30sec if proc is abnormal or not completed.
+                params.put("RunCustomCommand", "0")
+                p_order = 0
+                lcount = 0
+                result.kill()
+          elif p_order == 32:
+            rvalue=result.poll()
             if rvalue == 0:
               p_order = 4
-              result=subprocess.Popen(command4, shell=True)
+              result=subprocess.Popen(command42, shell=True)
             else:
               lcount += 1
               if lcount > 30: # killing in 30sec if proc is abnormal or not completed.

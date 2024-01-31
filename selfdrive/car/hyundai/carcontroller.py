@@ -705,7 +705,7 @@ class CarController:
                 self.switch_timer2 = int(randint(20, 25) * 2)
             elif self.switch_timer > 0 and not self.try_early_stop_retrieve:
               self.switch_timer -= 1
-            elif CS.cruiseGapSet != self.gap_by_spd_gap[0] and ((CS.clu_Vanz < self.gap_by_spd_spd[0]+self.gap_by_spd_on_buffer1) or self.gap_by_spd_gap1) and not self.try_early_stop_retrieve and not CS.lead_objspd < -4:
+            elif CS.cruiseGapSet != self.gap_by_spd_gap[0] and ((CS.clu_Vanz < self.gap_by_spd_spd[0]+self.gap_by_spd_on_buffer1) or self.gap_by_spd_gap1) and not self.try_early_stop_retrieve and not CS.lead_objspd < 0:
               self.gap_by_spd_gap1 = True
               self.gap_by_spd_gap2 = False
               self.gap_by_spd_gap3 = False
@@ -718,7 +718,7 @@ class CarController:
               if self.resume_cnt >= int(randint(4, 5) * 2):
                 self.resume_cnt = 0
                 self.switch_timer = int(randint(20, 25) * 2)
-            elif CS.cruiseGapSet != self.gap_by_spd_gap[1] and ((self.gap_by_spd_spd[0] <= CS.clu_Vanz < self.gap_by_spd_spd[1]+self.gap_by_spd_on_buffer2) or self.gap_by_spd_gap2) and not self.try_early_stop_retrieve and not CS.lead_objspd < -4:
+            elif CS.cruiseGapSet != self.gap_by_spd_gap[1] and ((self.gap_by_spd_spd[0] <= CS.clu_Vanz < self.gap_by_spd_spd[1]+self.gap_by_spd_on_buffer2) or self.gap_by_spd_gap2) and not self.try_early_stop_retrieve and not CS.lead_objspd < 0:
               self.gap_by_spd_gap1 = False
               self.gap_by_spd_gap2 = True
               self.gap_by_spd_gap3 = False
@@ -731,7 +731,7 @@ class CarController:
               if self.resume_cnt >= int(randint(4, 5) * 2):
                 self.resume_cnt = 0
                 self.switch_timer = int(randint(20, 25) * 2)
-            elif CS.cruiseGapSet != self.gap_by_spd_gap[2] and ((self.gap_by_spd_spd[1] <= CS.clu_Vanz < self.gap_by_spd_spd[2]+self.gap_by_spd_on_buffer3) or self.gap_by_spd_gap3) and not self.try_early_stop_retrieve and not CS.lead_objspd < -4:
+            elif CS.cruiseGapSet != self.gap_by_spd_gap[2] and ((self.gap_by_spd_spd[1] <= CS.clu_Vanz < self.gap_by_spd_spd[2]+self.gap_by_spd_on_buffer3) or self.gap_by_spd_gap3) and not self.try_early_stop_retrieve and not CS.lead_objspd < 0:
               self.gap_by_spd_gap1 = False
               self.gap_by_spd_gap2 = False
               self.gap_by_spd_gap3 = True
@@ -743,7 +743,7 @@ class CarController:
               if self.resume_cnt >= int(randint(4, 5) * 2):
                 self.resume_cnt = 0
                 self.switch_timer = int(randint(20, 25) * 2)
-            elif CS.cruiseGapSet != self.gap_by_spd_gap[3] and ((self.gap_by_spd_spd[2] <= CS.clu_Vanz) or self.gap_by_spd_gap4) and not self.try_early_stop_retrieve and not CS.lead_objspd < -4:
+            elif CS.cruiseGapSet != self.gap_by_spd_gap[3] and ((self.gap_by_spd_spd[2] <= CS.clu_Vanz) or self.gap_by_spd_gap4) and not self.try_early_stop_retrieve and not CS.lead_objspd < 0:
               self.gap_by_spd_gap1 = False
               self.gap_by_spd_gap2 = False
               self.gap_by_spd_gap3 = False
@@ -1112,11 +1112,11 @@ class CarController:
                     self.l_stat = 20
               elif aReqValue < 0.0 and CS.lead_distance < self.stoppingdist+0.5 and accel >= aReqValue and lead_objspd <= 0 and self.stopping_dist_adj_enabled:
                 self.l_stat = 21
-                if CS.lead_distance < 1.6:
+                if CS.lead_distance < 1.5:
                   accel = self.accel - (DT_CTRL * 2.5)
                   self.l_stat = 22
-                elif CS.lead_distance < self.stoppingdist+0.5:
-                  accel = self.accel - (DT_CTRL * interp(CS.out.vEgo, [0.0, 1.0, 2.0], [0.025, 1.0, 5.0]))
+                elif CS.lead_distance < self.stoppingdist+0.8:
+                  accel = self.accel - (DT_CTRL * interp(CS.out.vEgo, [0.0, 1.0, 2.0], [0.02, 0.8, 4.5]))
                   self.l_stat = 23
               elif aReqValue < 0.0:
                 dRel2 = self.dRel if self.dRel > 0 else CS.lead_distance
@@ -1143,7 +1143,7 @@ class CarController:
                     stock_weight = 1.0
                     self.l_stat = 27
                 else:
-                  accel = interp(CS.clu_Vanz, [3.0, 10.0, 30.0], [max(accel, faccel), (accel + faccel)/2, min(accel, faccel)])
+                  accel = interp(CS.clu_Vanz, [4.0, 10.0, 30.0], [max(accel, faccel), ((min(accel, faccel)*0.6)+(max(accel, faccel)*0.4)), min(accel, faccel)])
                   if not self.NC.cutInControl:
                     self.ed_rd_diff_on = False
                     self.l_stat = 28
