@@ -9149,3 +9149,69 @@ void KISACruiseGapSet::refresh() {
     label.setText(QString::fromStdString("■■■■"));
   }
 }
+
+UseLegacyLaneModel::UseLegacyLaneModel() : AbstractControl(tr("Lateral Plan Mode"), tr("1.Model(latest model path), 2.MPC(mpc path from post processing of model, 3.Mix(Model(high curvature), MPC(low curvature), interpolation value)"), "../assets/offroad/icon_shell.png") {
+
+  label.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
+  label.setStyleSheet("color: #e0e879");
+  hlayout->addWidget(&label);
+
+  btnminus.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+  btnplus.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+  btnminus.setFixedSize(150, 100);
+  btnplus.setFixedSize(150, 100);
+  btnminus.setText("－");
+  btnplus.setText("＋");
+  hlayout->addWidget(&btnminus);
+  hlayout->addWidget(&btnplus);
+
+  QObject::connect(&btnminus, &QPushButton::clicked, [=]() {
+    auto str = QString::fromStdString(params.get("UseLegacyLaneModel"));
+    int value = str.toInt();
+    value = value - 1;
+    if (value <= -1) {
+      value = 2;
+    }
+    QString values = QString::number(value);
+    params.put("UseLegacyLaneModel", values.toStdString());
+    refresh();
+  });
+  
+  QObject::connect(&btnplus, &QPushButton::clicked, [=]() {
+    auto str = QString::fromStdString(params.get("UseLegacyLaneModel"));
+    int value = str.toInt();
+    value = value + 1;
+    if (value >= 3) {
+      value = 0;
+    }
+    QString values = QString::number(value);
+    params.put("UseLegacyLaneModel", values.toStdString());
+    refresh();
+  });
+  refresh();
+}
+
+void LongAlternative::refresh() {
+  QString option = QString::fromStdString(params.get("UseLegacyLaneModel"));
+  if (option == "0") {
+    label.setText(tr("Model"));
+  } else if (option == "1") {
+    label.setText(tr("MPC"));
+  } else {
+    label.setText(tr("Mix"));
+  }
+}

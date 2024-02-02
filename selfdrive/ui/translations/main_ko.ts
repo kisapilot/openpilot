@@ -4144,12 +4144,12 @@ This may take up to a minute.</source>
 <context>
     <name>UseLegacyLaneModel</name>
     <message>
-        <source>Use Legacy Lane Model</source>
-        <translation>기존 Lateral MPC 경로 사용</translation>
+        <source>Lateral Plan Mode</source>
+        <translation>레터럴 플랜 모드</translation>
     </message>
     <message>
-        <source>Use MPC lateral plan instead of model path if you feel bad the new laterl plan from model.</source>
-        <translation>모델 경로가 아닌 기존 MPC경로를 사용합니다. 새로운 모델 경로가 불편하거나 기존 레인모델 선호시 기능을 켭니다.</translation>
+        <source>1.Model(latest model path), 2.MPC(mpc path from post processing of model, 3.Mix(Model(high curvature), MPC(low curvature), interpolation value)</source>
+        <translation>1.기본 모델 경로(콤마 최신), 2.MPC 모델(기존), 3.Mix(높은커브곡률에서는 모델 경로를 사용하고, 낮은 곡률(직선로)에서는 MPC경로를 사용합니다. 직선로 주행시 차선을 좀더 추종하여 직진성을 향상시키고, 커브에서는 모델경로를 사용하여 주행에 도움을 줄 수 있습니다.)</translation>
     </message>
 </context>
 </TS>

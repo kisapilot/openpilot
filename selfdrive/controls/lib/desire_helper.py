@@ -9,7 +9,7 @@ from decimal import Decimal
 
 from openpilot.common.params import Params
 
-USE_LEGACY_LANE_MODEL = Params().get_bool("UseLegacyLaneModel") if Params().get_bool("UseLegacyLaneModel") is not None else False
+USE_LEGACY_LANE_MODEL = int(Params().get("UseLegacyLaneModel", encoding="utf8")) if Params().get("UseLegacyLaneModel", encoding="utf8") is not None else 0
 
 if USE_LEGACY_LANE_MODEL:
   LaneChangeState = log.LateralPlan.LaneChangeState

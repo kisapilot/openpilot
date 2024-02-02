@@ -1025,18 +1025,6 @@ public:
   }
 };
 
-class UseLegacyLaneModel : public ToggleControl {
-  Q_OBJECT
-
-public:
-  UseLegacyLaneModel() : ToggleControl(tr("Use Legacy Lane Model"), tr("Use MPC lateral plan instead of model path if you feel bad the new laterl plan from model."), "../assets/offroad/icon_shell.png", Params().getBool("UseLegacyLaneModel")) {
-    QObject::connect(this, &UseLegacyLaneModel::toggleFlipped, [=](int state) {
-      bool status = state ? true : false;
-      Params().putBool("UseLegacyLaneModel", status);
-    });
-  }
-};
-
 // openpilot preview
 class OpenpilotView : public AbstractControl {
   Q_OBJECT
@@ -2846,6 +2834,21 @@ class KISACruiseGapSet : public AbstractControl {
 
 public:
   KISACruiseGapSet();
+
+private:
+  QPushButton btnplus;
+  QPushButton btnminus;
+  QLabel label;
+  Params params;
+  
+  void refresh();
+};
+
+class UseLegacyLaneModel : public AbstractControl {
+  Q_OBJECT
+
+public:
+  UseLegacyLaneModel();
 
 private:
   QPushButton btnplus;

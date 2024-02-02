@@ -38,7 +38,7 @@ class LateralPlanner:
     self.DH = DesireHelper()
 
     self.params = Params()
-    self.legacy_lane_mode = self.params.get_bool("UseLegacyLaneModel")
+    self.legacy_lane_mode = int(self.params.get("UseLegacyLaneModel", encoding="utf8"))
 
     # Vehicle model parameters used to calculate lateral movement of car
     self.factor1 = CP.wheelbase - CP.centerToFront

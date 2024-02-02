@@ -6,7 +6,7 @@ import threading
 from typing import SupportsFloat
 
 from cereal import car, log
-from openpilot.common.numpy_fast import clip
+from openpilot.common.numpy_fast import clip, interp
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper, DT_CTRL
 from openpilot.common.params import Params
 import cereal.messaging as messaging
@@ -35,7 +35,7 @@ from decimal import Decimal
 
 import openpilot.common.log as trace1
 
-USE_LEGACY_LANE_MODEL = Params().get_bool("UseLegacyLaneModel") if Params().get_bool("UseLegacyLaneModel") is not None else False
+USE_LEGACY_LANE_MODEL = int(Params().get("UseLegacyLaneModel", encoding="utf8")) if Params().get("UseLegacyLaneModel", encoding="utf8") is not None else 0
 
 SOFT_DISABLE_TIME = 3  # seconds
 LDW_MIN_SPEED = 50 * CV.KPH_TO_MS if Params().get_bool("IsMetric") else 31 * CV.MPH_TO_MS
@@ -295,7 +295,7 @@ class Controls:
     self.rx_checks_ok = False
     self.mismatch_counter_ok = False
 
-    self.legacy_lane_mode = self.params.get_bool("UseLegacyLaneModel")
+    self.legacy_lane_mode = int(self.params.get("UseLegacyLaneModel", encoding="utf8"))
 
   def auto_enable(self, CS):
     if self.state != State.enabled:
@@ -778,7 +778,12 @@ class Controls:
       actuators.accel, actuators.oaccel = self.LoC.update(CC.longActive, CS, long_plan, pid_accel_limits, t_since_plan, self.CP, self.sm['radarState'])
 
       # Steering PID loop and lateral MPC
-      if self.legacy_lane_mode:
+      if self.legacy_lane_mode == 2:
+        model_speed = self.sm['lateralPlan'].modelSpeed
+        desired_curvature1, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo, lat_plan.psis, lat_plan.curvatures, lat_plan.curvatureRates)
+        desired_curvature2 = clip_curvature(CS.vEgo, self.desired_curvature, model_v2.action.desiredCurvature)
+        self.desired_curvature = interp(model_speed, [40, 90], [desired_curvature2, desired_curvature1])
+      elif self.legacy_lane_mode == 1:
         self.desired_curvature, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo, lat_plan.psis, lat_plan.curvatures, lat_plan.curvatureRates)
       else:
         self.desired_curvature = clip_curvature(CS.vEgo, self.desired_curvature, model_v2.action.desiredCurvature)
