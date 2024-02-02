@@ -9174,8 +9174,8 @@ UseLegacyLaneModel::UseLegacyLaneModel() : AbstractControl(tr("Lateral Plan Mode
   )");
   btnminus.setFixedSize(150, 100);
   btnplus.setFixedSize(150, 100);
-  btnminus.setText("－");
-  btnplus.setText("＋");
+  btnminus.setText("◀");
+  btnplus.setText("▶");
   hlayout->addWidget(&btnminus);
   hlayout->addWidget(&btnplus);
 
@@ -9205,7 +9205,7 @@ UseLegacyLaneModel::UseLegacyLaneModel() : AbstractControl(tr("Lateral Plan Mode
   refresh();
 }
 
-void LongAlternative::refresh() {
+void UseLegacyLaneModel::refresh() {
   QString option = QString::fromStdString(params.get("UseLegacyLaneModel"));
   if (option == "0") {
     label.setText(tr("Model"));
