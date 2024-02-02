@@ -782,7 +782,7 @@ class Controls:
         model_speed = self.sm['lateralPlan'].modelSpeed
         desired_curvature1, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo, lat_plan.psis, lat_plan.curvatures, lat_plan.curvatureRates)
         desired_curvature2 = clip_curvature(CS.vEgo, self.desired_curvature, model_v2.action.desiredCurvature)
-        self.desired_curvature = interp(model_speed, [40, 90], [desired_curvature2, desired_curvature1])
+        self.desired_curvature = interp(model_speed, [50, 100], [desired_curvature2, desired_curvature1])
       elif self.legacy_lane_mode == 1:
         self.desired_curvature, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo, lat_plan.psis, lat_plan.curvatures, lat_plan.curvatureRates)
       else:
