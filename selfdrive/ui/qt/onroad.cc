@@ -843,7 +843,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     num_l = num_l + 1;
     sp_yl = sp_yl + j_num;
     p.setPen(whiteColor(200));
-    debugText(p, sp_xl, sp_yl, QString("REL SPED"), 150, 27);
+    debugText(p, sp_xl, sp_yl, QString("REL Speed"), 150, 27);
     if (int(vel_rel) < -5) {
       p.setPen(redColor(200));
     } else if (int(vel_rel) < 0) {
@@ -865,7 +865,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     num_l = num_l + 1;
     sp_yl = sp_yl + j_num;
     p.setPen(whiteColor(200));
-    debugText(p, sp_xl, sp_yl, QString("STER ANG"), 150, 27);
+    debugText(p, sp_xl, sp_yl, QString("Steer ANG"), 150, 27);
     p.setPen(greenColor(200));
     if ((int(s->scene.angleSteers) < -50) || (int(s->scene.angleSteers) > 50)) {
       p.setPen(redColor(200));
