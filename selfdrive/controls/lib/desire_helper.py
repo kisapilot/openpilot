@@ -24,7 +24,7 @@ elif Params().get_bool("IsMetric"):
   LANE_CHANGE_SPEED_MIN = float(int(Params().get("KisaLaneChangeSpeed", encoding="utf8")) * CV.KPH_TO_MS)
 else:
   LANE_CHANGE_SPEED_MIN = float(int(Params().get("KisaLaneChangeSpeed", encoding="utf8")) * CV.MPH_TO_MS)
-LANE_CHANGE_TIME_MAX = 10.
+LANE_CHANGE_TIME_MAX = 15.
 
 if USE_LEGACY_LANE_MODEL:
   DESIRES = {
@@ -89,7 +89,7 @@ class DesireHelper:
     self.lane_change_adjust = [float(Decimal(Params().get("LCTimingFactor30", encoding="utf8")) * Decimal('0.01')), float(Decimal(Params().get("LCTimingFactor60", encoding="utf8")) * Decimal('0.01')),
      float(Decimal(Params().get("LCTimingFactor80", encoding="utf8")) * Decimal('0.01')), float(Decimal(Params().get("LCTimingFactor110", encoding="utf8")) * Decimal('0.01'))]
     self.lane_change_adjust_vel = [30*CV.KPH_TO_MS, 60*CV.KPH_TO_MS, 80*CV.KPH_TO_MS, 110*CV.KPH_TO_MS]
-    self.lane_change_adjust_new = 2
+    self.lane_change_adjust_new = 2.0
     self.lane_change_adjust_enable = Params().get_bool("LCTimingFactorEnable")
 
     self.output_scale = 0.0
@@ -140,7 +140,7 @@ class DesireHelper:
 
     if self.lane_change_state == LaneChangeState.off and road_edge_stat == lane_direction:
       self.lane_change_direction = LaneChangeDirection.none
-    elif not lateral_active or (self.lane_change_timer > LANE_CHANGE_TIME_MAX) or (abs(self.output_scale) >= 0.8 and self.lane_change_timer > 0.5):
+    elif not lateral_active or (self.lane_change_timer > LANE_CHANGE_TIME_MAX) or (abs(self.output_scale) >= 0.8 and self.lane_change_timer > 0.3):
       self.lane_change_state = LaneChangeState.off
       self.lane_change_direction = LaneChangeDirection.none
     else:
@@ -166,6 +166,8 @@ class DesireHelper:
               self.lane_change_adjust_new = interp(v_ego, self.lane_change_adjust_vel, self.lane_change_adjust)
           else:
             self.lane_change_adjust_new = interp(v_ego, self.lane_change_adjust_vel, self.lane_change_adjust)
+        else:
+          self.lane_change_adjust_new = 2.0
       # LaneChangeState.preLaneChange
       elif self.lane_change_state == LaneChangeState.preLaneChange:
         self.lane_change_wait_timer += DT_MDL
@@ -186,7 +188,15 @@ class DesireHelper:
       # LaneChangeState.laneChangeFinishing
       elif self.lane_change_state == LaneChangeState.laneChangeFinishing:
         # fade in laneline over 1s
-        self.lane_change_ll_prob = min(self.lane_change_ll_prob + DT_MDL, 1.0)
+        if USE_LEGACY_LANE_MODEL:
+          if self.lane_change_direction == LaneChangeDirection.left:
+            prob_adj_val = interp(v_ego, [16.6, 30.5], [0.05, 0.025])
+            self.lane_change_ll_prob = min(self.lane_change_ll_prob + prob_adj_val, 1.0)
+          else:
+            prob_adj_val = interp(v_ego, [16.6, 30.5], [0.05, 0.005])
+            self.lane_change_ll_prob = min(self.lane_change_ll_prob + prob_adj_val, 1.0)
+        else:
+          self.lane_change_ll_prob = min(self.lane_change_ll_prob + DT_MDL, 1.0)
         if one_blinker and self.lane_change_ll_prob > 0.99:
           self.lane_change_state = LaneChangeState.preLaneChange
         elif self.lane_change_ll_prob > 0.99:

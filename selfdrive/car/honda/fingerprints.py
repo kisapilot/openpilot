@@ -832,6 +832,7 @@ FW_VERSIONS = {
       b'38897-THR-A020\x00\x00',
     ],
     (Ecu.programmedFuelInjection, 0x18da10f1, None): [
+      b'37805-5MR-3050\x00\x00',
       b'37805-5MR-3250\x00\x00',
       b'37805-5MR-4080\x00\x00',
       b'37805-5MR-4180\x00\x00',
@@ -984,6 +985,7 @@ FW_VERSIONS = {
       b'37805-RLV-F120\x00\x00',
       b'37805-RLV-L080\x00\x00',
       b'37805-RLV-L090\x00\x00',
+      b'37805-RLV-L150\x00\x00',
       b'37805-RLV-L160\x00\x00',
       b'37805-RLV-L180\x00\x00',
       b'37805-RLV-L350\x00\x00',

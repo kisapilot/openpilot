@@ -520,6 +520,7 @@ struct PandaState @0xa7649e2575e4591e {
     redPanda @7;
     redPandaV2 @8;
     tres @9;
+    cuatro @10;
   }
 
   enum HarnessStatus {
@@ -2341,6 +2342,8 @@ struct EncodeData {
   data @1 :Data;
   header @2 :Data;
   unixTimestampNanos @3 :UInt64;
+  width @4 :UInt32;
+  height @5 :UInt32;
 }
 
 struct UserFlag {
