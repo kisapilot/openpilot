@@ -481,12 +481,19 @@ DrivingPanel::DrivingPanel(QWidget *parent) : QFrame(parent) {
 
   // kisapilot
   layout->addWidget(new CResumeGroup());
+  layout->addWidget(horizontal_line());
   layout->addWidget(new CCruiseGapGroup());
+  layout->addWidget(horizontal_line());
   layout->addWidget(new CVariableCruiseGroup());
+  layout->addWidget(horizontal_line());
   layout->addWidget(new CLaneChangeGroup());
+  layout->addWidget(horizontal_line());
   layout->addWidget(new CDrivingQuality());
+  layout->addWidget(horizontal_line());
   layout->addWidget(new CSafetyandMap());
+  layout->addWidget(horizontal_line());
   layout->addWidget(new CSteerWidget());
+  layout->addWidget(horizontal_line());
 
   layout->addWidget(new UseLegacyLaneModel());
 }
@@ -501,17 +508,21 @@ DeveloperPanel::DeveloperPanel(QWidget *parent) : QFrame(parent) {
   layout->addWidget(new DebugUiTwoToggle());
   layout->addWidget(new DebugUiThreeToggle());
   layout->addWidget(new KISADebug());
-  layout->addWidget(new ShowErrorToggle());
   layout->addWidget(new LongLogToggle());
+  layout->addWidget(horizontal_line());
+  layout->addWidget(new ShowErrorToggle());
   layout->addWidget(new PrebuiltToggle());
+  layout->addWidget(horizontal_line());
   layout->addWidget(new LDWSToggle());
   layout->addWidget(new GearDToggle());
   layout->addWidget(new SteerWarningFixToggle());
   layout->addWidget(new IgnoreCanErroronISGToggle());
+  layout->addWidget(new NoSmartMDPSToggle());
+  layout->addWidget(horizontal_line());
   layout->addWidget(new UFCModeEnabledToggle());
   layout->addWidget(new StockLKASEnabledatDisenagedStatusToggle());
+  layout->addWidget(horizontal_line());
   layout->addWidget(new JoystickModeToggle());
-  layout->addWidget(new NoSmartMDPSToggle());
   layout->addWidget(new UserSpecificFeature());
   layout->addWidget(new MapboxToken());
 
