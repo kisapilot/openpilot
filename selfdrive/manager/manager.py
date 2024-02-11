@@ -27,7 +27,6 @@ sys.path.append(os.path.join(PYEXTRADIR, "pyextra"))
 
 
 def manager_init() -> None:
-  # save boot log
   #save_bootlog()
 
   params = Params()
