@@ -5911,8 +5911,8 @@ VCurvSpeed::VCurvSpeed() : AbstractControl("", "", "") {
     height: 120px;
   )");
   btn.setFixedSize(150, 100);
-  edit1.setFixedSize(650, 100);
-  edit2.setFixedSize(650, 100);
+  edit1.setFixedSize(600, 100);
+  edit2.setFixedSize(600, 100);
   edit1.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
   edit2.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 
@@ -6015,8 +6015,8 @@ OCurvSpeed::OCurvSpeed() : AbstractControl("", "", "") {
     height: 120px;
   )");
   btn.setFixedSize(150, 100);
-  edit1.setFixedSize(650, 100);
-  edit2.setFixedSize(650, 100);
+  edit1.setFixedSize(600, 100);
+  edit2.setFixedSize(600, 100);
   edit1.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
   edit2.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 
@@ -6929,8 +6929,8 @@ OSMCustomSpeedLimit::OSMCustomSpeedLimit() : AbstractControl("", "", "") {
   btn.setFixedSize(150, 100);
   edit1.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
   edit2.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
-  edit1.setFixedSize(650, 100);
-  edit2.setFixedSize(650, 100);
+  edit1.setFixedSize(600, 100);
+  edit2.setFixedSize(600, 100);
 
   hlayout->addWidget(&edit1);
   hlayout->addWidget(&edit2);
@@ -7230,8 +7230,8 @@ SpeedLaneWidth::SpeedLaneWidth() : AbstractControl("", "", "") {
     height: 120px;
   )");
   btn.setFixedSize(150, 100);
-  edit1.setFixedSize(650, 100);
-  edit2.setFixedSize(650, 100);
+  edit1.setFixedSize(600, 100);
+  edit2.setFixedSize(600, 100);
   edit1.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
   edit2.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 
