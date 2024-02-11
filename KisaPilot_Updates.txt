@@ -1,4 +1,5 @@
 2024-02-06
+- SteerActuatorDelay(0.35->0.15) Must confirm your tune value
 - Certified Herbalist model
 - Optimized curvature btw Lane&Model
 2024-02-01
