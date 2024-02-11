@@ -324,16 +324,18 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     std::system("date '+%F %T' > /data/params/d/LastUpdateTime");
     QString last_ping = QString::fromStdString(params.get("LastAthenaPingTime"));
     QString desc = "";
-    QString commit_local = QString::fromStdString(Params().get("GitCommit").substr(0, 10));
-    QString commit_remote = QString::fromStdString(Params().get("GitCommitRemote").substr(0, 10));
+    QString commit_local = QString::fromStdString(params.get("GitCommit").substr(0, 5));
+    QString commit_remote = QString::fromStdString(params.get("GitCommitRemote").substr(0, 5));
+    QString commit_local_date = QString::fromStdString(params.get("GitCommitLocalDate"));
+    QString commit_remote_date = QString::fromStdString(params.get("GitCommitRemoteDate"));
     QString empty = "";
-    desc += tr("LOCAL: %1  REMOTE: %2%3%4 ").arg(commit_local, commit_remote, empty, empty);
+    desc = tr("LOCAL: %1(%2)  /  REMOTE: %3(%4)").arg(commit_local, commit_local_date, commit_remote, commit_remote_date);
     if (!last_ping.length()) {
-      desc += tr("Network connection is missing or unstable. Check the connection.");
+      desc = tr("Network connection is missing or unstable. Check the connection.");
       ConfirmationDialog::alert(desc, this);
     } else if (commit_local == commit_remote) {
       params.put("RunCustomCommand", "1", 1);
-      desc += tr("Checking update takes a time. If Same message, no update required.");
+      desc = tr("Checking update takes a time. If Same message, no update required.");
       ConfirmationDialog::alert(desc, this);
     } else {
       if (QFileInfo::exists("/data/KisaPilot_Updates.txt")) {
@@ -397,8 +399,10 @@ void SoftwarePanel::updateLabels() {
   if (tm != "") {
     lastUpdate = timeAgo(QDateTime::fromString(tm, "yyyy-MM-dd HH:mm:ss"));
   }
-  QString lhash = QString::fromStdString(params.get("GitCommit").substr(0, 10));
-  QString rhash = QString::fromStdString(params.get("GitCommitRemote").substr(0, 10));
+  QString lhash = QString::fromStdString(params.get("GitCommit").substr(0, 5));
+  QString rhash = QString::fromStdString(params.get("GitCommitRemote").substr(0, 5));
+  QString lhash_date = QString::fromStdString(params.get("GitCommitLocalDate"));
+  QString rhash_date = QString::fromStdString(params.get("GitCommitRemoteDate"));
 
   if (lhash == rhash) {
     gitCommitLbl->setStyleSheet("color: #aaaaaa");
@@ -412,7 +416,7 @@ void SoftwarePanel::updateLabels() {
   updateBtn->setEnabled(true);
   gitRemoteLbl->setText(QString::fromStdString(params.get("GitRemote").substr(19)));
   gitBranchLbl->setText(QString::fromStdString(params.get("GitBranch")));
-  gitCommitLbl->setText(lhash + "     " + rhash);
+  gitCommitLbl->setText(lhash + "(" + lhash_date + ")" + " / " + rhash + "(" + rhash_date + ")");
 }
 
 

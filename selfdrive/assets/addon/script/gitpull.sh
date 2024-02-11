@@ -17,7 +17,9 @@ if [ "$?" == "0" ]; then
   git fetch
 
   REMOTE_HASH=$(git rev-parse --verify origin/$BRANCH)
+  REMOTE_HASH_DATE=$(git log FETCH_HEAD -n 1 --pretty=format:"%cs" | cut -c 6-)
   echo -n "$REMOTE_HASH" > /data/params/d/GitCommitRemote
+  echo -n "$REMOTE_HASH_DATE" > /data/params/d/GitCommitRemoteDate
 
   if [ "$HASH" != "$REMOTE_HASH" ]; then
     IS_LANGFILE_CHANGED=$(git diff @{upstream} | grep translations)

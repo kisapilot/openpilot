@@ -985,8 +985,8 @@ This may take up to a minute.</source>
         <translation>업데이트 지금 확인</translation>
     </message>
     <message>
-        <source>LOCAL: %1  REMOTE: %2%3%4 </source>
-        <translation>로컬: %1  원격: %2%3%4 </translation>
+        <source>LOCAL: %1(%2)  /  REMOTE: %3(%4)</source>
+        <translation>로컬: %1(%2)  /  원격: %3(%4)</translation>
     </message>
     <message>
         <source>Network connection is missing or unstable. Check the connection.</source>

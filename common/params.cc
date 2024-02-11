@@ -422,6 +422,8 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"KisaPilotCurrentDescription", PERSISTENT},
     {"UseLegacyLaneModel", PERSISTENT},
     {"GitCommitRemote", PERSISTENT},
+    {"GitCommitRemoteDate", PERSISTENT},
+    {"GitCommitLocalDate", PERSISTENT},
     {"DrivingModel", PERSISTENT},
 };
 

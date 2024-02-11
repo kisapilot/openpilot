@@ -240,6 +240,8 @@ def manager_init() -> None:
     ("KisaCruiseGapSet", "4"),
     ("UseLegacyLaneModel", "2"),
     ("DrivingModel", "DrivingModel"),
+    ("GitCommitRemote", "0000000000000000000000000000000000000000"),
+    ("GitCommitRemoteDate", "00-00"),
   ]
   if not PC:
     default_params.append(("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')))
