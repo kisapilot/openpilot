@@ -242,6 +242,9 @@ def manager_init() -> None:
     ("DrivingModel", "DrivingModel"),
     ("GitCommitRemote", "0000000000000000000000000000000000000000"),
     ("GitCommitRemoteDate", "00-00"),
+    ("LCTimingKeepFactorLeft", "25"),
+    ("LCTimingKeepFactorRight", "25"),
+    ("LCTimingKeepFactorEnable", "1"),
   ]
   if not PC:
     default_params.append(("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')))

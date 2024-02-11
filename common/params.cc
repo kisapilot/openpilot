@@ -425,6 +425,9 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"GitCommitRemoteDate", PERSISTENT},
     {"GitCommitLocalDate", PERSISTENT},
     {"DrivingModel", PERSISTENT},
+    {"LCTimingKeepFactorLeft", PERSISTENT},
+    {"LCTimingKeepFactorRight", PERSISTENT},
+    {"LCTimingKeepFactorEnable", PERSISTENT},
 };
 
 } // namespace

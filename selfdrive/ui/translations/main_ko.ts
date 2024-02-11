@@ -1453,7 +1453,7 @@ This may take up to a minute.</source>
 <context>
     <name>CGitGroup</name>
     <message>
-        <source>Git Branch Change</source>
+        <source>Git Repository/Branch</source>
         <translation>Git 리포지토리/브랜치</translation>
     </message>
     <message>
@@ -1471,6 +1471,48 @@ This may take up to a minute.</source>
     <message>
         <source>GitPull Restore</source>
         <translation>GitPull 복구</translation>
+    </message>
+</context>
+<context>
+    <name>CResumeGroup</name>
+    <message>
+        <source>SCC Resume Option</source>
+        <translation>SCC 재시작 옵션</translation>
+    </message>
+</context>
+<context>
+    <name>CCruiseGapGroup</name>
+    <message>
+        <source>Cruise Gap Option</source>
+        <translation>크루즈 갭 옵션</translation>
+    </message>
+</context>
+<context>
+    <name>CVariableCruiseGroup</name>
+    <message>
+        <source>Variable Cruise Option</source>
+        <translation>가변크루즈 옵션</translation>
+    </message>
+</context>
+<context>
+    <name>CLaneChangeGroup</name>
+    <message>
+        <source>Lane Change Option</source>
+        <translation>차선변경 옵션</translation>
+    </message>
+</context>
+<context>
+    <name>CDrivingQuality</name>
+    <message>
+        <source>Driving Quality Option</source>
+        <translation>주행품질 옵션</translation>
+    </message>
+</context>
+<context>
+    <name>CSafetyandMap</name>
+    <message>
+        <source>Safety Speed and Map Option</source>
+        <translation>안전속도 및 맵 옵션</translation>
     </message>
 </context>
 <context>
@@ -2662,6 +2704,17 @@ This may take up to a minute.</source>
     <message>
         <source>When changing lanes, adjust the timing of lane change for each speed. If you want a quick lane change, increase the value and lower the value if you want a slow lane change.</source>
         <translation>차선 변경 시 속도별로 차선 변경 타이밍을 조정합니다. 빠른 차선 변경을 원하는 경우 값을 늘리고 느린 차선 변경을 원하는 경우 값을 낮춥니다.</translation>
+    </message>
+</context>
+<context>
+    <name>LCTimingKeepFactorUD</name>
+    <message>
+        <source>LaneChange Keeping Time</source>
+        <translation>차선변경 유지 시간</translation>
+    </message>
+    <message>
+        <source>Set a time to keep lane change. Low value makes changing time more so that your car move enough to target lane. If car is over to target lane too fast, increase a value.</source>
+        <translation>차선 변경 시 유지시간을 설정합니다. 낮은 값은 차선변경할 수 있는 충분한 시간을 확보하여 천천히 이동하도록 만듭니다. 만약 너무 빨리 목표차선으로 넘어간다면 값을 높이십시오.</translation>
     </message>
 </context>
 <context>

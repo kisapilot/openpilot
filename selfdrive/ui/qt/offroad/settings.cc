@@ -478,63 +478,16 @@ DrivingPanel::DrivingPanel(QWidget *parent) : QFrame(parent) {
   QVBoxLayout *layout = new QVBoxLayout(this);
   layout->setContentsMargins(50, 0, 50, 0);
   layout->setSpacing(30);
-  // kisapilot
-  layout->addWidget(new AutoResumeToggle());
-  layout->addWidget(new RESCountatStandstill());
-  layout->addWidget(new CruiseGapAdjustToggle());
-  layout->addWidget(new CruiseGapBySpdOn());
-  layout->addWidget(new CruiseGapBySpd());
-  layout->addWidget(new StandstillResumeAltToggle());
-  layout->addWidget(new DepartChimeAtResume());
-  layout->addWidget(new VariableCruiseToggle());
-  //layout->addWidget(new VariableCruiseLevel());
-  layout->addWidget(new CruiseSpammingLevel());
-  layout->addWidget(new CruiseSetwithRoadLimitSpeed());
-  layout->addWidget(new CruiseSetwithRoadLimitSpeedOffset());
-  layout->addWidget(new CruisemodeSelInit());
-  layout->addWidget(new LaneChangeSpeed());
-  layout->addWidget(new LaneChangeDelay());
-  layout->addWidget(new LCTimingFactorUD());
-  layout->addWidget(new LCTimingFactor());
-  layout->addWidget(new LeftCurvOffset());
-  layout->addWidget(new RightCurvOffset());
-  //layout->addWidget(new BlindSpotDetectToggle());
 
+  // kisapilot
+  layout->addWidget(new CResumeGroup());
+  layout->addWidget(new CCruiseGapGroup());
+  layout->addWidget(new CVariableCruiseGroup());
+  layout->addWidget(new CLaneChangeGroup());
+  layout->addWidget(new CDrivingQuality());
+  layout->addWidget(new CSafetyandMap());
   layout->addWidget(new CSteerWidget());
-  layout->addWidget(new SteerAngleCorrection());
-  layout->addWidget(new TurnSteeringDisableToggle());
-  layout->addWidget(new CruiseOverMaxSpeedToggle());
-  layout->addWidget(new OSMEnabledToggle());
-  layout->addWidget(new OSMSpeedLimitEnabledToggle());
-  layout->addWidget(new SpeedLimitOffset());
-  layout->addWidget(new OSMCustomSpeedLimitUD());
-  layout->addWidget(new OSMCustomSpeedLimit());
-  layout->addWidget(new SpeedLimitSignType());
-  layout->addWidget(new CamDecelDistAdd());
-  layout->addWidget(new CurvDecelSelect());
-  layout->addWidget(new VCurvSpeedUD());
-  layout->addWidget(new VCurvSpeed());
-  layout->addWidget(new OCurvSpeedUD());
-  layout->addWidget(new OCurvSpeed());
-  layout->addWidget(new SpeedBumpDecelToggle());
-  layout->addWidget(new KISAEarlyStoppingToggle());
-  layout->addWidget(new AutoEnabledToggle());
-  layout->addWidget(new AutoEnableSpeed());
-  layout->addWidget(new CruiseAutoResToggle());
-  layout->addWidget(new RESChoice());
-  layout->addWidget(new AutoResCondition());
-  layout->addWidget(new AutoResLimitTime());
-  layout->addWidget(new AutoRESDelay());
-  layout->addWidget(new LaneWidth());
-  layout->addWidget(new SpeedLaneWidthUD());
-  layout->addWidget(new SpeedLaneWidth());
-  layout->addWidget(new RoutineDriveOnToggle());
-  layout->addWidget(new RoutineDriveOption());
-  layout->addWidget(new CloseToRoadEdgeToggle());
-  layout->addWidget(new KISAEdgeOffset());
-  layout->addWidget(new ToAvoidLKASFaultToggle());
-  layout->addWidget(new ToAvoidLKASFault());
-  layout->addWidget(new SetSpeedByFive());
+
   layout->addWidget(new UseLegacyLaneModel());
 }
 
@@ -580,6 +533,7 @@ TuningPanel::TuningPanel(QWidget *parent) : QFrame(parent) {
   //layout->addWidget(new LabelControl(tr("〓〓〓〓〓〓〓〓〓〓〓〓【 TUNING 】〓〓〓〓〓〓〓〓〓〓〓〓"), ""));
   layout->addWidget(new CameraOffset());
   layout->addWidget(new PathOffset());
+  layout->addWidget(new SteerAngleCorrection());
   layout->addWidget(horizontal_line());
 
   layout->addWidget(new SteerActuatorDelay());

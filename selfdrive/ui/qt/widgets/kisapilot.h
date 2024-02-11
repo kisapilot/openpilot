@@ -74,6 +74,53 @@ public:
   explicit CGitGroup( void *parent=0);
 };
 
+class CResumeGroup : public CGroupWidget 
+{
+  Q_OBJECT
+
+public:
+  explicit CResumeGroup( void *parent=0);
+};
+
+class CCruiseGapGroup : public CGroupWidget 
+{
+  Q_OBJECT
+
+public:
+  explicit CCruiseGapGroup( void *parent=0);
+};
+
+class CVariableCruiseGroup : public CGroupWidget 
+{
+  Q_OBJECT
+
+public:
+  explicit CVariableCruiseGroup( void *parent=0);
+};
+
+class CLaneChangeGroup : public CGroupWidget 
+{
+  Q_OBJECT
+
+public:
+  explicit CLaneChangeGroup( void *parent=0);
+};
+
+class CDrivingQuality : public CGroupWidget 
+{
+  Q_OBJECT
+
+public:
+  explicit CDrivingQuality( void *parent=0);
+};
+
+class CSafetyandMap : public CGroupWidget 
+{
+  Q_OBJECT
+
+public:
+  explicit CSafetyandMap( void *parent=0);
+};
 
 class CUtilWidget : public CGroupWidget 
 {
@@ -2124,6 +2171,40 @@ private:
   
   void refresh();
   void refresh2();
+};
+
+class LCTimingKeepFactor : public AbstractControl {
+  Q_OBJECT
+
+public:
+  LCTimingKeepFactor();
+
+private:
+  QPushButton btn1;
+  QPushButton btn2;
+  QPushButton btn3;
+  QPushButton btn4;
+  QLabel label1;
+  QLabel label2;
+  QLabel label1a;
+  QLabel label2a;
+  Params params;
+
+  void refresh1();
+  void refresh2();
+};
+
+class LCTimingKeepFactorUD : public AbstractControl {
+  Q_OBJECT
+
+public:
+  LCTimingKeepFactorUD();
+
+private:
+  QPushButton btn;
+  Params params;
+  
+  void refresh();
 };
 
 class AutoResCondition : public AbstractControl {

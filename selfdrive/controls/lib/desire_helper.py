@@ -92,6 +92,10 @@ class DesireHelper:
     self.lane_change_adjust_new = 2.0
     self.lane_change_adjust_enable = Params().get_bool("LCTimingFactorEnable")
 
+    self.lane_change_keep_enable = Params().get_bool("LCTimingKeepFactorEnable")
+    self.lane_change_keep_time_left = float(Decimal(Params().get("LCTimingKeepFactorLeft", encoding="utf8")) * Decimal('0.001'))
+    self.lane_change_keep_time_right = float(Decimal(Params().get("LCTimingKeepFactorRight", encoding="utf8")) * Decimal('0.001'))
+
     self.output_scale = 0.0
     self.ready_to_change = False
 
@@ -188,12 +192,12 @@ class DesireHelper:
       # LaneChangeState.laneChangeFinishing
       elif self.lane_change_state == LaneChangeState.laneChangeFinishing:
         # fade in laneline over 1s
-        if USE_LEGACY_LANE_MODEL:
+        if USE_LEGACY_LANE_MODEL and self.lane_change_keep_enable:
           if self.lane_change_direction == LaneChangeDirection.left:
-            prob_adj_val = interp(v_ego, [16.6, 30.5], [0.05, 0.025])
+            prob_adj_val = interp(v_ego, [16.6, 30.5], [0.05, self.lane_change_keep_time_left])
             self.lane_change_ll_prob = min(self.lane_change_ll_prob + prob_adj_val, 1.0)
           else:
-            prob_adj_val = interp(v_ego, [16.6, 30.5], [0.05, 0.005])
+            prob_adj_val = interp(v_ego, [16.6, 30.5], [0.05, self.lane_change_keep_time_right])
             self.lane_change_ll_prob = min(self.lane_change_ll_prob + prob_adj_val, 1.0)
         else:
           self.lane_change_ll_prob = min(self.lane_change_ll_prob + DT_MDL, 1.0)
