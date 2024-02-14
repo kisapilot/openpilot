@@ -107,8 +107,9 @@ function launch {
 
   # KisaPilot Model check
   Model_Size=$(stat --printf=%s /data/openpilot/selfdrive/modeld/models/supercombo.onnx)
-  Model_Modified=$(stat --printf=%Y /data/openpilot/selfdrive/modeld/models/supercombo.onnx)
-  if [ "$Model_Size" == "48219112" ] && [ $Model_Modified -ge 1707205173 ]; then echo -en "Certified_Herbalist" > /data/params/d/DrivingModel;
+  # Model_Modified=$(stat --printf=%Y /data/openpilot/selfdrive/modeld/models/supercombo.onnx)
+  # if [ "$Model_Size" == "48193749" ] && [ $Model_Modified -ge 1707205173 ]; then echo -en "Certified_Herbalist" > /data/params/d/DrivingModel;
+  if [ "$Model_Size" == "48193749" ]; then echo -en "Certified_Herbalist" > /data/params/d/DrivingModel;
   elif [ "$Model_Size" == "48219112" ]; then echo -en "Los_Angeles" > /data/params/d/DrivingModel;
   elif [ "$Model_Size" == "48457850" ]; then echo -en "New_Delhi" > /data/params/d/DrivingModel;
   elif [ "$Model_Size" == "48457192" ]; then echo -en "Blue_Diamond" > /data/params/d/DrivingModel;
