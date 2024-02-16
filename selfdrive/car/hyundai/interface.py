@@ -16,23 +16,11 @@ from openpilot.common.params import Params
 from decimal import Decimal
 
 Ecu = car.CarParams.Ecu
-SafetyModel = car.CarParams.SafetyModel
 ButtonType = car.CarState.ButtonEvent.Type
 EventName = car.CarEvent.EventName
 ENABLE_BUTTONS = (Buttons.RES_ACCEL, Buttons.SET_DECEL, Buttons.CANCEL)
 BUTTONS_DICT = {Buttons.RES_ACCEL: ButtonType.accelCruise, Buttons.SET_DECEL: ButtonType.decelCruise,
                 Buttons.GAP_DIST: ButtonType.gapAdjustCruise, Buttons.CANCEL: ButtonType.cancel}
-
-
-def set_safety_config_hyundai(candidate, CAN, can_fd=False):
-  platform = SafetyModel.hyundaiCanfd if can_fd else \
-             SafetyModel.hyundaiLegacy if candidate in LEGACY_SAFETY_MODE_CAR else \
-             SafetyModel.hyundai
-  cfgs = [get_safety_config(platform), ]
-  if CAN.ECAN >= 4:
-    cfgs.insert(0, get_safety_config(SafetyModel.noOutput))
-
-  return cfgs
 
 
 class CarInterface(CarInterfaceBase):
@@ -58,6 +46,7 @@ class CarInterface(CarInterfaceBase):
 
       # detect HDA2 with ADAS Driving ECU
       if hda2:
+        ret.flags |= HyundaiFlags.CANFD_HDA2.value
         if 0x110 in fingerprint[CAN.CAM]:
           ret.flags |= HyundaiFlags.CANFD_HDA2_ALT_STEERING.value
       else:
@@ -376,13 +365,13 @@ class CarInterface(CarInterfaceBase):
     if candidate in CANFD_CAR:
       ret.longitudinalTuning.kpV = [0.1]
       ret.longitudinalTuning.kiV = [0.0]
-      ret.experimentalLongitudinalAvailable = (candidate in (HYBRID_CAR | EV_CAR) and candidate not in
-                                               (CANFD_UNSUPPORTED_LONGITUDINAL_CAR | CANFD_RADAR_SCC_CAR))
+      ret.experimentalLongitudinalAvailable = candidate not in (CANFD_UNSUPPORTED_LONGITUDINAL_CAR | CANFD_RADAR_SCC_CAR)
     else:
       ret.longitudinalTuning.kpV = [0.5]
       ret.longitudinalTuning.kiV = [0.0]
       ret.experimentalLongitudinalAvailable = True #candidate not in (LEGACY_SAFETY_MODE_CAR | CAMERA_SCC_CAR)
-
+    ret.openpilotLongitudinalControl = experimental_long and ret.experimentalLongitudinalAvailable #experimental_long is LongControl toggle, not Experiment Mode
+    ret.pcmCruise = not ret.openpilotLongitudinalControl
 
     ret.stoppingControl = True
     ret.startingState = True
@@ -391,7 +380,6 @@ class CarInterface(CarInterfaceBase):
     ret.longitudinalActuatorDelayLowerBound = 0.5
     ret.longitudinalActuatorDelayUpperBound = 0.5
 
-    ret.openpilotLongitudinalControl = experimental_long and ret.experimentalLongitudinalAvailable #experimental_long is LongControl toggle, not Experiment Mode
 
     # *** feature detection ***
     if candidate in CANFD_CAR:
@@ -425,21 +413,21 @@ class CarInterface(CarInterfaceBase):
       ret.navAvailable = 1348 in fingerprint[0]
 
     # *** panda safety config ***
-    ret.safetyConfigs = set_safety_config_hyundai(candidate, CAN, can_fd=(candidate in CANFD_CAR))
-
-    if hda2:
-      ret.flags |= HyundaiFlags.CANFD_HDA2.value
-      ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_CANFD_HDA2
-
     if candidate in CANFD_CAR:
-      if hda2 and ret.flags & HyundaiFlags.CANFD_HDA2_ALT_STEERING:
-        ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_CANFD_HDA2_ALT_STEERING
+      cfgs = [get_safety_config(car.CarParams.SafetyModel.hyundaiCanfd), ]
+      if CAN.ECAN >= 4:
+        cfgs.insert(0, get_safety_config(car.CarParams.SafetyModel.noOutput))
+      ret.safetyConfigs = cfgs
+
+      if ret.flags & HyundaiFlags.CANFD_HDA2:
+        ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_CANFD_HDA2
+        if ret.flags & HyundaiFlags.CANFD_HDA2_ALT_STEERING:
+          ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_CANFD_HDA2_ALT_STEERING
       if ret.flags & HyundaiFlags.CANFD_ALT_BUTTONS:
         ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_CANFD_ALT_BUTTONS
-
-    if ret.flags & HyundaiFlags.CANFD_CAMERA_SCC or candidate in CAMERA_SCC_CAR:
-      ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_CAMERA_SCC
-    elif candidate not in CANFD_CAR:
+      if ret.flags & HyundaiFlags.CANFD_CAMERA_SCC:
+        ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_CAMERA_SCC
+    else:
       if Params().get_bool("ExperimentalLongitudinalEnabled"):
         if candidate in LEGACY_SAFETY_MODE_CAR:
           # these cars require a special panda safety mode due to missing counters and checksums in the messages

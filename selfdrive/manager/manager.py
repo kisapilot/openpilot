@@ -335,7 +335,7 @@ def manager_thread() -> None:
     ignore.append("pandad")
   ignore += [x for x in os.getenv("BLOCK", "").split(",") if len(x) > 0]
 
-  sm = messaging.SubMaster(['deviceState', 'carParams'], poll=['deviceState'])
+  sm = messaging.SubMaster(['deviceState', 'carParams'], poll='deviceState')
   pm = messaging.PubMaster(['managerState'])
 
   write_onroad_params(False, params)
@@ -344,7 +344,7 @@ def manager_thread() -> None:
   started_prev = False
 
   while True:
-    sm.update()
+    sm.update(1000)
 
     started = sm['deviceState'].started
 

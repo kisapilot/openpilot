@@ -410,8 +410,8 @@ class CarState(CarStateBase):
     ret.cruiseState.cruiseSwState = self.cruise_buttons[-1]
     ret.cruiseState.modeSel = self.cruise_set_mode
 
-    if self.CP.carFingerprint in (HYBRID_CAR | EV_CAR):
-      if self.CP.carFingerprint in HYBRID_CAR:
+    if self.CP.flags & (HyundaiFlags.HYBRID | HyundaiFlags.EV):
+      if self.CP.flags & HyundaiFlags.HYBRID:
         ret.gas = cp.vl["E_EMS11"]["CR_Vcu_AccPedDep_Pos"] / 254.
         ret.engineRpm = cp.vl["E_EMS11"]["N"] # kisa
         ret.chargeMeter = 0
