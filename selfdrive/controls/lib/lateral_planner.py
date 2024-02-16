@@ -169,7 +169,7 @@ class LateralPlanner:
       self.timer3 += DT_MDL
       if self.timer3 > 1.0:
         self.timer3 = 0.0
-        if right_nearside_prob < 0.1 and left_nearside_prob < 0.1:
+        if right_nearside_prob < 0.2 and left_nearside_prob < 0.2:
           if self.road_edge_offset != 0.0:
             if self.road_edge_offset > 0.0:
               self.road_edge_offset -= max(0.01, round((self.road_edge_offset/5), 2))
@@ -179,7 +179,7 @@ class LateralPlanner:
               self.road_edge_offset += max(0.01, round((self.road_edge_offset/5), 2))
               if self.road_edge_offset > 0.0:
                 self.road_edge_offset = 0.0
-        elif right_edge_prob > 0.3 and right_nearside_prob < 0.2 and right_close_prob > 0.5 and left_nearside_prob >= right_nearside_prob:
+        elif right_edge_prob > 0.3 and right_nearside_prob < 0.3 and right_close_prob > 0.5 and left_nearside_prob >= right_nearside_prob:
           if self.right_edge_offset != 0.0 and self.road_edge_offset != self.right_edge_offset:
             if self.road_edge_offset < self.right_edge_offset:
               self.road_edge_offset += max(0.01, round((self.right_edge_offset/5), 2))
@@ -189,7 +189,7 @@ class LateralPlanner:
               self.road_edge_offset -= max(0.01, round((self.right_edge_offset/5), 2))
               if self.road_edge_offset < self.right_edge_offset:
                 self.road_edge_offset = self.right_edge_offset
-        elif left_edge_prob > 0.3 and left_nearside_prob < 0.2 and left_close_prob > 0.5 and right_nearside_prob >= left_nearside_prob:
+        elif left_edge_prob > 0.3 and left_nearside_prob < 0.3 and left_close_prob > 0.5 and right_nearside_prob >= left_nearside_prob:
           if self.left_edge_offset != 0.0 and self.road_edge_offset != self.left_edge_offset:
             if self.road_edge_offset < self.left_edge_offset:
               self.road_edge_offset += max(0.01, round((self.left_edge_offset/5), 2))
