@@ -242,8 +242,8 @@ def manager_init() -> None:
     ("DrivingModel", "DrivingModel"),
     ("GitCommitRemote", "0000000000000000000000000000000000000000"),
     ("GitCommitRemoteDate", "00-00"),
-    ("LCTimingKeepFactorLeft", "25"),
-    ("LCTimingKeepFactorRight", "25"),
+    ("LCTimingKeepFactorLeft", "10"),
+    ("LCTimingKeepFactorRight", "10"),
     ("LCTimingKeepFactorEnable", "1"),
   ]
   if not PC:
