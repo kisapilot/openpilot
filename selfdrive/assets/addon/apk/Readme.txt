@@ -7,7 +7,7 @@
    In most cases, the Dev ip is not changed.
 7. If Wifi is working, Run kisa connect and Navi application. Tip. use Tasker App and make automated task.
 8. Your OP device will check the connection every 60s.
-9. Once connected, OP device stop checking the connection and receive the Navi data.
+9. Once connected, OP device stop checking the connection and receive the Navi data. If you see a green circle at the top right, it's connected.
 10. Battery Optimization of Android should be off for kisa connect App to run as background. Don't use back button to exit.
 11. Be safe and Enjoy your driving~
 
@@ -20,6 +20,6 @@
    할당 IP가 계속 변동된다면 범위로도 입력 가능합니다. 범위로 입력시 192.168.0.1-254 (끝자리 숫자가 변동시) 혹은 192.168.1-254.100 (중간 숫자가 변동시)
 7. 와이파이가 정상적으로 작동되면 기사커넥트앱과 네비어플을 실행합니다.
 8. C3는 60초마다 안드로이드 기사커넥트앱과 통신을 시도합니다.
-9. C3와 안드로이드 연결되면 네비어플 로그를 읽어서 기사커넥트앱에 데이터가 표시됩니다.
+9. C3와 안드로이드 연결되면 네비어플 로그를 읽어서 기사커넥트앱에 데이터가 표시됩니다. 우측 상단 동그라미가 초록색으로 표시되면 정상적으로 연결된 것입니다.
 10. 기사커넥트앱은 배터리최적화 예외가 되어야 하며, 뒤로가기로 종료하지 않으면 백그라운드에서 실행됩니다.
 11. 항상 안전운전하시고 펀드라이빙 하시길 바랍니다.
