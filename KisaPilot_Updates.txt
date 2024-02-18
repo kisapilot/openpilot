@@ -1,3 +1,5 @@
+2024-02-18
+- Mappy and Waze added. See Readme.txt before use.
 2024-02-06
 - SteerActuatorDelay(0.35->0.15) Must confirm your tune value
 - Certified Herbalist model
