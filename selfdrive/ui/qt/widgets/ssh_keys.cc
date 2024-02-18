@@ -4,10 +4,9 @@
 #include "selfdrive/ui/qt/api.h"
 #include "selfdrive/ui/qt/widgets/input.h"
 
-SshControl::SshControl() : ButtonControl(tr("SSH Keys"), "", tr("Warning: This grants SSH access to all public keys in your GitHub settings. Never enter a GitHub username other than your own. A comma employee will NEVER ask you to add their GitHub username.")) {
-  username_label.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-  username_label.setStyleSheet("color: #aaaaaa");
-  hlayout->addWidget(&username_label);
+SshControl::SshControl() :
+  ButtonControl(tr("SSH Keys"), "", tr("Warning: This grants SSH access to all public keys in your GitHub settings. Never enter a GitHub username "
+                                       "other than your own. A comma employee will NEVER ask you to add their GitHub username.")) {
 
   QObject::connect(this, &ButtonControl::clicked, [=]() {
     if (text() == tr("ADD")) {
@@ -30,17 +29,11 @@ SshControl::SshControl() : ButtonControl(tr("SSH Keys"), "", tr("Warning: This g
 
 void SshControl::refresh() {
   QString param = QString::fromStdString(params.get("GithubSshKeys"));
-  QString isUsername = QString::fromStdString(params.get("GithubUsername"));
-  bool legacy_stat = params.getBool("KisaSSHLegacy");
   if (param.length()) {
-    if (isUsername.length()) {
-      username_label.setText(QString::fromStdString(params.get("GithubUsername")));
-    } else if (legacy_stat) {
-      username_label.setText(tr("Legacy Key"));
-    }
+    setValue(QString::fromStdString(params.get("GithubUsername")));
     setText(tr("REMOVE"));
   } else {
-    username_label.setText("");
+    setValue("");
     setText(tr("ADD"));
   }
   setEnabled(true);
