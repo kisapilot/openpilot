@@ -1,6 +1,10 @@
 1. Prepare a device with Android version equal or upper than 6.0(marshmallow)
-2. Root the device
+2. For rooted device, use com.kisapilot.connect(root).apk. Non-rooted device is com.kisapilot.connect(no_root).apk
 3. Install kisa connect and Navi application on the device.
+  3-1. Non-root device requires some prior procedures.
+  3-2. Enable Android Debugging in Android developer mode.
+  3-3. Connect pc to android device using usb cable. Check a popup message and check a box on your phone at connected.
+  3-4. Download adb and run a command "adb shell pm grant com.kisapilot.connect android.permission.READ_LOGS" on command window.
 4. Connect to same Wifi Network the Device and Openpilot Device.
 5. Input Your Nav dev IP in UI Menu of Openpilot Settings.
 6. Seperate with comma if your Dev IP changed few times when connected.(ex. 192.168.1-254.2,192.168.10.10)
@@ -12,8 +16,12 @@
 11. Be safe and Enjoy your driving~
 
 1. 안드로이드 6.0이상 여분의 디바이스를 준비하세요. 네비어플이 원할하게 깔리는 기기가 좋습니다.
-2. 해당 장치를 루팅하세요. 루팅이유는 장치에서 발생하는 로그를 쉐어링 하기 위함입니다.
+2. 루팅된 장치라면, com.kisapilot.connect(root).apk를 사용하고 비루팅 기기는 com.kisapilot.connect(no_root).apk를 사용하세요.
 3. 기사커넥트앱과 네비어플(수정된 어플)을 설치하세요.
+  3-1. 비루팅 기기는 몇가지 작업이 필요합니다.
+  3-2. 안드로이드 개발자 모드에서 안드로이드 디버깅을 활성화하세요.
+  3-3. PC와 안드로이드 기기를 USB로 연결하세요. 연결시 안드로이드에서 팝업이 표시되면 체크하세요.
+  3-4. adb를 다운받고 커맨드창에서 "adb shell pm grant com.kisapilot.connect android.permission.READ_LOGS" 를 실행하세요.
 4. C3와 안드로이드 단말기가 같은 네트워크에 있어야 합니다. LTE라우터나 안드로이드 핫스팟을 이용하세요.
 5. C3 UI메뉴에서 네비어플 종류를 선택하고 안드로이드 장치 IP를 입력하세요.
 6. IP입력시 ,(콤마)로 구분하여 입력하고 공백은 넣지마세요. 입력예시는 고정의경우, 예를들면 IP 2개 입력시 192.168.0.101,192.168.0.102 이런식으로 입력하고,
