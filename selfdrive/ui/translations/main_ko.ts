@@ -2830,20 +2830,20 @@ This may take up to a minute.</source>
         <translation>네비게이션 선택</translation>
     </message>
     <message>
-        <source>Select the navigation you want to use.(None/Mappy/iNavi/Waze/TMapE/WazeE)</source>
-        <translation>사용할 네비게이션을 선택합니다.(없음/맵피/아이나비/웨이즈/외부티맵/외부웨이즈), 외부 티맵이나 외부 웨이즈의 경우 KISA Connect 어플과 함께 별도 단말기로 실행해야 합니다.</translation>
+        <source>Select the navigation you want to use.(None/TMap/Mappy/Waze) Refer to Readme.txt in the directory.</source>
+        <translation>사용할 네비게이션을 선택합니다.(없음/티맵/맵피/웨이즈), KISA Connect 어플과 함께 별도 단말기로 실행해야 합니다. 폴더 내 Readme.txt 파일 참조</translation>
     </message>
     <message>
         <source>None</source>
         <translation>없음</translation>
     </message>
     <message>
-        <source>TMapE</source>
-        <translation>E티맵</translation>
+        <source>TMap/Mappy</source>
+        <translation>티맵/맵피</translation>
     </message>
     <message>
-        <source>WazeE</source>
-        <translation>E웨이즈</translation>
+        <source>Waze</source>
+        <translation>웨이즈</translation>
     </message>
 </context>
 <context>

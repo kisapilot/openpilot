@@ -119,6 +119,15 @@ class ENavi:
       self.waze_lat_prev = 0
       self.waze_lon_prev = 0
 
+  def int_to_degree(self, int_value):
+    int_value = (int_value/ 100) / 3600
+    degree = int_value
+    int_value = 60 * (int_value - degree)
+    minute = int_value
+    int_value = 60 * (int_value - minute)
+    second = int_value
+    return(float(degree) + float(minute)/60 + float(second)/(60*60))
+
   def update(self):
     self.count += 1
     if not self.ip_bind:
@@ -237,9 +246,13 @@ class ENavi:
           if "kisadestlat" in line:
             arr = line.split('kisadestlat: ')
             self.kisa_lat = arr[1]
+            if int(self.kisa_lat) > 180:
+              self.kisa_lat = self.int_to_degree(int(arr[1]))
           if "kisadestlon" in line:
             arr = line.split('kisadestlon: ')
             self.kisa_lon = arr[1]
+            if int(self.kisa_lon) > 360:
+              self.kisa_lon = self.int_to_degree(int(arr[1]))
 
           if self.kisa_lat and self.kisa_lon and self.kisa_lat != self.kisa_lat_prev and self.kisa_lon != self.kisa_lon_prev:
             self.dest_changed = True
