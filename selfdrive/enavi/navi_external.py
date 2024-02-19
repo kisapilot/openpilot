@@ -246,12 +246,12 @@ class ENavi:
           if "kisadestlat" in line:
             arr = line.split('kisadestlat: ')
             self.kisa_lat = arr[1]
-            if int(self.kisa_lat) > 180:
+            if int(float(self.kisa_lat)) > 180:
               self.kisa_lat = self.int_to_degree(int(arr[1]))
           if "kisadestlon" in line:
             arr = line.split('kisadestlon: ')
             self.kisa_lon = arr[1]
-            if int(self.kisa_lon) > 360:
+            if int(float(self.kisa_lon)) > 360:
               self.kisa_lon = self.int_to_degree(int(arr[1]))
 
           if self.kisa_lat and self.kisa_lon and self.kisa_lat != self.kisa_lat_prev and self.kisa_lon != self.kisa_lon_prev:
