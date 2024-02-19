@@ -131,6 +131,12 @@ AdvancedNetworking::AdvancedNetworking(QWidget* parent, WifiManager* wifi): QWid
   list->addItem(tetheringToggle);
   QObject::connect(tetheringToggle, &ToggleControl::toggleFlipped, this, &AdvancedNetworking::toggleTethering);
 
+  // hotspot code from FrogPilot for D.Fyffe
+  if (params.getBool("KisaHotspotOnBoot")) {
+    tetheringToggle->refresh();
+    uiState()->scene.hotspot_autorun = true;
+  }
+
   // Change tethering password
   ButtonControl *editPasswordButton = new ButtonControl(tr("Tethering Password"), tr("EDIT"));
   connect(editPasswordButton, &ButtonControl::clicked, [=]() {
@@ -225,6 +231,8 @@ void AdvancedNetworking::refresh() {
 void AdvancedNetworking::toggleTethering(bool enabled) {
   wifi->setTetheringEnabled(enabled);
   tetheringToggle->setEnabled(false);
+  params.putBool("KisaHotspotOnBoot", enabled);
+  uiState()->scene.hotspot_autorun = enabled;
 }
 
 // WifiUI functions

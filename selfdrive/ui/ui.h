@@ -16,6 +16,7 @@
 #include "common/params.h"
 #include "common/timing.h"
 #include "system/hardware/hw.h"
+#include "selfdrive/ui/qt/network/wifi_manager.h"
 
 const int UI_BORDER_SIZE = 15;
 const int UI_HEADER_HEIGHT = 420;
@@ -268,6 +269,8 @@ typedef struct UIScene {
   int satelliteCount;
   float gpsAccuracy;
 
+  bool hotspot_autorun;
+
   QString model_name;
 
   cereal::DeviceState::Reader deviceState;
@@ -417,6 +420,8 @@ public:
   bool is_OpenpilotViewEnabled = false;
 
   QTransform car_space_transform;
+
+  WifiManager *wifi = nullptr;
 
 signals:
   void uiUpdate(const UIState &s);
