@@ -454,7 +454,13 @@ void UIState::updateStatus() {
     started_prev = scene.started;
     scene.world_objects_visible = false;
     emit offroadTransition(!scene.started);
-    wifi->setTetheringEnabled(scene.started && scene.hotspot_autorun);
+  }
+
+  if(scene.hotspot_on_boot) {
+    if(scene.ipAddress.length() > 1 && !scene.hotspot_trigger) {
+      scene.hotspot_trigger = true;
+      emit hotspotSignal();
+    }
   }
 
   // this is useful to save compiling time before depart when you use remote ignition
@@ -522,6 +528,7 @@ void UIState::updateStatus() {
     scene.ufc_mode = params.getBool("UFCModeEnabled");
     scene.op_long_enabled = params.getBool("ExperimentalLongitudinalEnabled");
     scene.model_name = QString::fromStdString(params.get("DrivingModel"));
+    scene.hotspot_on_boot = params.getBool("KisaHotspotOnBoot");
 
     if (scene.autoScreenOff > 0) {
       scene.nTime = scene.autoScreenOff * 60 * UI_FREQ;
@@ -561,7 +568,6 @@ UIState::UIState(QObject *parent) : QObject(parent) {
   QObject::connect(timer, &QTimer::timeout, this, &UIState::update);
   timer->start(1000 / UI_FREQ);
 
-  wifi = new WifiManager(this);
 }
 
 void UIState::update() {

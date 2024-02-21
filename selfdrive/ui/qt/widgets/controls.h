@@ -166,10 +166,6 @@ public:
     toggle.update();
   }
 
-  void refresh() {
-    toggle.togglePosition();
-  }
-
 signals:
   void toggleFlipped(bool state);
 

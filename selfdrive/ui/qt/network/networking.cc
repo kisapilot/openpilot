@@ -22,6 +22,7 @@ Networking::Networking(QWidget* parent, bool show_advanced) : QFrame(parent) {
   wifi = new WifiManager(this);
   connect(wifi, &WifiManager::refreshSignal, this, &Networking::refresh);
   connect(wifi, &WifiManager::wrongPassword, this, &Networking::wrongPassword);
+  connect(uiState(), &UIState::hotspotSignal, this, &Networking::hotspoton);
 
   wifiScreen = new QWidget(this);
   QVBoxLayout* vlayout = new QVBoxLayout(wifiScreen);
@@ -78,6 +79,12 @@ void Networking::refresh() {
   an->refresh();
 }
 
+void Networking::hotspoton() {
+  wifiWidget->refresh();
+  an->toggleTethering(true);
+  an->refresh();
+}
+
 void Networking::connectToNetwork(const Network n) {
   if (wifi->isKnownConnection(n.ssid)) {
     wifi->activateWifiConnection(n.ssid);
@@ -126,16 +133,20 @@ AdvancedNetworking::AdvancedNetworking(QWidget* parent, WifiManager* wifi): QWid
   main_layout->addWidget(back, 0, Qt::AlignLeft);
 
   ListWidget *list = new ListWidget(this);
+
   // Enable tethering layout
-  tetheringToggle = new ToggleControl(tr("Enable Tethering"), "", "", wifi->isTetheringEnabled());
+  const bool hotspotEnabled = params.getBool("KisaHotspotOnBoot");
+  tetheringToggle = new ToggleControl(tr("Enable Tethering"), "", "", wifi->isTetheringEnabled() || hotspotEnabled);
   list->addItem(tetheringToggle);
   QObject::connect(tetheringToggle, &ToggleControl::toggleFlipped, this, &AdvancedNetworking::toggleTethering);
 
-  // hotspot code from FrogPilot for D.Fyffe
-  if (params.getBool("KisaHotspotOnBoot")) {
-    tetheringToggle->refresh();
-    uiState()->scene.hotspot_autorun = true;
-  }
+  // Hotspot Autorun toggle
+  hotspotToggle = new ToggleControl(tr("Hotspot Autorun"), "", "", hotspotEnabled);
+  QObject::connect(hotspotToggle, &ToggleControl::toggleFlipped, [=](bool state) {
+    params.putBool("KisaHotspotOnBoot", state);
+    if (state) toggleTethering(state);
+  });
+  list->addItem(hotspotToggle);
 
   // Change tethering password
   ButtonControl *editPasswordButton = new ButtonControl(tr("Tethering Password"), tr("EDIT"));
@@ -231,8 +242,6 @@ void AdvancedNetworking::refresh() {
 void AdvancedNetworking::toggleTethering(bool enabled) {
   wifi->setTetheringEnabled(enabled);
   tetheringToggle->setEnabled(false);
-  params.putBool("KisaHotspotOnBoot", enabled);
-  uiState()->scene.hotspot_autorun = enabled;
 }
 
 // WifiUI functions

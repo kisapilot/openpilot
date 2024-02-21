@@ -64,6 +64,7 @@ private:
   ButtonControl* editApnButton;
   ButtonControl* hiddenNetworkButton;
   ToggleControl* meteredToggle;
+  ToggleControl* hotspotToggle;
   WifiManager* wifi = nullptr;
   Params params;
 
@@ -94,6 +95,7 @@ private:
 
 public slots:
   void refresh();
+  void hotspoton();
 
 private slots:
   void connectToNetwork(const Network n);

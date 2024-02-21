@@ -27,6 +27,10 @@
         <translation>테더링 사용</translation>
     </message>
     <message>
+        <source>Hotspot Autorun</source>
+        <translation>핫스팟 자동실행</translation>
+    </message>
+    <message>
         <source>Tethering Password</source>
         <translation>테더링 비밀번호</translation>
     </message>
