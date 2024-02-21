@@ -5640,7 +5640,7 @@ void LCTimingFactorUD::refresh2() {
     font-weight: 500;
     color: #E4E4E4;
     background-color: #393939;
-  )");
+    )");
   }
 }
 
@@ -8462,6 +8462,14 @@ void VariableCruiseLevel::refresh() {
 }
 
 ExternalDeviceIP::ExternalDeviceIP() : AbstractControl(tr("ExternalDevIP"), tr("Set Your External Device IP to get useful data. ex. a ip:192.168.0.1 / two or more: 192.168.0.1,192.168.0.2 put comma btw IPs / range:192.168.0.1-10  192.168.0-10.254 use dash(-)"), "") {
+  btna.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
   btn.setStyleSheet(R"(
     padding: 0;
     border-radius: 50px;
@@ -8477,14 +8485,20 @@ ExternalDeviceIP::ExternalDeviceIP() : AbstractControl(tr("ExternalDevIP"), tr("
     height: 120px;
   )");
 
-  edit.setFixedSize(1000, 100);
+  edit.setFixedSize(720, 100);
   btn.setFixedSize(150, 100);
-  btn.setText(tr("SET"));
+  btna.setFixedSize(250, 100);
   edit.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 
+  hlayout->addWidget(&btna);
   hlayout->addWidget(&edit);
   hlayout->addWidget(&btn);
 
+  QObject::connect(&btna, &QPushButton::clicked, [=]() {
+    bool stat = params.getBool("ExternalDeviceIPAuto");
+    params.putBool("ExternalDeviceIPAuto", !stat);
+    refresh();
+  });
 
   QObject::connect(&btn, &QPushButton::clicked, [=]() {
     QString eip_address = InputDialog::getText(tr("Input Your External Dev IP"), this, tr("See description for more detail how to set up."), false, 1, QString::fromStdString(params.get("ExternalDeviceIP")));
@@ -8497,8 +8511,37 @@ ExternalDeviceIP::ExternalDeviceIP() : AbstractControl(tr("ExternalDevIP"), tr("
 }
 
 void ExternalDeviceIP::refresh() {
-  auto strs = QString::fromStdString(params.get("ExternalDeviceIP"));
-  edit.setText(QString::fromStdString(strs.toStdString()));
+  bool param = params.getBool("ExternalDeviceIPAuto");
+  if (param) {
+    btna.setText(tr("AutoDetect"));
+    btna.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #00A12E;
+    )");
+    edit.setText("");
+    btn.setText("");
+    btn.setEnabled(false);
+    edit.setEnabled(false);
+  } else {
+    auto strs = QString::fromStdString(params.get("ExternalDeviceIP"));
+    edit.setText(QString::fromStdString(strs.toStdString()));
+    btn.setText(tr("SET"));
+    btna.setText(tr("ManualInput"));
+    btna.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+    )");
+    btn.setEnabled(true);
+    edit.setEnabled(true);
+  }
 }
 
 DoNotDisturbMode::DoNotDisturbMode() : AbstractControl(tr("DoNotDisturb Mode"), tr("Off Event notification, Screen and Sound of Device. You can enable this touching Left-Top Box like a button on onroad screen."), "../assets/offroad/icon_shell.png") {

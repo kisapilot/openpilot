@@ -4071,6 +4071,14 @@ This may take up to a minute.</source>
         <source>See description for more detail how to set up.</source>
         <translation>IP입력 방법은 메뉴의 설명을 참고하세요.</translation>
     </message>
+    <message>
+        <source>AutoDetect</source>
+        <translation>자동감지</translation>
+    </message>
+    <message>
+        <source>ManualInput</source>
+        <translation>수동입력</translation>
+    </message>
 </context>
 <context>
     <name>DoNotDisturbMode</name>

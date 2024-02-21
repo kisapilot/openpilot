@@ -47,6 +47,8 @@ class ENavi:
     self.dest = {"latitude": 0.0, "longitude": 0.0,}
     self.waypoints = [(0.0, 0.0),]
 
+    self.Auto_IP = self.params.get_bool("ExternalDeviceIPAuto")
+
     self.KISA_Debug = self.params.get_bool("KISADebug")
     if self.KISA_Debug:
       self.kisa_0 = ""
@@ -73,25 +75,45 @@ class ENavi:
 
     self.ip_count = 0
 
-    try:
-      self.ip_count = int(len(self.params.get("ExternalDeviceIP", encoding="utf8").split(',')))
-      if self.ip_count > 0:
-        ip_list = self.params.get("ExternalDeviceIP", encoding="utf8").split(',')
-        for input_list in ip_list:
-          if '-' in input_list:
-            t_out = input_list.split('-')
-            left1 = t_out[0].split('.')
-            leftp = left1[-1]
-            right1 = t_out[-1].split('.')
-            rightp = right1[0]
-            for x in range(int(leftp), int(rightp)+1):
-              self.ip_list_out.append(input_list.replace(leftp+"-"+rightp, str(x)))
+    if self.Auto_IP:
+      try:
+        out = subprocess.check_output("ip route", shell=True)
+        ip_via = str(out.strip().decode()).split('via ')[1].split(' ')[0]
+        ip_src = str(out.strip().decode()).split('src ')[1].split(' ')[0]
+        compare1 = ip_src.split('.')
+        c_num = 0
+        for compare2 in ip_via.split('.'):
+          if compare2 != compare1[c_num]:
+            break
           else:
-            self.ip_list_out.append(input_list)
+            c_num += 1
+        compare1[c_num] = '*'
+        ip_s = '.'.join(compare1)
+        for x in range(2, 255):
+          self.ip_list_out.append(ip_s.replace('*', str(x)))
         random.shuffle(self.ip_list_out)
-    except:
-      self.ip_count = 0
-      pass
+      except:
+        pass
+    else:
+      try:
+        self.ip_count = int(len(self.params.get("ExternalDeviceIP", encoding="utf8").split(',')))
+        if self.ip_count > 0:
+          ip_list = self.params.get("ExternalDeviceIP", encoding="utf8").split(',')
+          for input_list in ip_list:
+            if '-' in input_list:
+              t_out = input_list.split('-')
+              left1 = t_out[0].split('.')
+              leftp = left1[-1]
+              right1 = t_out[-1].split('.')
+              rightp = right1[0]
+              for x in range(int(leftp), int(rightp)+1):
+                self.ip_list_out.append(input_list.replace(leftp+"-"+rightp, str(x)))
+            else:
+              self.ip_list_out.append(input_list)
+          random.shuffle(self.ip_list_out)
+      except:
+        self.ip_count = 0
+        pass
     self.is_metric = self.params.get_bool("IsMetric")
     self.navi_selection = int(self.params.get("KISANaviSelect", encoding="utf8"))
 

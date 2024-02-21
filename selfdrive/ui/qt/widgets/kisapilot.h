@@ -2775,6 +2775,7 @@ public:
 
 private:
   QPushButton btn;
+  QPushButton btna;
   QLineEdit edit;
   Params params;
   

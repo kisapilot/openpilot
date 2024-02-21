@@ -226,6 +226,7 @@ def manager_init() -> None:
     ("CruiseSetwithRoadLimitSpeedOffset", "0"),
     ("KisaLiveTorque", "1"),
     ("ExternalDeviceIP", ""),
+    ("ExternalDeviceIPAuto", "1"),
     ("ExternalDeviceIPNow", ""),
     ("SetSpeedFive", "0"),
     ("KISALongAlt", "0"),

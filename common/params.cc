@@ -400,6 +400,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"KISASpeedBump", PERSISTENT},
     {"KISAEarlyStop", PERSISTENT},
     {"ExternalDeviceIP", PERSISTENT},
+    {"ExternalDeviceIPAuto", PERSISTENT},
     {"ExternalDeviceIPNow", CLEAR_ON_MANAGER_START},
     {"DoNotDisturbMode", PERSISTENT},
     {"DepartChimeAtResume", PERSISTENT},
