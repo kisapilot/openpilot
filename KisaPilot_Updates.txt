@@ -1,3 +1,8 @@
+2024-02-23
+- IP auto detection for external Navigation
+- Hotspot Autorun
+- Kisa connect App for non-Rooted device
+- Add a param of lane change time for legacy lateral plan
 2024-02-18
 - Mappy and Waze added. See Readme.txt before use.
 2024-02-06
