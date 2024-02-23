@@ -75,26 +75,7 @@ class ENavi:
 
     self.ip_count = 0
 
-    if self.Auto_IP:
-      try:
-        out = subprocess.check_output("ip route", shell=True)
-        ip_via = str(out.strip().decode()).split('via ')[1].split(' ')[0]
-        ip_src = str(out.strip().decode()).split('src ')[1].split(' ')[0]
-        compare1 = ip_src.split('.')
-        c_num = 0
-        for compare2 in ip_via.split('.'):
-          if compare2 != compare1[c_num]:
-            break
-          else:
-            c_num += 1
-        compare1[c_num] = '*'
-        ip_s = '.'.join(compare1)
-        for x in range(2, 255):
-          self.ip_list_out.append(ip_s.replace('*', str(x)))
-        random.shuffle(self.ip_list_out)
-      except:
-        pass
-    else:
+    if not self.Auto_IP:
       try:
         self.ip_count = int(len(self.params.get("ExternalDeviceIP", encoding="utf8").split(',')))
         if self.ip_count > 0:
@@ -153,6 +134,26 @@ class ENavi:
   def update(self):
     self.count += 1
     if not self.ip_bind:
+      if self.Auto_IP and self.count == 30:
+        try:
+          out = subprocess.check_output("ip route", shell=True)
+          ip_via = str(out.strip().decode()).split('via ')[1].split(' ')[0]
+          ip_src = str(out.strip().decode()).split('src ')[1].split(' ')[0]
+          compare1 = ip_src.split('.')
+          c_num = 0
+          for compare2 in ip_via.split('.'):
+            if compare2 != compare1[c_num]:
+              break
+            else:
+              c_num += 1
+          compare1[c_num] = '*'
+          ip_s = '.'.join(compare1)
+          for x in range(1, 255):
+            self.ip_list_out.append(ip_s.replace('*', str(x)))
+          self.ip_list_out.remove(ip_src)
+          random.shuffle(self.ip_list_out)
+        except:
+          pass
       if (self.count % 60) == 0:
         self.count2 = self.count + 10
         self.result = []
