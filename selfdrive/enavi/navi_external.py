@@ -134,7 +134,7 @@ class ENavi:
   def update(self):
     self.count += 1
     if not self.ip_bind:
-      if self.Auto_IP and self.count in (30, 90, 150, 210, 270):
+      if self.Auto_IP and self.count in (30, 90, 150, 210, 270, 330, 390, 450, 510, 570):
         try:
           out = subprocess.check_output("ip route", shell=True)
           ip_via = str(out.strip().decode()).split('via ')[1].split(' ')[0]
@@ -158,7 +158,7 @@ class ENavi:
         self.count2 = self.count + 10
         self.result = []
         for address in self.ip_list_out:
-            p = subprocess.Popen(['ping', '-c', '1', '-W', '2', '-q', address])
+            p = subprocess.Popen(['ping', '-c', '1', '-W', '1', '-q', address])
             self.result.append(p)
       elif (self.count % self.count2) == 0:
         for ip, p in zip(self.ip_list_out, self.result):
@@ -173,6 +173,7 @@ class ENavi:
                   self.socket.connect("tcp://" + str(ip) + ":5555")
                   break
 
+    navi_msg = messaging.new_message('liveENaviData')
     if self.ip_bind:
       self.spd_limit = 0
       self.safety_distance = 0
@@ -211,15 +212,15 @@ class ENavi:
 
       self.socket.subscribe("")
       try:
-        self.check_connection_count -= 1 if self.check_connection_count > 0 else 0
         if self.check_connection_count > 5:
           self.message = ""
           self.check_connection = False
         else:
           self.check_connection = True
         self.message = str(self.socket.recv(flags=zmq.NOBLOCK), 'utf-8')
+        self.check_connection_count -= 1 if self.check_connection_count > 0 else 0
       except zmq.ZMQError:
-        self.check_connection_count = min(10, self.check_connection_count+1)
+        self.check_connection_count = min(8, self.check_connection_count+2)
         pass
       
       for line in self.message.split('\n'):
@@ -465,7 +466,6 @@ class ENavi:
           except:
             pass
 
-      navi_msg = messaging.new_message('liveENaviData')
       if self.navi_selection == 1:
         navi_msg.liveENaviData.speedLimit = int(self.spd_limit)
         navi_msg.liveENaviData.safetyDistance = float(self.safety_distance)
@@ -581,8 +581,9 @@ class ENavi:
         navi_msg.liveENaviData.kisa7 = str(self.kisa_7)
         navi_msg.liveENaviData.kisa8 = str(self.kisa_8)
         navi_msg.liveENaviData.kisa9 = str(self.kisa_9)
-
-      self.pm.send('liveENaviData', navi_msg)
+    else:
+      navi_msg.liveENaviData.connectionAlive = bool(self.check_connection)
+    self.pm.send('liveENaviData', navi_msg)
 
 
 def main():
