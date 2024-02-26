@@ -345,21 +345,28 @@ MapSettingsButton::MapSettingsButton(QWidget *parent) : QPushButton(parent) {
   setEnabled(false);
 }
 
+void MapSettingsButton::updateState(const UIState &s) {
+  if (s.scene.liveENaviData.ekisaconalive && !navi_is_alive) {
+    navi_is_alive = true;
+    update();
+  } else if (!s.scene.liveENaviData.ekisaconalive && navi_is_alive) {
+    navi_is_alive = false;
+    update();
+  }
+}
+
 void MapSettingsButton::paintEvent(QPaintEvent *event) {
   QPainter p(this);
 
   QPoint center(btn_size / 2, btn_size / 2);
+  QPixmap img = navi_is_alive ? settings_img_g : settings_img;
 
   p.setOpacity(1.0);
   p.setPen(Qt::NoPen);
   p.setBrush(QColor(0, 0, 0, 166));
   p.drawEllipse(center, btn_size / 2, btn_size / 2);
   p.setOpacity(isDown() ? 0.6 : 1.0);
-  if (uiState()->scene.liveENaviData.ekisaconalive) {
-    p.drawPixmap((btn_size - img_size) / 2, (btn_size - img_size) / 2, settings_img_g);
-  } else {
-    p.drawPixmap((btn_size - img_size) / 2, (btn_size - img_size) / 2, settings_img);
-  }
+  p.drawPixmap((btn_size - img_size) / 2, (btn_size - img_size) / 2, img);
 }
 
 
@@ -439,6 +446,9 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
 
   // update engageability/experimental mode button
   experimental_btn->updateState(s);
+
+  // enavi connection update
+  map_settings_btn->updateState(s);
 
   // update DM icon
   auto dm_state = sm["driverMonitoringState"].getDriverMonitoringState();
@@ -1157,7 +1167,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.setPen(Qt::NoPen);
     p.drawEllipse(m_x-15, m_y-15, m_btn_size+30, m_btn_size+30);
     if (s->scene.liveENaviData.ekisaconalive) {
-      p.setPen(QPen(QColor(0, 255, 0, 150), 6));
+      p.setPen(QPen(QColor(0, 255, 0, 180), 7));
     } else {
       p.setPen(QPen(QColor(255, 255, 255, 80), 6));
     }

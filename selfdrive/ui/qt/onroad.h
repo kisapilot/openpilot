@@ -69,12 +69,14 @@ class MapSettingsButton : public QPushButton {
 
 public:
   explicit MapSettingsButton(QWidget *parent = 0);
+  void updateState(const UIState &s);
 
 private:
   void paintEvent(QPaintEvent *event) override;
 
   QPixmap settings_img;
   QPixmap settings_img_g;
+  bool navi_is_alive = false;
 };
 
 // container window for the NVG UI
