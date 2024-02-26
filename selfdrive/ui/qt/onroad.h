@@ -74,6 +74,7 @@ private:
   void paintEvent(QPaintEvent *event) override;
 
   QPixmap settings_img;
+  QPixmap settings_img_g;
 };
 
 // container window for the NVG UI
