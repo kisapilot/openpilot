@@ -80,7 +80,7 @@ void update_line_data(const UIState *s, const cereal::XYZTData::Reader &line,
 }
 
 void update_bsm_data(const UIState *s, int lr, const cereal::XYZTData::Reader &line,
-                     float y_off, float z_off, QPolygonF *pvd, int max_idx ) {
+                     float y_off, float z_off, QPolygonF *pvd, int max_idx, bool allow_invert=true) {
 
   float y_off1, y_off2;
   if (lr == 0) {
@@ -144,7 +144,7 @@ void update_model(UIState *s,
 
   // update bsm alert
   for (int i = 0; i < std::size(scene.bsm_vertices); i++) {
-    update_bsm_data(s, i, lane_lines[i+1], 2.8, 0, &scene.bsm_vertices[i], max_idx);
+    update_bsm_data(s, i, lane_lines[i+1], 2.8, 0, &scene.bsm_vertices[i], max_idx, false);
   }
 
   // update path
