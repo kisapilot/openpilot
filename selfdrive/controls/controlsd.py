@@ -183,31 +183,10 @@ class CarD:
   def controls_update(self, CC: car.CarControl):
     """control update loop, driven by carControl"""
 
-    if self.stock_lkas_on_disengaged_status and self.CP.carName == "hyundai" and not self.exp_long_enabled:
-      if self.enabled:
-        self.hkg_stock_lkas = False
-        self.hkg_stock_lkas_timer = 0
-      elif not self.enabled and not self.hkg_stock_lkas:
-        self.hkg_stock_lkas_timer += 1
-        if self.hkg_stock_lkas_timer > 300:
-          self.hkg_stock_lkas = True
-          self.hkg_stock_lkas_timer = 0
-        elif CS.gearShifter != GearShifter.drive and self.hkg_stock_lkas_timer > 150:
-          self.hkg_stock_lkas = True
-          self.hkg_stock_lkas_timer = 0
-      if not self.hkg_stock_lkas:
-        # send car controls over can
-        now_nanos = self.can_log_mono_time if REPLAY else int(time.monotonic() * 1e9)
-        actuators_output, can_sends, self.safety_speed, self.lkas_temporary_off, self.gap_by_spd_on_temp, self.exp_mode_temp, self.btn_pressing = self.CI.apply(CC, now_nanos)
-        self.pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan', valid=self.CS.canValid))
-    else:
-      # send car controls over can
-      now_nanos = self.can_log_mono_time if REPLAY else int(time.monotonic() * 1e9)
-      if self.CP.carName == "hyundai":
-        actuators_output, can_sends, self.safety_speed, self.lkas_temporary_off, self.gap_by_spd_on_temp, self.exp_mode_temp, self.btn_pressing = self.CI.apply(CC, now_nanos)
-      else:
-        actuators_output, can_sends = self.CI.apply(CC, now_nanos)
-      self.pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan', valid=self.CS.canValid))
+    # send car controls over can
+    now_nanos = self.can_log_mono_time if REPLAY else int(time.monotonic() * 1e9)
+    actuators_output, can_sends = self.CI.apply(CC, now_nanos)
+    self.pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan', valid=self.CS.canValid))
 
     return actuators_output
 
@@ -257,7 +236,6 @@ class Controls:
     self.cruise_over_maxspeed = self.params.get_bool("CruiseOverMaxSpeed")
     self.cruise_road_limit_spd_enabled = self.params.get_bool("CruiseSetwithRoadLimitSpeedEnabled")
     self.cruise_road_limit_spd_offset = int(self.params.get("CruiseSetwithRoadLimitSpeedOffset", encoding="utf8"))
-    self.stock_lkas_on_disengaged_status = self.params.get_bool("StockLKASEnabled")
     self.no_mdps_mods = self.params.get_bool("NoSmartMDPS")
     self.ufc_mode = self.params.get_bool("UFCModeEnabled")
 
@@ -265,7 +243,6 @@ class Controls:
     self.cruise_road_limit_spd_switch_prev = 0
     
     self.long_alt = int(self.params.get("KISALongAlt", encoding="utf8"))
-    self.exp_long_enabled = self.params.get_bool("ExperimentalLongitudinalEnabled")
 
     # detect sound card presence and ensure successful init
     sounds_available = HARDWARE.get_sound_card_online()
@@ -352,9 +329,6 @@ class Controls:
     # controlsd is driven by can recv, expected at 100Hz
     self.rk = Ratekeeper(100, print_delay_threshold=None)
 
-    self.hkg_stock_lkas = True
-    self.hkg_stock_lkas_timer = 0
-
     self.mpc_frame = 0
     self.mpc_frame_sr = 0
 
@@ -383,11 +357,6 @@ class Controls:
     self.osm_speedlimit_enabled = self.params.get_bool("OSMSpeedLimitEnable")
     self.osm_waze_speedlimit = 255
     self.osm_waze_off_spdlimit_init = False
-    self.safety_speed = 0
-    self.lkas_temporary_off = False
-    self.gap_by_spd_on_temp = True
-    self.exp_mode_temp = False
-    self.btn_pressing = 0
     try:
       self.roadname_and_slc = self.params.get("RoadList", encoding="utf8").strip().splitlines()[1].split(',')
     except:
@@ -410,6 +379,11 @@ class Controls:
     self.mismatch_counter_ok = False
 
     self.legacy_lane_mode = int(self.params.get("UseLegacyLaneModel", encoding="utf8"))
+
+    self.stock_lkas_on_disengaged_status = self.params.get_bool("StockLKASEnabled")
+    self.hkg_stock_lkas = True
+    self.hkg_stock_lkas_timer = 0
+    self.exp_long_enabled = self.params.get_bool("ExperimentalLongitudinalEnabled")
 
   def auto_enable(self, CS):
     if self.state != State.enabled:
@@ -513,7 +487,7 @@ class Controls:
         self.events.add(EventName.calibrationInvalid)
 
     # Handle lane change
-    if not self.lkas_temporary_off:
+    if not self.last_actuators.lkasTemporaryOff:
       latplan_type = self.sm['lateralPlan'] if self.legacy_lane_mode else self.sm['modelV2'].meta
       if latplan_type.laneChangeState == LaneChangeState.preLaneChange:
         direction = latplan_type.laneChangeDirection
@@ -860,7 +834,7 @@ class Controls:
     # Check which actuators can be enabled
     standstill = (CS.vEgo <= max(self.CP.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) and self.no_mdps_mods) or CS.standstill
     CC.latActive = self.active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
-                   (not standstill or self.joystick_mode) and not self.lkas_temporary_off
+                   (not standstill or self.joystick_mode) and not self.last_actuators.lkasTemporaryOff
     CC.longActive = self.enabled and not self.events.contains(ET.OVERRIDE_LONGITUDINAL) and self.CP.openpilotLongitudinalControl
     # print('active={}  steerFaultTemporary={}  steerFaultPermanent={}  standstill={}  joystick_mode={}  lkas_temporary_off={}'.format(
     # self.active, CS.steerFaultTemporary, CS.steerFaultPermanent, standstill, self.joystick_mode, self.lkas_temporary_off))
@@ -1071,14 +1045,36 @@ class Controls:
     if current_alert:
       hudControl.visualAlert = current_alert.visual_alert
 
-    if not self.CP.passive and self.initialized:
-      self.last_actuators = self.card.controls_update(CC)
-      CC.actuatorsOutput = self.last_actuators
-      if self.CP.steerControlType == car.CarParams.SteerControlType.angle:
-        self.steer_limited = abs(CC.actuators.steeringAngleDeg - CC.actuatorsOutput.steeringAngleDeg) > \
-                             STEER_ANGLE_SATURATION_THRESHOLD
-      else:
-        self.steer_limited = abs(CC.actuators.steer - CC.actuatorsOutput.steer) > 1e-2
+    if self.stock_lkas_on_disengaged_status and self.CP.carName == "hyundai" and not self.exp_long_enabled:
+      if self.enabled:
+        self.hkg_stock_lkas = False
+        self.hkg_stock_lkas_timer = 0
+      elif not self.enabled and not self.hkg_stock_lkas:
+        self.hkg_stock_lkas_timer += 1
+        if self.hkg_stock_lkas_timer > 300:
+          self.hkg_stock_lkas = True
+          self.hkg_stock_lkas_timer = 0
+        elif CS.gearShifter != GearShifter.drive and self.hkg_stock_lkas_timer > 150:
+          self.hkg_stock_lkas = True
+          self.hkg_stock_lkas_timer = 0
+      if not self.hkg_stock_lkas:
+        if not self.CP.passive and self.initialized:
+          self.last_actuators = self.card.controls_update(CC)
+          CC.actuatorsOutput = self.last_actuators
+          if self.CP.steerControlType == car.CarParams.SteerControlType.angle:
+            self.steer_limited = abs(CC.actuators.steeringAngleDeg - CC.actuatorsOutput.steeringAngleDeg) > \
+                                STEER_ANGLE_SATURATION_THRESHOLD
+          else:
+            self.steer_limited = abs(CC.actuators.steer - CC.actuatorsOutput.steer) > 1e-2
+    else:
+      if not self.CP.passive and self.initialized:
+        self.last_actuators = self.card.controls_update(CC)
+        CC.actuatorsOutput = self.last_actuators
+        if self.CP.steerControlType == car.CarParams.SteerControlType.angle:
+          self.steer_limited = abs(CC.actuators.steeringAngleDeg - CC.actuatorsOutput.steeringAngleDeg) > \
+                              STEER_ANGLE_SATURATION_THRESHOLD
+        else:
+          self.steer_limited = abs(CC.actuators.steer - CC.actuatorsOutput.steer) > 1e-2
 
     force_decel = (self.sm['driverMonitoringState'].awarenessStatus < 0.) or \
                   (self.state == State.softDisabling)
@@ -1152,10 +1148,10 @@ class Controls:
     controlsState.dynamicTRMode = int(self.sm['longitudinalPlan'].dynamicTRMode)
     controlsState.dynamicTRValue = float(self.sm['longitudinalPlan'].dynamicTRValue)
     controlsState.accel = float(self.last_actuators.accel)
-    controlsState.safetySpeed = float(self.safety_speed)
-    controlsState.gapBySpeedOn = bool(self.gap_by_spd_on_temp)
-    controlsState.expModeTemp = bool(self.exp_mode_temp)
-    controlsState.btnPressing = self.btn_pressing
+    controlsState.safetySpeed = float(self.last_actuators.safetySpeed)
+    controlsState.gapBySpeedOn = bool(self.last_actuators.gapBySpdOnTemp)
+    controlsState.expModeTemp = bool(self.last_actuators.expModeTemp)
+    controlsState.btnPressing = int(self.last_actuators.btnPressing)
 
     lat_tuning = self.CP.lateralTuning.which()
     if self.joystick_mode:

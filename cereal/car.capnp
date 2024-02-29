@@ -417,7 +417,13 @@ struct CarControl {
     longControlState @5: LongControlState;
 
     oaccel @9: Float32; # m/s^2
-    
+
+    safetySpeed @10: Float32; 
+    lkasTemporaryOff @11: Bool;
+    gapBySpdOnTemp @12: Bool;
+    expModeTemp @13: Bool;
+    btnPressing @14: Int8;
+
     enum LongControlState @0xe40f3a917d908282{
       off @0;
       pid @1;
