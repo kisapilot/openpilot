@@ -1799,6 +1799,17 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
     }
   }
 
+  // bsm alert
+  for (int i = 0; i < std::size(scene.bsm_vertices); ++i) {
+    painter.setBrush(QColor::fromRgbF(1.0, 0.25, 0, 0.6));
+    if (scene.leftblindspot && i == 0) {
+      painter.drawPolygon(scene.bsm_vertices[i]);
+    }
+    if (scene.rightblindspot && i == 1) {
+      painter.drawPolygon(scene.bsm_vertices[i]);
+    }
+  }
+
   // paint path
   QLinearGradient bg(0, height(), 0, 0);
   if (sm["controlsState"].getControlsState().getExperimentalMode()) {

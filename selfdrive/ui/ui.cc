@@ -79,6 +79,41 @@ void update_line_data(const UIState *s, const cereal::XYZTData::Reader &line,
   *pvd = left_points + right_points;
 }
 
+void update_bsm_data(const UIState *s, int lr, const cereal::XYZTData::Reader &line,
+                     float y_off, float z_off, QPolygonF *pvd, int max_idx ) {
+
+  float y_off1, y_off2;
+  if (lr == 0) {
+    y_off1 = y_off;
+    y_off2 = -0.01;
+  } else {
+    y_off1 = 0.01;
+    y_off2 = y_off;  
+  }
+
+  const auto line_x = line.getX(), line_y = line.getY(), line_z = line.getZ();
+  QPolygonF left_points, right_points;
+  left_points.reserve(max_idx + 1);
+  right_points.reserve(max_idx + 1);
+
+  for (int i = 0; i <= max_idx; i++) {
+    // highly negative x positions  are drawn above the frame and cause flickering, clip to zy plane of camera
+    if (line_x[i] < 0) continue;
+    QPointF left, right;
+    bool l = calib_frame_to_full_frame(s, line_x[i], line_y[i] - y_off1, line_z[i] + z_off, &left);
+    bool r = calib_frame_to_full_frame(s, line_x[i], line_y[i] + y_off2, line_z[i] + z_off, &right);
+    if (l && r) {
+      // For wider lines the drawn polygon will "invert" when going over a hill and cause artifacts
+      if (!allow_invert && left_points.size() && left.y() > left_points.back().y()) {
+        continue;
+      }
+      left_points.push_back(left);
+      right_points.push_front(right);
+    }
+  }
+  *pvd = left_points + right_points;
+}
+
 void update_model(UIState *s,
                   const cereal::ModelDataV2::Reader &model,
                   const cereal::UiPlan::Reader &plan) {
@@ -105,6 +140,11 @@ void update_model(UIState *s,
   for (int i = 0; i < std::size(scene.road_edge_vertices); i++) {
     scene.road_edge_stds[i] = road_edge_stds[i];
     update_line_data(s, road_edges[i], 0.035, 0, &scene.road_edge_vertices[i], max_idx);
+  }
+
+  // update bsm alert
+  for (int i = 0; i < std::size(scene.bsm_vertices); i++) {
+    update_bsm_data(s, i, lane_lines[i+1], 2.8, 0, &scene.bsm_vertices[i], max_idx);
   }
 
   // update path
