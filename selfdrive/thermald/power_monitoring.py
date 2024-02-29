@@ -1,6 +1,5 @@
 import time
 import threading
-from typing import Optional
 
 from openpilot.common.params import Params
 from openpilot.system.hardware import HARDWARE
@@ -16,7 +15,6 @@ CAR_BATTERY_CAPACITY_uWh = 30e6
 CAR_CHARGING_RATE_W = 45
 
 VBATT_PAUSE_CHARGING = 11.8           # Lower limit on the LPF car battery voltage
-VBATT_INSTANT_PAUSE_CHARGING = 7.0    # Lower limit on the instant car battery voltage measurements to avoid triggering on instant power loss
 MAX_TIME_OFFROAD_S = interp(int(Params().get("KisaAutoShutdown", encoding="utf8")), [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14], [0,5,30,60,180,300,600,1800,3600,10800,18000,36000,86400,172800,259200]) \
                       if Params().get("KisaAutoShutdown", encoding="utf8") is not None else 0 # 30*3600
 MIN_ON_TIME_S = 3600
@@ -42,7 +40,7 @@ class PowerMonitoring:
     self.car_battery_capacity_uWh = max((CAR_BATTERY_CAPACITY_uWh / 10), int(car_battery_capacity_uWh))
 
   # Calculation tick
-  def calculate(self, voltage: Optional[int], ignition: bool):
+  def calculate(self, voltage: int | None, ignition: bool):
     try:
       now = time.monotonic()
 
@@ -112,7 +110,7 @@ class PowerMonitoring:
     return int(self.car_battery_capacity_uWh)
 
   # See if we need to shutdown
-  def should_shutdown(self, ignition: bool, in_car: bool, offroad_timestamp: Optional[float], started_seen: bool):
+  def should_shutdown(self, ignition: bool, in_car: bool, offroad_timestamp: float | None, started_seen: bool):
     if offroad_timestamp is None:
       return False
 
@@ -120,7 +118,6 @@ class PowerMonitoring:
     should_shutdown = False
     offroad_time = (now - offroad_timestamp)
     low_voltage_shutdown = (self.car_voltage_mV < (VBATT_PAUSE_CHARGING * 1e3) and
-                            self.car_voltage_instant_mV > (VBATT_INSTANT_PAUSE_CHARGING * 1e3) and
                             offroad_time > VOLTAGE_SHUTDOWN_MIN_OFFROAD_TIME_S)
     should_shutdown |= offroad_time > MAX_TIME_OFFROAD_S
     should_shutdown |= low_voltage_shutdown

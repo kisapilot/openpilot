@@ -6,7 +6,6 @@ import threading
 import time
 from collections import OrderedDict, namedtuple
 from pathlib import Path
-from typing import Dict, Optional, Tuple
 
 import psutil
 
@@ -50,11 +49,12 @@ THERMAL_BANDS = OrderedDict({
 # Override to highest thermal band when offroad and above this temp
 OFFROAD_DANGER_TEMP = 75
 
-prev_offroad_states: Dict[str, Tuple[bool, Optional[str]]] = {}
+prev_offroad_states: dict[str, tuple[bool, str | None]] = {}
+
+tz_by_type: dict[str, int] | None = None
 
 sshkeyfile = '/data/public_key'
 
-tz_by_type: Optional[Dict[str, int]] = None
 def populate_tz_by_type():
   global tz_by_type
   tz_by_type = {}
@@ -90,7 +90,7 @@ def read_thermal(thermal_config):
   return dat
 
 
-def set_offroad_alert_if_changed(offroad_alert: str, show_alert: bool, extra_text: Optional[str]=None):
+def set_offroad_alert_if_changed(offroad_alert: str, show_alert: bool, extra_text: str | None=None):
   if prev_offroad_states.get(offroad_alert, None) == (show_alert, extra_text):
     return
   prev_offroad_states[offroad_alert] = (show_alert, extra_text)
@@ -177,16 +177,16 @@ def thermald_thread(end_event, hw_queue) -> None:
 
   count = 0
 
-  onroad_conditions: Dict[str, bool] = {
+  onroad_conditions: dict[str, bool] = {
     "ignition": False,
   }
-  startup_conditions: Dict[str, bool] = {}
-  startup_conditions_prev: Dict[str, bool] = {}
+  startup_conditions: dict[str, bool] = {}
+  startup_conditions_prev: dict[str, bool] = {}
 
-  off_ts: Optional[float] = None
-  started_ts: Optional[float] = None
+  off_ts: float | None = None
+  started_ts: float | None = None
   started_seen = False
-  startup_blocked_ts: Optional[float] = None
+  startup_blocked_ts: float | None = None
   thermal_status = ThermalStatus.yellow
 
   last_hw_state = HardwareState(
@@ -262,8 +262,10 @@ def thermald_thread(end_event, hw_queue) -> None:
 
     msg.deviceState.freeSpacePercent = get_available_percent(default=100.0)
     msg.deviceState.memoryUsagePercent = int(round(psutil.virtual_memory().percent))
-    msg.deviceState.cpuUsagePercent = [int(round(n)) for n in psutil.cpu_percent(percpu=True)]
     msg.deviceState.gpuUsagePercent = int(round(HARDWARE.get_gpu_usage_percent()))
+    online_cpu_usage = [int(round(n)) for n in psutil.cpu_percent(percpu=True)]
+    offline_cpu_usage = [0., ] * (len(msg.deviceState.cpuTempC) - len(online_cpu_usage))
+    msg.deviceState.cpuUsagePercent = online_cpu_usage + offline_cpu_usage
 
     msg.deviceState.networkType = last_hw_state.network_type
     msg.deviceState.networkMetered = last_hw_state.network_metered
