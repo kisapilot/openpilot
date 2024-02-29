@@ -106,6 +106,8 @@ private:
   QPixmap gear_img_n;
   QPixmap gear_img_d;
   QPixmap kisapilot_img;
+  QPixmap waze_police_img;
+  QPixmap waze_cam_img;
 
   float speed;
   QString speedUnit;
