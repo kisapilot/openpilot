@@ -394,8 +394,8 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
   gear_img_n = loadPixmap("../assets/addon/img/circle_blue_letter-n.svg", {img_size+45, img_size+45});
   gear_img_d = loadPixmap("../assets/addon/img/circle_green_letter-d.svg", {img_size+45, img_size+45});
   kisapilot_img = loadPixmap("../assets/addon/img/kisapilot.png", {img_size-35, img_size-35});
-  waze_police_img = loadPixmap("../assets/addon/img/img_police_car.png", {img_size+25, img_size+25});
-  waze_cam_img = loadPixmap("../assets/addon/img/img_speed_cam.png", {img_size+25, img_size+25});
+  waze_police_img = loadPixmap("../assets/addon/img/img_police_car.png", {img_size+45, img_size+45});
+  waze_cam_img = loadPixmap("../assets/addon/img/img_speed_cam.png", {img_size+45, img_size+45});
 
   // neokii screen recorder, thx for sharing:)
   record_timer = std::make_shared<QTimer>();
@@ -1359,9 +1359,9 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
       // waze safety type img
       if (s->scene.liveENaviData.ewazealertid == 1) {
-        drawIcon(p, s_center_x - diameter3/2 + 212, s_center_y - diameter3/2, waze_cam_img, QColor(0, 0, 0, 0), 1.0);
+        drawIcon(p, s_center_x + 212, s_center_y, waze_cam_img, QColor(0, 0, 0, 0), 1.0);
       } else if (s->scene.liveENaviData.ewazealertid == 2) {
-        drawIcon(p, s_center_x - diameter3/2 + 212, s_center_y - diameter3/2, waze_police_img, QColor(0, 0, 0, 0), 1.0);
+        drawIcon(p, s_center_x + 212, s_center_y, waze_police_img, QColor(0, 0, 0, 0), 1.0);
       }
 
       if (s->scene.limitSpeedCameraDist != 0) {
