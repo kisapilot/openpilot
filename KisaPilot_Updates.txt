@@ -1,3 +1,8 @@
+2024-03-01
+- Recertified Herbalist Model
+- More visible BSM alert on UI
+- ALC uses model curvature on MPC and Mix mode
+- Waze safety img added
 2024-02-23
 - IP auto detection for external Navigation
 - Hotspot Autorun
