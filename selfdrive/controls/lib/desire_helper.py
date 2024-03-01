@@ -24,7 +24,7 @@ elif Params().get_bool("IsMetric"):
   LANE_CHANGE_SPEED_MIN = float(int(Params().get("KisaLaneChangeSpeed", encoding="utf8")) * CV.KPH_TO_MS)
 else:
   LANE_CHANGE_SPEED_MIN = float(int(Params().get("KisaLaneChangeSpeed", encoding="utf8")) * CV.MPH_TO_MS)
-LANE_CHANGE_TIME_MAX = 15.
+LANE_CHANGE_TIME_MAX = 10.
 
 if USE_LEGACY_LANE_MODEL:
   DESIRES = {
