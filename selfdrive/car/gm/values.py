@@ -79,7 +79,7 @@ class GMCarInfo(CarInfo):
       self.footnotes.append(Footnote.OBD_II)
 
 
-@dataclass(frozen=True)
+@dataclass
 class GMPlatformConfig(PlatformConfig):
   dbc_dict: DbcDict = field(default_factory=lambda: dbc_dict('gm_global_a_powertrain_generated', 'gm_global_a_object', chassis_dbc='gm_global_a_chassis'))
 
@@ -88,52 +88,52 @@ class CAR(Platforms):
   HOLDEN_ASTRA = GMPlatformConfig(
     "HOLDEN ASTRA RS-V BK 2017",
     GMCarInfo("Holden Astra 2017"),
-    specs=CarSpecs(mass=1363, wheelbase=2.662, steerRatio=15.7, centerToFrontRatio=0.4),
+    CarSpecs(mass=1363, wheelbase=2.662, steerRatio=15.7, centerToFrontRatio=0.4),
   )
   VOLT = GMPlatformConfig(
     "CHEVROLET VOLT PREMIER 2017",
     GMCarInfo("Chevrolet Volt 2017-18", min_enable_speed=0, video_link="https://youtu.be/QeMCN_4TFfQ"),
-    specs=CarSpecs(mass=1607, wheelbase=2.69, steerRatio=17.7, centerToFrontRatio=0.45),
+    CarSpecs(mass=1607, wheelbase=2.69, steerRatio=17.7, centerToFrontRatio=0.45),
   )
   CADILLAC_ATS = GMPlatformConfig(
     "CADILLAC ATS Premium Performance 2018",
     GMCarInfo("Cadillac ATS Premium Performance 2018"),
-    specs=CarSpecs(mass=1601, wheelbase=2.78, steerRatio=15.3),
+    CarSpecs(mass=1601, wheelbase=2.78, steerRatio=15.3),
   )
   MALIBU = GMPlatformConfig(
     "CHEVROLET MALIBU PREMIER 2017",
     GMCarInfo("Chevrolet Malibu Premier 2017"),
-    specs=CarSpecs(mass=1496, wheelbase=2.83, steerRatio=15.8, centerToFrontRatio=0.4),
+    CarSpecs(mass=1496, wheelbase=2.83, steerRatio=15.8, centerToFrontRatio=0.4),
   )
   ACADIA = GMPlatformConfig(
     "GMC ACADIA DENALI 2018",
     GMCarInfo("GMC Acadia 2018", video_link="https://www.youtube.com/watch?v=0ZN6DdsBUZo"),
-    specs=CarSpecs(mass=1975, wheelbase=2.86, steerRatio=14.4, centerToFrontRatio=0.4),
+    CarSpecs(mass=1975, wheelbase=2.86, steerRatio=14.4, centerToFrontRatio=0.4),
   )
   BUICK_LACROSSE = GMPlatformConfig(
     "BUICK LACROSSE 2017",
     GMCarInfo("Buick LaCrosse 2017-19", "Driver Confidence Package 2"),
-    specs=CarSpecs(mass=1712, wheelbase=2.91, steerRatio=15.8, centerToFrontRatio=0.4),
+    CarSpecs(mass=1712, wheelbase=2.91, steerRatio=15.8, centerToFrontRatio=0.4),
   )
   BUICK_REGAL = GMPlatformConfig(
     "BUICK REGAL ESSENCE 2018",
     GMCarInfo("Buick Regal Essence 2018"),
-    specs=CarSpecs(mass=1714, wheelbase=2.83, steerRatio=14.4, centerToFrontRatio=0.4),
+    CarSpecs(mass=1714, wheelbase=2.83, steerRatio=14.4, centerToFrontRatio=0.4),
   )
   ESCALADE = GMPlatformConfig(
     "CADILLAC ESCALADE 2017",
     GMCarInfo("Cadillac Escalade 2017", "Driver Assist Package"),
-    specs=CarSpecs(mass=2564, wheelbase=2.95, steerRatio=17.3),
+    CarSpecs(mass=2564, wheelbase=2.95, steerRatio=17.3),
   )
   ESCALADE_ESV = GMPlatformConfig(
     "CADILLAC ESCALADE ESV 2016",
     GMCarInfo("Cadillac Escalade ESV 2016", "Adaptive Cruise Control (ACC) & LKAS"),
-    specs=CarSpecs(mass=2739, wheelbase=3.302, steerRatio=17.3),
+    CarSpecs(mass=2739, wheelbase=3.302, steerRatio=17.3),
   )
   ESCALADE_ESV_2019 = GMPlatformConfig(
     "CADILLAC ESCALADE ESV 2019",
     GMCarInfo("Cadillac Escalade ESV 2019", "Adaptive Cruise Control (ACC) & LKAS"),
-    specs=ESCALADE_ESV.specs,
+    ESCALADE_ESV.specs,
   )
   BOLT_EUV = GMPlatformConfig(
     "CHEVROLET BOLT EUV 2022",
@@ -141,7 +141,7 @@ class CAR(Platforms):
       GMCarInfo("Chevrolet Bolt EUV 2022-23", "Premier or Premier Redline Trim without Super Cruise Package", video_link="https://youtu.be/xvwzGMUA210"),
       GMCarInfo("Chevrolet Bolt EV 2022-23", "2LT Trim with Adaptive Cruise Control Package"),
     ],
-    specs=CarSpecs(mass=1669, wheelbase=2.63779, steerRatio=16.8, centerToFrontRatio=0.4),
+    CarSpecs(mass=1669, wheelbase=2.63779, steerRatio=16.8, centerToFrontRatio=0.4),
   )
   SILVERADO = GMPlatformConfig(
     "CHEVROLET SILVERADO 1500 2020",
@@ -149,17 +149,17 @@ class CAR(Platforms):
       GMCarInfo("Chevrolet Silverado 1500 2020-21", "Safety Package II"),
       GMCarInfo("GMC Sierra 1500 2020-21", "Driver Alert Package II", video_link="https://youtu.be/5HbNoBLzRwE"),
     ],
-    specs=CarSpecs(mass=2450, wheelbase=3.75, steerRatio=16.3),
+    CarSpecs(mass=2450, wheelbase=3.75, steerRatio=16.3),
   )
   EQUINOX = GMPlatformConfig(
     "CHEVROLET EQUINOX 2019",
     GMCarInfo("Chevrolet Equinox 2019-22"),
-    specs=CarSpecs(mass=1588, wheelbase=2.72, steerRatio=14.4, centerToFrontRatio=0.4),
+    CarSpecs(mass=1588, wheelbase=2.72, steerRatio=14.4, centerToFrontRatio=0.4),
   )
   TRAILBLAZER = GMPlatformConfig(
     "CHEVROLET TRAILBLAZER 2021",
     GMCarInfo("Chevrolet Trailblazer 2021-22"),
-    specs=CarSpecs(mass=1345, wheelbase=2.64, steerRatio=16.8, centerToFrontRatio=0.4),
+    CarSpecs(mass=1345, wheelbase=2.64, steerRatio=16.8, centerToFrontRatio=0.4),
   )
 
 
@@ -189,22 +189,35 @@ class CanBus:
 # In a Data Module, an identifier is a string used to recognize an object,
 # either by itself or together with the identifiers of parent objects.
 # Each returns a 4 byte hex representation of the decimal part number. `b"\x02\x8c\xf0'"` -> 42790951
+GM_BOOT_SOFTWARE_PART_NUMER_REQUEST = b'\x1a\xc0'  # likely does not contain anything useful
 GM_SOFTWARE_MODULE_1_REQUEST = b'\x1a\xc1'
 GM_SOFTWARE_MODULE_2_REQUEST = b'\x1a\xc2'
 GM_SOFTWARE_MODULE_3_REQUEST = b'\x1a\xc3'
+
+# Part number of XML data file that is used to configure ECU
+GM_XML_DATA_FILE_PART_NUMBER = b'\x1a\x9c'
+GM_XML_CONFIG_COMPAT_ID = b'\x1a\x9b'  # used to know if XML file is compatible with the ECU software/hardware
+
 # This DID is for identifying the part number that reflects the mix of hardware,
 # software, and calibrations in the ECU when it first arrives at the vehicle assembly plant.
 # If there's an Alpha Code, it's associated with this part number and stored in the DID $DB.
 GM_END_MODEL_PART_NUMBER_REQUEST = b'\x1a\xcb'
+GM_END_MODEL_PART_NUMBER_ALPHA_CODE_REQUEST = b'\x1a\xdb'
 GM_BASE_MODEL_PART_NUMBER_REQUEST = b'\x1a\xcc'
+GM_BASE_MODEL_PART_NUMBER_ALPHA_CODE_REQUEST = b'\x1a\xdc'
 GM_FW_RESPONSE = b'\x5a'
 
 GM_FW_REQUESTS = [
+  GM_BOOT_SOFTWARE_PART_NUMER_REQUEST,
   GM_SOFTWARE_MODULE_1_REQUEST,
   GM_SOFTWARE_MODULE_2_REQUEST,
   GM_SOFTWARE_MODULE_3_REQUEST,
+  GM_XML_DATA_FILE_PART_NUMBER,
+  GM_XML_CONFIG_COMPAT_ID,
   GM_END_MODEL_PART_NUMBER_REQUEST,
+  GM_END_MODEL_PART_NUMBER_ALPHA_CODE_REQUEST,
   GM_BASE_MODEL_PART_NUMBER_REQUEST,
+  GM_BASE_MODEL_PART_NUMBER_ALPHA_CODE_REQUEST,
 ]
 
 GM_RX_OFFSET = 0x400

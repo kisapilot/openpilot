@@ -36,6 +36,8 @@ TORQUE_OVERRIDE_PATH = os.path.join(BASEDIR, 'selfdrive/car/torque_data/override
 TORQUE_SUBSTITUTE_PATH = os.path.join(BASEDIR, 'selfdrive/car/torque_data/substitute.toml')
 
 UseLiveTorque = Params().get_bool("KisaLiveTorque") if Params().get_bool("KisaLiveTorque") is not None else False
+NoMdpsMod = Params().get_bool("NoSmartMDPS") if Params().get_bool("NoSmartMDPS") is not None else False
+TireStiffnessFactor = float(Decimal(Params().get("TireStiffnessFactorAdj", encoding="utf8")) * Decimal('0.01')) if Params().get("TireStiffnessFactorAdj") is not None else 1.0
 
 class LatControlInputs(NamedTuple):
   lateral_acceleration: float
@@ -124,14 +126,14 @@ class CarInterfaceBase(ABC):
   def get_params(cls, candidate: Platform, fingerprint: dict[int, dict[int, int]], car_fw: list[car.CarParams.CarFw], experimental_long: bool, docs: bool):
     ret = CarInterfaceBase.get_std_params(candidate)
 
-    if hasattr(candidate, "config"):
-      if candidate.config.specs is not None:
-        ret.mass = candidate.config.specs.mass
-        ret.wheelbase = candidate.config.specs.wheelbase
-        ret.steerRatio = candidate.config.specs.steerRatio
-        ret.centerToFront = ret.wheelbase * candidate.config.specs.centerToFrontRatio
-        ret.minEnableSpeed = candidate.config.specs.minEnableSpeed
-        ret.minSteerSpeed = candidate.config.specs.minSteerSpeed
+    ret.mass = candidate.config.specs.mass
+    ret.wheelbase = candidate.config.specs.wheelbase
+    ret.steerRatio = candidate.config.specs.steerRatio
+    ret.centerToFront = ret.wheelbase * candidate.config.specs.centerToFrontRatio
+    ret.minEnableSpeed = candidate.config.specs.minEnableSpeed
+    ret.minSteerSpeed = candidate.config.specs.minSteerSpeed if NoMdpsMod else 0.
+    ret.tireStiffnessFactor = candidate.config.specs.tireStiffnessFactor
+    ret.flags |= int(candidate.config.flags)
 
     ret = cls._get_params(ret, candidate, fingerprint, car_fw, experimental_long, docs)
 
@@ -147,7 +149,7 @@ class CarInterfaceBase(ABC):
 
   @staticmethod
   @abstractmethod
-  def _get_params(ret: car.CarParams, candidate: Platform, fingerprint: dict[int, dict[int, int]],
+  def _get_params(ret: car.CarParams, candidate, fingerprint: dict[int, dict[int, int]],
                   car_fw: list[car.CarParams.CarFw], experimental_long: bool, docs: bool):
     raise NotImplementedError
 
@@ -186,7 +188,7 @@ class CarInterfaceBase(ABC):
     ret.autoResumeSng = True  # describes whether car can resume from a stop automatically
 
     # standard ALC params
-    ret.tireStiffnessFactor = 1.0
+    ret.tireStiffnessFactor = TireStiffnessFactor
     ret.steerControlType = car.CarParams.SteerControlType.torque
     ret.minSteerSpeed = 0.
     ret.wheelSpeedFactor = 1.0
@@ -524,6 +526,15 @@ class CarStateBase(ABC):
   @staticmethod
   def get_loopback_can_parser(CP):
     return None
+
+
+SendCan = tuple[int, int, bytes, int]
+
+
+class CarControllerBase(ABC):
+  @abstractmethod
+  def update(self, CC, CS, now_nanos) -> tuple[car.CarControl.Actuators, list[SendCan]]:
+    pass
 
 
 INTERFACE_ATTR_FILE = {

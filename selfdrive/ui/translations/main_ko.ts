@@ -790,6 +790,18 @@ This may take up to a minute.</source>
         <source>Select a language</source>
         <translation>언어를 선택하세요</translation>
     </message>
+    <message>
+        <source>Choose Software to Install</source>
+        <translation>설치할 소프트웨어를 선택하세요</translation>
+    </message>
+    <message>
+        <source>openpilot</source>
+        <translation>오픈파일럿</translation>
+    </message>
+    <message>
+        <source>Custom Software</source>
+        <translation>커스텀 소프트웨어</translation>
+    </message>
 </context>
 <context>
     <name>SetupWidget</name>

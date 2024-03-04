@@ -348,9 +348,9 @@ static void update_state(UIState *s) {
     }
   }
   if (sm.updated("gpsLocationExternal")) {
-    scene.gpsAccuracy = sm["gpsLocationExternal"].getGpsLocationExternal().getAccuracy();
+    scene.gpsAccuracy = sm["gpsLocationExternal"].getGpsLocationExternal().getHorizontalAccuracy();
     auto ge_data = sm["gpsLocationExternal"].getGpsLocationExternal();
-    scene.gpsAccuracyUblox = ge_data.getAccuracy();
+    scene.gpsAccuracyUblox = ge_data.getHorizontalAccuracy();
     scene.altitudeUblox = ge_data.getAltitude();
     scene.bearingUblox = ge_data.getBearingDeg();
   }
