@@ -318,7 +318,6 @@ def sw_update_thread(end_event, nv_queue):
             if rvalue == 0:
               p_order = 6
               params.remove("CalibrationParams")
-              params.remove("LiveTorqueParameters")
               result=subprocess.Popen(command6, shell=True)
             else:
               lcount += 1
@@ -390,7 +389,6 @@ def sw_update_thread(end_event, nv_queue):
             if rvalue == 0:
               p_order = 5
               params.remove("CalibrationParams")
-              params.remove("LiveTorqueParameters")
               result=subprocess.Popen(command5, shell=True)
             else:
               lcount += 1
