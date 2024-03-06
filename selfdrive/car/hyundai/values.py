@@ -663,7 +663,7 @@ class CAR(Platforms):
   )
   K5_JF = HyundaiPlatformConfig(
     "KIA K5 (JF)",
-    HyundaiCarInfo("Kia K5 2021-22", "Advanced Smart Cruise Control",
+    HyundaiCarInfo("Kia K5 2017", "Advanced Smart Cruise Control",
                    car_parts=CarParts.common([CarHarness.hyundai_b])),
     CarSpecs(mass=1475, wheelbase=2.805, steerRatio=13.75, tireStiffnessFactor=0.5),
     flags=HyundaiFlags.LEGACY | HyundaiFlags.TCU_GEARS | HyundaiFlags.MIN_STEER_32_MPH,
@@ -673,6 +673,19 @@ class CAR(Platforms):
     HyundaiCarInfo("Kia K5 Hybrid 2017", "Advanced Smart Cruise Control", car_parts=CarParts.common([CarHarness.hyundai_c])),
     CarSpecs(mass=1600, wheelbase=2.805, steerRatio=13.75),
     flags=HyundaiFlags.HYBRID | HyundaiFlags.LEGACY | HyundaiFlags.LEGACY_ALT,
+  )
+  K7_YG = HyundaiPlatformConfig(
+    "KIA K7 (YG)",
+    HyundaiCarInfo("Kia K7 2017-18", "Advanced Smart Cruise Control",
+                   car_parts=CarParts.common([CarHarness.hyundai_b])),
+    CarSpecs(mass=1555, wheelbase=2.855, steerRatio=13.75),
+    flags=HyundaiFlags.LEGACY | HyundaiFlags.TCU_GEARS,
+  )
+  K7_HEV_YG = HyundaiPlatformConfig(
+    "KIA K7 HYBRID (YG)",
+    HyundaiCarInfo("Kia K7 Hybrid 2017-18", "Advanced Smart Cruise Control", car_parts=CarParts.common([CarHarness.hyundai_c])),
+    CarSpecs(mass=1680, wheelbase=2.855, steerRatio=13.75),
+    flags=HyundaiFlags.HYBRID | HyundaiFlags.LEGACY,
   )
   SOUL_EV_SK3 = HyundaiPlatformConfig(
     "KIA SOUL EV (SK3)",
