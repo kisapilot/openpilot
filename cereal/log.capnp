@@ -689,6 +689,7 @@ struct ControlsState @0x97ff69c53601abf1 {
   active @36 :Bool;
 
   experimentalMode @64 :Bool;
+  personality @66 :LongitudinalPersonality;
 
   longControlState @30 :Car.CarControl.Actuators.LongControlState;
   vPid @2 :Float32;
@@ -718,30 +719,30 @@ struct ControlsState @0x97ff69c53601abf1 {
   canErrorCounter @57 :UInt32;
 
   # atom
-  alertTextMsg1  @66 :Text;
-  alertTextMsg2  @67 :Text;
-  alertTextMsg3  @68 :Text;
+  alertTextMsg1  @67 :Text;
+  alertTextMsg2  @68 :Text;
+  alertTextMsg3  @69 :Text;
 
-  lateralControlMethod  @69 :UInt8;
-  limitSpeedCamera @70 :Float32 = 0;
-  limitSpeedCameraDist @71 :Float32 = 0;
-  steerRatio @72 :Float32;
-  mapSign @73 :Float32;
-  mapSignCam @74 :Float32;
-  dynamicTRMode @75 :UInt8;
-  dynamicTRValue @76 :Float32;
-  pauseSpdLimit @77 :Bool;
-  accel @78 :Float32;
-  safetySpeed @79 :Float32;
-  steeringAngleDesiredDeg @80 :Float32;
-  gapBySpeedOn @81 :Bool;
+  lateralControlMethod  @70 :UInt8;
+  limitSpeedCamera @71 :Float32 = 0;
+  limitSpeedCameraDist @72 :Float32 = 0;
+  steerRatio @73 :Float32;
+  mapSign @74 :Float32;
+  mapSignCam @75 :Float32;
+  dynamicTRMode @76 :UInt8;
+  dynamicTRValue @77 :Float32;
+  pauseSpdLimit @78 :Bool;
+  accel @79 :Float32;
+  safetySpeed @80 :Float32;
+  steeringAngleDesiredDeg @81 :Float32;
+  gapBySpeedOn @82 :Bool;
 
-  pandaSafetyModel @83 :Text;
-  interfaceSafetyModel @84 :Text;
-  rxChecks @85 :Bool;
-  mismatchCounter @86 :Bool;
-  expModeTemp @87 :Bool;
-  btnPressing @88 :UInt8;
+  pandaSafetyModel @84 :Text;
+  interfaceSafetyModel @85 :Text;
+  rxChecks @86 :Bool;
+  mismatchCounter @87 :Bool;
+  expModeTemp @88 :Bool;
+  btnPressing @89 :UInt8;
 
 
   lateralControlState :union {
@@ -751,7 +752,7 @@ struct ControlsState @0x97ff69c53601abf1 {
     angleState @58 :LateralAngleState;
     debugState @59 :LateralDebugState;
     torqueState @60 :LateralTorqueState;
-    atomState @82  :LateralATOMState;
+    atomState @83  :LateralATOMState;
     curvatureState @65 :LateralCurvatureState;
   }
 
@@ -1113,7 +1114,6 @@ struct LongitudinalPlan @0xe00b5b3eba12876c {
   jerks @34 :List(Float32);
 
   solverExecutionTime @35 :Float32;
-  personality @36 :LongitudinalPersonality;
 
   dynamicTRMode @37 :UInt8;
   dynamicTRValue @38 :Float32;
@@ -1160,6 +1160,7 @@ struct LongitudinalPlan @0xe00b5b3eba12876c {
   eventsDEPRECATED @13 :List(Car.CarEvent);
   gpsTrajectoryDEPRECATED @12 :GpsTrajectory;
   gpsPlannerActiveDEPRECATED @19 :Bool;
+  personalityDEPRECATED @36 :LongitudinalPersonality;
 
   struct GpsTrajectory {
     x @0 :List(Float32);
