@@ -110,9 +110,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
   std::vector<QString> longi_button_texts{tr("Aggressive"), tr("Standard"), tr("Relaxed")};
   long_personality_setting = new ButtonParamControl("LongitudinalPersonality", tr("Driving Personality"),
                                           tr("Standard is recommended. In aggressive mode, openpilot will follow lead cars closer and be more aggressive with the gas and brake. "
-                                             "In relaxed mode openpilot will stay further away from lead cars."),
+                                             "In relaxed mode openpilot will stay further away from lead cars. On supported cars, you can cycle through these personalities with "
+                                             "your steering wheel distance button."),
                                           "../assets/offroad/icon_speed_limit.png",
                                           longi_button_texts);
+
+  // set up uiState update for personality setting
+  QObject::connect(uiState(), &UIState::uiUpdate, this, &TogglesPanel::updateState);
+
   for (auto &[param, title, desc, icon] : toggle_defs) {
     auto toggle = new ParamControl(param, title, desc, icon, this);
 
@@ -129,8 +134,21 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
   }
 
   // Toggles with confirmation dialogs
+  toggles["ExperimentalMode"]->setActiveIcon("../assets/img_experimental.svg");
   toggles["ExperimentalMode"]->setConfirmation(true, false);
   toggles["ExperimentalLongitudinalEnabled"]->setConfirmation(true, false);
+}
+
+void TogglesPanel::updateState(const UIState &s) {
+  const SubMaster &sm = *(s.sm);
+
+  if (sm.updated("controlsState")) {
+    auto personality = sm["controlsState"].getControlsState().getPersonality();
+    if (personality != s.scene.personality && s.scene.started && isVisible()) {
+      long_personality_setting->setCheckedButton(static_cast<int>(personality));
+    }
+    uiState()->scene.personality = personality;
+  }
 }
 
 void TogglesPanel::expandToggleDescription(const QString &param) {
@@ -159,6 +177,7 @@ DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent) {
   connect(resetCalibBtn, &ButtonControl::clicked, [&]() {
     if (ConfirmationDialog::confirm(tr("Are you sure you want to reset calibration?"), tr("Reset"), this)) {
       params.remove("CalibrationParams");
+      //params.remove("LiveTorqueParameters");
       params.putBool("OnRoadRefresh", true);
       QTimer::singleShot(3000, [this]() {
         params.putBool("OnRoadRefresh", false);
@@ -167,15 +186,13 @@ DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent) {
   });
   addItem(resetCalibBtn);
 
-  if (!params.getBool("Passive")) {
-    auto retrainingBtn = new ButtonControl(tr("Review Training Guide"), tr("REVIEW"), tr("Review the rules, features, and limitations of openpilot"));
-    connect(retrainingBtn, &ButtonControl::clicked, [=]() {
-      if (ConfirmationDialog::confirm(tr("Are you sure you want to review the training guide?"), tr("Review"), this)) {
-        emit reviewTrainingGuide();
-      }
-    });
-    addItem(retrainingBtn);
-  }
+  auto retrainingBtn = new ButtonControl(tr("Review Training Guide"), tr("REVIEW"), tr("Review the rules, features, and limitations of openpilot"));
+  connect(retrainingBtn, &ButtonControl::clicked, [=]() {
+    if (ConfirmationDialog::confirm(tr("Are you sure you want to review the training guide?"), tr("Review"), this)) {
+      emit reviewTrainingGuide();
+    }
+  });
+  addItem(retrainingBtn);
 
   if (Hardware::TICI()) {
     auto regulatoryBtn = new ButtonControl(tr("Regulatory"), tr("VIEW"), "");
@@ -203,8 +220,6 @@ DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent) {
     for (auto btn : findChildren<ButtonControl *>()) {
       btn->setEnabled(offroad);
     }
-    resetCalibBtn->setEnabled(true);
-    translateBtn->setEnabled(true);
   });
 
   // power buttons

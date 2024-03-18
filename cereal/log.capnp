@@ -251,7 +251,7 @@ struct SensorEventData {
 
 # android struct GpsLocation
 struct GpsLocationData {
-  # Contains GpsLocationFlags bits.
+  # Contains module-specific flags.
   flags @0 :UInt16;
 
   # Represents latitude in degrees.
@@ -288,6 +288,8 @@ struct GpsLocationData {
   # Represents velocity accuracy in m/s. (presumably 1 sigma?)
   speedAccuracy @12 :Float32;
 
+  hasFix @13 :Bool;
+
   enum SensorSource {
     android @0;
     iOS @1;
@@ -298,6 +300,7 @@ struct GpsLocationData {
     ublox @6;
     trimble @7;
     qcomdiag @8;
+    unicore @9;
   }
 }
 
@@ -332,6 +335,8 @@ struct CanData {
 }
 
 struct DeviceState @0xa4d8b5af2aa492eb {
+  deviceType @45 :InitData.DeviceType;
+
   networkType @22 :NetworkType;
   networkInfo @31 :NetworkInfo;
   networkStrength @24 :NetworkStrength;
@@ -369,7 +374,7 @@ struct DeviceState @0xa4d8b5af2aa492eb {
   fanSpeedPercentDesired @10 :UInt16;
   screenBrightnessPercent @37 :Int8;
 
-  ipAddress @45 :Text;
+  ipAddress @46 :Text;
 
   struct ThermalZone {
     name @0 :Text;
@@ -2393,6 +2398,7 @@ struct Event {
     liveCalibration @19 :LiveCalibrationData;
     carState @22 :Car.CarState;
     carControl @23 :Car.CarControl;
+    carOutput @127 :Car.CarOutput;
     longitudinalPlan @24 :LongitudinalPlan;
     lateralPlan @64 :LateralPlan;
     uiPlan @106 :UiPlan;
@@ -2465,8 +2471,8 @@ struct Event {
     customReservedRawData1 @125 :Data;
     customReservedRawData2 @126 :Data;
 
-    liveENaviData @127: LiveENaviData;
-    liveMapData @128: LiveMapData;
+    liveENaviData @128: LiveENaviData;
+    liveMapData @129: LiveMapData;
 
     # *********** Custom: reserved for forks ***********
     customReserved0 @107 :Custom.CustomReserved0;

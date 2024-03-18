@@ -388,6 +388,7 @@ typedef struct UIScene {
   float dm_prob[5];
 
   bool navigate_on_openpilot = false;
+  cereal::LongitudinalPersonality personality;
 
   float light_sensor;
   bool started, ignition, is_metric, map_on_left, longitudinal_control;
