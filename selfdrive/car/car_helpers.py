@@ -5,7 +5,6 @@ from collections.abc import Callable
 from cereal import car
 from openpilot.common.params import Params
 from openpilot.common.basedir import BASEDIR
-from openpilot.selfdrive.car.values import PLATFORMS
 from openpilot.system.version import is_comma_remote, is_tested_branch
 from openpilot.selfdrive.car.interfaces import get_interface_attr
 from openpilot.selfdrive.car.fingerprints import eliminate_incompatible_cars, all_legacy_fingerprint_cars
@@ -197,9 +196,7 @@ def fingerprint(logcan, sendcan, num_pandas):
   if CAR_NAME is not None:
     car_fingerprint = CAR_NAME.rstrip('\n')
 
-  car_platform = PLATFORMS.get(car_fingerprint, MOCK.MOCK)
-
-  return car_platform, finger, vin, car_fw, source, exact_match
+  return car_fingerprint, finger, vin, car_fw, source, exact_match
 
 
 def get_car_interface(CP):
