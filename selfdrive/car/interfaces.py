@@ -219,8 +219,6 @@ class CarInterfaceBase(ABC):
     ret.resSpeed = 0
     ret.vFuture = 0
     ret.vFutureA = 0
-    ret.aqValue = 0
-    ret.aqValueRaw = 0
     ret.standStill = False
 
     return ret

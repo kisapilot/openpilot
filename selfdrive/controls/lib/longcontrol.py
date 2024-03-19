@@ -77,7 +77,7 @@ class LongControl:
     self.pid.reset()
     self.v_pid = v_pid
 
-  def update(self, active, CS, long_plan, accel_limits, t_since_plan, CP, radarState):
+  def update(self, active, CS, long_plan, accel_limits, t_since_plan, CO, radarState):
     self.loc_timer += 1
     if self.loc_timer > 100:
       self.loc_timer = 0
@@ -180,9 +180,9 @@ class LongControl:
     else:
       self.long_plan_source = "---"
 
-    if CP.sccBus != 0 and self.long_log:
+    if self.long_log:
       str_log3 = 'LS={:s}  LP={:s}  AQ/AR/AT/FA={:+04.2f}/{:+04.2f}/{:+04.2f}/{:+04.2f}  GB={}  ED/RD={:04.1f}/{:04.1f}  TG={:03.0f}/{:03.0f}'.format(self.long_stat, \
-       self.long_plan_source, CP.aqValue, CP.aqValueRaw, a_target, self.last_output_accel, int(CS.gasPressed or CS.brakePressed), dRel, CS.radarDistance, \
+       self.long_plan_source, CO.aqValue, CO.aqValueRaw, a_target, self.last_output_accel, int(CS.gasPressed or CS.brakePressed), dRel, CS.radarDistance, \
        (v_target*CV.MS_TO_MPH) if CS.isMph else (v_target*CV.MS_TO_KPH), (v_target_1sec*CV.MS_TO_MPH) if CS.isMph else (v_target_1sec*CV.MS_TO_KPH))
       trace1.printf3('{}'.format(str_log3))
 

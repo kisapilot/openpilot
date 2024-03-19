@@ -422,6 +422,9 @@ struct CarControl {
     expModeTemp @13: Bool;
     btnPressing @14: Int8;
 
+    aqValue @15: Float32;
+    aqValueRaw @16: Float32;
+
     enum LongControlState @0xe40f3a917d908282{
       off @0;
       pid @1;
@@ -599,14 +602,12 @@ struct CarParams {
   vCruisekph @88: Float32;
   resSpeed @89: Float32;
   vFuture @90: Float32;
-  aqValue @91: Float32;
-  aqValueRaw @92: Float32;
-  vFutureA @93: Float32;
-  autoHoldAvailable @94 :Bool;
-  scc13Available @95 :Bool;
-  scc14Available @96 :Bool;
-  lfaHdaAvailable @97 :Bool;
-  navAvailable @98 :Bool;
+  vFutureA @91: Float32;
+  autoHoldAvailable @92 :Bool;
+  scc13Available @93 :Bool;
+  scc14Available @94 :Bool;
+  lfaHdaAvailable @95 :Bool;
+  navAvailable @96 :Bool;
 
   struct SmoothSteerData
   {

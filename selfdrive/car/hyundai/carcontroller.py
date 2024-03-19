@@ -1314,6 +1314,8 @@ class CarController(CarControllerBase):
     new_actuators.steerOutputCan = apply_steer
     new_actuators.accel = self.accel if self.CP.sccBus == 2 else accel
 
+    new_actuators.aqValue = self.aq_value
+    new_actuators.aqValueRaw = self.aq_value_raw
     new_actuators.safetySpeed = self.NC.safetycam_speed
     new_actuators.lkasTemporaryOff = self.lkas_temp_disabled
     new_actuators.gapBySpdOnTemp = (self.gap_by_spd_on_sw_trg and self.gap_by_spd_on)

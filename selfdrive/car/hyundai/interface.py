@@ -310,8 +310,6 @@ class CarInterface(CarInterfaceBase):
       self.CP.vFutureA = self.CC.vFutureA
     else:
       self.CP.vFutureA = 0
-    self.CP.aqValue = self.CC.aq_value
-    self.CP.aqValueRaw = self.CC.aq_value_raw
 
     if self.CC.mode_change_timer and self.CS.out.cruiseState.modeSel == 0:
       events.add(EventName.modeChangeOpenpilot)
