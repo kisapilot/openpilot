@@ -218,7 +218,7 @@ DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent) {
 
   QObject::connect(uiState(), &UIState::offroadTransition, [=](bool offroad) {
     for (auto btn : findChildren<ButtonControl *>()) {
-      btn->setEnabled(offroad);
+      btn->setEnabled(true);
     }
   });
 
@@ -388,7 +388,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
       params.putBool("DoUninstall", true);
     }
   });
-  connect(parent, SIGNAL(offroadTransition(bool)), uninstallBtn, SLOT(setEnabled(bool)));
+  connect(parent, SIGNAL(offroadTransition(bool)), uninstallBtn, SLOT(setEnabled(true)));
 
   QWidget *widgets[] = {versionLbl, gitRemoteLbl, gitBranchLbl, lastUpdateLbl, updateBtn, gitCommitLbl};
   for (QWidget* w : widgets) {
