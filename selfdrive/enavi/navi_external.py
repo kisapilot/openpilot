@@ -47,7 +47,7 @@ class ENavi:
     self.dest = {"latitude": 0.0, "longitude": 0.0,}
     self.waypoints = [(0.0, 0.0),]
 
-    self.Auto_IP = self.params.get_bool("ExternalDeviceIPAuto")
+    self.Auto_IP = int(self.params.get("ExternalDeviceIPAuto", encoding="utf8"))
 
     self.KISA_Debug = self.params.get_bool("KISADebug")
     if self.KISA_Debug:
@@ -138,20 +138,23 @@ class ENavi:
         try:
           out = subprocess.check_output("ip route", shell=True)
           ip_via = str(out.strip().decode()).split('via ')[1].split(' ')[0]
-          ip_src = str(out.strip().decode()).split('src ')[1].split(' ')[0]
-          compare1 = ip_src.split('.')
-          c_num = 0
-          for compare2 in ip_via.split('.'):
-            if compare2 != compare1[c_num]:
-              break
-            else:
-              c_num += 1
-          compare1[c_num] = '*'
-          ip_s = '.'.join(compare1)
-          for x in range(1, 255):
-            self.ip_list_out.append(ip_s.replace('*', str(x)))
-          self.ip_list_out.remove(ip_src)
-          random.shuffle(self.ip_list_out)
+          if self.Auto_IP == 1:
+            ip_src = str(out.strip().decode()).split('src ')[1].split(' ')[0]
+            compare1 = ip_src.split('.')
+            c_num = 0
+            for compare2 in ip_via.split('.'):
+              if compare2 != compare1[c_num]:
+                break
+              else:
+                c_num += 1
+            compare1[c_num] = '*'
+            ip_s = '.'.join(compare1)
+            for x in range(1, 255):
+              self.ip_list_out.append(ip_s.replace('*', str(x)))
+            self.ip_list_out.remove(ip_src)
+            random.shuffle(self.ip_list_out)
+          elif self.Auto_IP == 2:
+            self.ip_list_out.append(ip_via)
         except:
           pass
       if (self.count % 60) == 0:

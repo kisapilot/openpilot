@@ -4088,6 +4088,10 @@ This may take up to a minute.</source>
         <translation>자동감지</translation>
     </message>
     <message>
+        <source>GatewayIP</source>
+        <translation>핫스팟IP</translation>
+    </message>
+    <message>
         <source>ManualInput</source>
         <translation>수동입력</translation>
     </message>

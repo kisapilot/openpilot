@@ -8495,8 +8495,14 @@ ExternalDeviceIP::ExternalDeviceIP() : AbstractControl(tr("ExternalDevIP"), tr("
   hlayout->addWidget(&btn);
 
   QObject::connect(&btna, &QPushButton::clicked, [=]() {
-    bool stat = params.getBool("ExternalDeviceIPAuto");
-    params.putBool("ExternalDeviceIPAuto", !stat);
+    auto str = QString::fromStdString(params.get("ExternalDeviceIPAuto"));
+    int value = str.toInt();
+    value = value + 1;
+    if (value >= 3) {
+      value = 0;
+    }
+    QString values = QString::number(value);
+    params.put("ExternalDeviceIPAuto", values.toStdString());
     refresh();
   });
 
@@ -8511,22 +8517,8 @@ ExternalDeviceIP::ExternalDeviceIP() : AbstractControl(tr("ExternalDevIP"), tr("
 }
 
 void ExternalDeviceIP::refresh() {
-  bool param = params.getBool("ExternalDeviceIPAuto");
-  if (param) {
-    btna.setText(tr("AutoDetect"));
-    btna.setStyleSheet(R"(
-    padding: 0;
-    border-radius: 50px;
-    font-size: 35px;
-    font-weight: 500;
-    color: #E4E4E4;
-    background-color: #00A12E;
-    )");
-    edit.setText("");
-    btn.setText("");
-    btn.setEnabled(false);
-    edit.setEnabled(false);
-  } else {
+  QString option = QString::fromStdString(params.get("ExternalDeviceIPAuto"));
+  if (option == "0") {
     auto strs = QString::fromStdString(params.get("ExternalDeviceIP"));
     edit.setText(QString::fromStdString(strs.toStdString()));
     btn.setText(tr("SET"));
@@ -8541,6 +8533,34 @@ void ExternalDeviceIP::refresh() {
     )");
     btn.setEnabled(true);
     edit.setEnabled(true);
+  } else if (option == "1") {
+    btna.setText(tr("AutoDetect"));
+    btna.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #00A12E;
+    )");
+    edit.setText("");
+    btn.setText("");
+    btn.setEnabled(false);
+    edit.setEnabled(false);
+  } else {
+    btna.setText(tr("GatewayIP"));
+    btna.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #00A1FF;
+    )");
+    edit.setText("");
+    btn.setText("");
+    btn.setEnabled(false);
+    edit.setEnabled(false);
   }
 }
 
