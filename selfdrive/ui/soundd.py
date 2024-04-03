@@ -36,13 +36,13 @@ sound_list: dict[int, tuple[str, int | None, float]] = {
   AudibleAlert.refuse: ("refuse.wav", 1, MAX_VOLUME),
 
   AudibleAlert.prompt: ("prompt.wav", 1, MAX_VOLUME),
-  AudibleAlert.promptRepeat: ("prompt.wav", None, MAX_VOLUME),
-  AudibleAlert.promptDistracted: ("prompt_distracted.wav", None, MAX_VOLUME),
+  AudibleAlert.promptRepeat: ("prompt.wav", 10, MAX_VOLUME),
+  AudibleAlert.promptDistracted: ("prompt_distracted.wav", 10, MAX_VOLUME),
 
-  AudibleAlert.warningSoft: ("warning_soft.wav", None, MAX_VOLUME),
-  AudibleAlert.warningImmediate: ("warning_immediate.wav", None, MAX_VOLUME),
-  AudibleAlert.warning: ("warning.wav", None, MAX_VOLUME),
-  AudibleAlert.dingdong: ("dingdong.wav", None, MAX_VOLUME),
+  AudibleAlert.warningSoft: ("warning_soft.wav", 10, MAX_VOLUME),
+  AudibleAlert.warningImmediate: ("warning_immediate.wav", 10, MAX_VOLUME),
+  AudibleAlert.warning: ("warning.wav", 1, MAX_VOLUME),
+  AudibleAlert.dingdong: ("dingdong.wav", 1, MAX_VOLUME),
 }
 
 def check_controls_timeout_alert(sm):
