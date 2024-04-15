@@ -53,7 +53,7 @@ function agnos_init {
     chmod 600 /data/params/d/GithubSshKeys
   fi
 
-  cat /data/openpilot/selfdrive/car/hyundai/values.py | grep '    "' | grep -v "Requires" | grep -v "comma 3X" | awk -F'"' '{print $2}' > /data/CarList
+  cat /data/openpilot/selfdrive/car/hyundai/values.py | grep ' = Hyundai' | awk '{print $1}' > /data/CarList
 }
 
 function launch {
