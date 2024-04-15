@@ -18,7 +18,7 @@ from openpilot.common.params import Params
 from openpilot.common.realtime import DT_TRML
 from openpilot.selfdrive.controls.lib.alertmanager import set_offroad_alert
 from openpilot.system.hardware import HARDWARE, TICI, AGNOS
-from openpilot.system.loggerd.config import get_available_percent
+from openpilot.system.loggerd.config import get_available_percenta
 from openpilot.selfdrive.statsd import statlog
 from openpilot.common.swaglog import cloudlog
 from openpilot.selfdrive.thermald.power_monitoring import PowerMonitoring
@@ -262,7 +262,7 @@ def thermald_thread(end_event, hw_queue) -> None:
     except queue.Empty:
       pass
 
-    msg.deviceState.freeSpacePercent = get_available_percent(default=100.0)
+    msg.deviceState.freeSpacePercent = get_available_percenta(default=100.0)
     msg.deviceState.memoryUsagePercent = int(round(psutil.virtual_memory().percent))
     msg.deviceState.gpuUsagePercent = int(round(HARDWARE.get_gpu_usage_percent()))
     online_cpu_usage = [int(round(n)) for n in psutil.cpu_percent(percpu=True)]

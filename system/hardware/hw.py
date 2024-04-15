@@ -56,3 +56,7 @@ class Paths:
       return Paths.comma_home()
     else:
       return "/tmp/.comma"
+
+  @staticmethod
+  def log_roota() -> str:
+    return '/data/media/'
