@@ -13,7 +13,6 @@
 #include "selfdrive/ui/qt/util.h"
 #include "selfdrive/ui/qt/qt_window.h"
 #include "selfdrive/ui/qt/widgets/scrollview.h"
-#include "selfdrive/ui/qt/widgets/input.h"
 #include "common/params.h"
 
 int main(int argc, char *argv[]) {

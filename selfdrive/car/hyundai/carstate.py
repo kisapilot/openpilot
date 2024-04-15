@@ -447,7 +447,7 @@ class CarState(CarStateBase):
     # as this seems to be standard over all cars, but is not the preferred method.
     if self.CP.flags & (HyundaiFlags.HYBRID | HyundaiFlags.EV):
       gear = cp.vl["ELECT_GEAR"]["Elect_Gear_Shifter"]
-      if self.CP.carFingerprint == CAR.NEXO_FE:
+      if self.CP.carFingerprint == CAR.HYUNDAI_NEXO_FE:
         gear = cp.vl["EMS20"]["Elect_Gear_Shifter_NEXO"] # kisa, NEXO gear by multikyd
       else:
         gear = cp.vl["ELECT_GEAR"]["Elect_Gear_Shifter"]
@@ -553,7 +553,7 @@ class CarState(CarStateBase):
 
     # TODO: alt signal usage may be described by cp.vl['BLINKERS']['USE_ALT_LAMP']
     left_blinker_sig, right_blinker_sig = "LEFT_LAMP", "RIGHT_LAMP"
-    if self.CP.carFingerprint == CAR.KONA_EV_2ND_GEN:
+    if self.CP.carFingerprint == CAR.HYUNDAI_KONA_EV_2ND_GEN:
       left_blinker_sig, right_blinker_sig = "LEFT_LAMP_ALT", "RIGHT_LAMP_ALT"
     ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(50, cp.vl["BLINKERS"][left_blinker_sig],
                                                                       cp.vl["BLINKERS"][right_blinker_sig])
@@ -683,7 +683,7 @@ class CarState(CarStateBase):
 
     if CP.flags & (HyundaiFlags.HYBRID | HyundaiFlags.EV):
       messages.append(("ELECT_GEAR", 20))
-      if CP.carFingerprint == CAR.NEXO_FE:
+      if CP.carFingerprint == CAR.HYUNDAI_NEXO_FE:
         messages.append(("EMS20", 20))
     elif CP.carFingerprint in CAN_GEARS["use_cluster_gears"]:
       pass
