@@ -27,3 +27,12 @@ def get_available_bytes(default=None):
     available_bytes = default
 
   return available_bytes
+
+def get_available_percenta(default=None):
+  try:
+    statvfs = os.statvfs(Paths.log_roota())
+    available_percent = 100.0 * statvfs.f_bavail / statvfs.f_blocks
+  except OSError:
+    available_percent = default
+
+  return available_percent
