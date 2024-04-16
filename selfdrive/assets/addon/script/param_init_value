@@ -168,3 +168,4 @@ UseLegacyLaneModel:2
 LCTimingKeepFactorLeft:10
 LCTimingKeepFactorRight:10
 LCTimingKeepFactorEnable:1
+KISACruiseSpammingInterval:7
