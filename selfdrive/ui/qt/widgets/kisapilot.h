@@ -2940,3 +2940,18 @@ private:
   
   void refresh();
 };
+
+class KISACruiseSpammingInterval : public AbstractControl {
+  Q_OBJECT
+
+public:
+  KISACruiseSpammingInterval();
+
+private:
+  QPushButton btnplus;
+  QPushButton btnminus;
+  QLabel label;
+  Params params;
+  
+  void refresh();
+};

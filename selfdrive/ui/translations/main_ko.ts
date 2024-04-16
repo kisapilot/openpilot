@@ -4260,4 +4260,15 @@ This may take up to a minute.</source>
         <translation>1.기본 모델 경로(콤마 최신), 2.MPC 모델(기존), 3.Mix(높은커브곡률에서는 모델 경로를 사용하고, 낮은 곡률(직선로)에서는 MPC경로를 사용합니다. 직선로 주행시 차선을 좀더 추종하여 직진성을 향상시키고, 커브에서는 모델경로를 사용하여 주행에 도움을 줄 수 있습니다.)</translation>
     </message>
 </context>
+<context>
+    <name>KISACruiseSpammingInterval</name>
+    <message>
+        <source>Cruise Spamming Interval</source>
+        <translation>크루즈 버튼 타이밍 간격</translation>
+    </message>
+    <message>
+        <source>Adjust Cruise Spamming Interval if SetSpeed is not changed appropriately. Low values can make SetSpeed quickly, but could make cluster(CAN) error. Default Value: 7</source>
+        <translation>가변 크루즈 속도 변화가 없을 시 값을 낮춰보세요. 너무 낮은 값은 클러스터(캔) 오류를 발생시킬 수 있습니다. 기본값: 7</translation>
+    </message>
+</context>
 </TS>

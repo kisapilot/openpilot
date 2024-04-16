@@ -252,6 +252,7 @@ CVariableCruiseGroup::CVariableCruiseGroup(void *p) : CGroupWidget( tr("Variable
 
   pBoxLayout->addWidget(new VariableCruiseToggle());
   pBoxLayout->addWidget(new CruiseSpammingLevel());
+  pBoxLayout->addWidget(new KISACruiseSpammingInterval());
   pBoxLayout->addWidget(new CruisemodeSelInit());
   pBoxLayout->addWidget(new CruiseOverMaxSpeedToggle());
   pBoxLayout->addWidget(new SetSpeedByFive());
@@ -9544,4 +9545,63 @@ void UseLegacyLaneModel::refresh() {
   } else {
     label.setText(tr("Mix"));
   }
+}
+
+KISACruiseSpammingInterval::KISACruiseSpammingInterval() : AbstractControl(tr("Cruise Spamming Interval"), tr("Adjust Cruise Spamming Interval if SetSpeed is not changed appropriately. Low values can make SetSpeed quickly, but could make cluster(CAN) error. Default Value: 7"), "../assets/offroad/icon_shell.png") {
+
+  label.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
+  label.setStyleSheet("color: #e0e879");
+  hlayout->addWidget(&label);
+
+  btnminus.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+  btnplus.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+  btnminus.setFixedSize(150, 100);
+  btnplus.setFixedSize(150, 100);
+  btnminus.setText("－");
+  btnplus.setText("＋");
+  hlayout->addWidget(&btnminus);
+  hlayout->addWidget(&btnplus);
+
+  QObject::connect(&btnminus, &QPushButton::clicked, [=]() {
+    auto str = QString::fromStdString(params.get("KISACruiseSpammingInterval"));
+    int value = str.toInt();
+    value = value - 1;
+    if (value <= 0) {
+      value = 7;
+    }
+    QString values = QString::number(value);
+    params.put("KISACruiseSpammingInterval", values.toStdString());
+    refresh();
+  });
+  
+  QObject::connect(&btnplus, &QPushButton::clicked, [=]() {
+    auto str = QString::fromStdString(params.get("KISACruiseSpammingInterval"));
+    int value = str.toInt();
+    value = value + 1;
+    if (value >= 8) {
+      value = 1;
+    }
+    QString values = QString::number(value);
+    params.put("KISACruiseSpammingInterval", values.toStdString());
+    refresh();
+  });
+  refresh();
+}
+
+void KISACruiseSpammingInterval::refresh() {
+  label.setText(QString::fromStdString(params.get("KISACruiseSpammingInterval")));
 }
