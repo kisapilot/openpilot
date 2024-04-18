@@ -1065,17 +1065,17 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     sp_yr = sp_yr + j_num;
     p.setPen(whiteColor(200));
     debugText(p, sp_xr, sp_yr, QString("GPS PREC"), 150, 27);
-    if (s->scene.gpsAccuracyUblox > 1.3) {
+    if (s->scene.gpsAccuracy > 1.3) {
       p.setPen(redColor(200));
-    } else if (s->scene.gpsAccuracyUblox > 0.85) {
+    } else if (s->scene.gpsAccuracy > 0.85) {
       p.setPen(orangeColor(200));
     }
-    if (s->scene.gpsAccuracyUblox > 99 || s->scene.gpsAccuracyUblox == 0) {
+    if (s->scene.gpsAccuracy > 99 || s->scene.gpsAccuracy == 0) {
       debugText(p, sp_xr, sp_yr+60, "None", 150, 52);
-    } else if (s->scene.gpsAccuracyUblox > 9.99) {
-      debugText(p, sp_xr, sp_yr+60, QString::number(s->scene.gpsAccuracyUblox, 'f', 1), 150, 57);
+    } else if (s->scene.gpsAccuracy > 9.99) {
+      debugText(p, sp_xr, sp_yr+60, QString::number(s->scene.gpsAccuracy, 'f', 1), 150, 57);
     } else {
-      debugText(p, sp_xr, sp_yr+60, QString::number(s->scene.gpsAccuracyUblox, 'f', 2), 150, 57);
+      debugText(p, sp_xr, sp_yr+60, QString::number(s->scene.gpsAccuracy, 'f', 2), 150, 57);
     }
     p.translate(sp_xr + 90, sp_yr + 20);
     p.rotate(-90);

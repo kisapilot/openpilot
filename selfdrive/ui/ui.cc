@@ -341,18 +341,32 @@ static void update_state(UIState *s) {
   } else if ((s->sm->frame - s->sm->rcv_frame("pandaStates")) > 5*UI_FREQ) {
     scene.pandaType = cereal::PandaState::PandaType::UNKNOWN;
   }
-  if (sm.updated("ubloxGnss")) {
-    auto ub_data = sm["ubloxGnss"].getUbloxGnss();
-    if (ub_data.which() == cereal::UbloxGnss::MEASUREMENT_REPORT) {
-      scene.satelliteCount = ub_data.getMeasurementReport().getNumMeas();
+  if (scene.pandaType == cereal::PandaState::PandaType::TRES) {
+    if (sm.updated("qcomGnss")) {
+      auto ub_data = sm["qcomGnss"].getQcomGnss();
+      if (ub_data.which() == cereal::QcomGnss::MEASUREMENT_REPORT) {
+        scene.satelliteCount = ub_data.getMeasurementReport().getGlonassCycleNumber();
+      }
     }
-  }
-  if (sm.updated("gpsLocationExternal")) {
-    scene.gpsAccuracy = sm["gpsLocationExternal"].getGpsLocationExternal().getHorizontalAccuracy();
-    auto ge_data = sm["gpsLocationExternal"].getGpsLocationExternal();
-    scene.gpsAccuracyUblox = ge_data.getHorizontalAccuracy();
-    scene.altitudeUblox = ge_data.getAltitude();
-    scene.bearingUblox = ge_data.getBearingDeg();
+    if (sm.updated("gpsLocation")) {
+      auto ge_data = sm["gpsLocation"].getGpsLocation();
+      scene.gpsAccuracy = ge_data.getHorizontalAccuracy();
+      scene.altitude = ge_data.getAltitude();
+      scene.bearing = ge_data.getBearingDeg();
+    }    
+  } else {
+    if (sm.updated("ubloxGnss")) {
+      auto ub_data = sm["ubloxGnss"].getUbloxGnss();
+      if (ub_data.which() == cereal::UbloxGnss::MEASUREMENT_REPORT) {
+        scene.satelliteCount = ub_data.getMeasurementReport().getNumMeas();
+      }
+    }
+    if (sm.updated("gpsLocationExternal")) {
+      auto ge_data = sm["gpsLocationExternal"].getGpsLocationExternal();
+      scene.gpsAccuracy = ge_data.getHorizontalAccuracy();
+      scene.altitude = ge_data.getAltitude();
+      scene.bearing = ge_data.getBearingDeg();
+    }
   }
   if (sm.updated("carParams")) {
     auto cp_data = sm["carParams"].getCarParams();
@@ -593,7 +607,7 @@ UIState::UIState(QObject *parent) : QObject(parent) {
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState",
     "pandaStates", "carParams", "driverMonitoringState", "carState", "liveLocationKalman", "driverStateV2",
     "wideRoadCameraState", "managerState", "navInstruction", "navRoute", "uiPlan",
-    "peripheralState", "liveParameters", "ubloxGnss", "gpsLocationExternal",
+    "peripheralState", "liveParameters", "ubloxGnss", "qcomGnss", "gpsLocationExternal", "gpsLocation",
     "lateralPlan", "longitudinalPlan", "liveENaviData", "liveMapData",
   });
 
