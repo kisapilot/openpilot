@@ -342,12 +342,6 @@ static void update_state(UIState *s) {
     scene.pandaType = cereal::PandaState::PandaType::UNKNOWN;
   }
   if (scene.pandaType == cereal::PandaState::PandaType::TRES) {
-    if (sm.updated("qcomGnss")) {
-      auto ub_data = sm["qcomGnss"].getQcomGnss();
-      if (ub_data.which() == cereal::QcomGnss::MEASUREMENT_REPORT) {
-        scene.satelliteCount = ub_data.getMeasurementReport().getGlonassCycleNumber().getSv().getObservations();
-      }
-    }
     if (sm.updated("gpsLocation")) {
       auto ge_data = sm["gpsLocation"].getGpsLocation();
       scene.gpsAccuracy = ge_data.getVerticalAccuracy();
