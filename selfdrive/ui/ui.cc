@@ -345,12 +345,12 @@ static void update_state(UIState *s) {
     if (sm.updated("qcomGnss")) {
       auto ub_data = sm["qcomGnss"].getQcomGnss();
       if (ub_data.which() == cereal::QcomGnss::MEASUREMENT_REPORT) {
-        scene.satelliteCount = ub_data.getMeasurementReport().getGlonassCycleNumber();
+        scene.satelliteCount = ub_data.getMeasurementReport().getGlonassCycleNumber().getSv().getObservations();
       }
     }
     if (sm.updated("gpsLocation")) {
       auto ge_data = sm["gpsLocation"].getGpsLocation();
-      scene.gpsAccuracy = ge_data.getHorizontalAccuracy();
+      scene.gpsAccuracy = ge_data.getVerticalAccuracy();
       scene.altitude = ge_data.getAltitude();
       scene.bearing = ge_data.getBearingDeg();
     }    
