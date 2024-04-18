@@ -169,3 +169,4 @@ LCTimingKeepFactorLeft:10
 LCTimingKeepFactorRight:10
 LCTimingKeepFactorEnable:1
 KISACruiseSpammingInterval:7
+KISACruiseSpammingBtnCount:2

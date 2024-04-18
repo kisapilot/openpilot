@@ -248,6 +248,7 @@ def manager_init() -> None:
     ("LCTimingKeepFactorRight", "10"),
     ("LCTimingKeepFactorEnable", "1"),
     ("KISACruiseSpammingInterval", "7"),
+    ("KISACruiseSpammingBtnCount", "2"),
   ]
   if not PC:
     default_params.append(("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')))
