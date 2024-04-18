@@ -250,6 +250,7 @@ class CarController(CarControllerBase):
 
     self.btnsignal = 0
     self.nt_interval = int(self.c_params.get("KISACruiseSpammingInterval", encoding="utf8"))
+    self.btn_count = int(self.c_params.get("KISACruiseSpammingBtnCount", encoding="utf8"))
     self.second2 = 0
     self.experimental_mode_temp = self.experimental_mode
     self.exp_mode_push = False
@@ -666,7 +667,7 @@ class CarController(CarControllerBase):
                 self.switch_timer -= 1
               else:
                 btn_count = 1
-                btn_count = int(interp(self.NC.t_interval, [self.nt_interval+3,70],[1,2])) if CS.is_set_speed_in_mph else int(interp(self.NC.t_interval, [self.nt_interval,40],[1,2]))
+                btn_count = int(interp(self.NC.t_interval, [self.nt_interval+3,70],[1,self.btn_count])) if CS.is_set_speed_in_mph else int(interp(self.NC.t_interval, [self.nt_interval,40],[1,self.btn_count]))
                 can_sends.extend([hyundaican.create_clu11(self.packer, self.resume_cnt, CS.clu11, btn_signal)] * btn_count) if not self.longcontrol \
                 else can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_signal, clu11_speed, self.CP.sccBus)] * btn_count)
                 self.resume_cnt += 1
@@ -764,7 +765,7 @@ class CarController(CarControllerBase):
                 self.switch_timer -= 1
               else:
                 btn_count = 1
-                btn_count = int(interp(self.NC.t_interval, [self.nt_interval+3,70],[1,2])) if CS.is_set_speed_in_mph else int(interp(self.NC.t_interval, [self.nt_interval,40],[1,2]))
+                btn_count = int(interp(self.NC.t_interval, [self.nt_interval+3,70],[1,self.btn_count])) if CS.is_set_speed_in_mph else int(interp(self.NC.t_interval, [self.nt_interval,40],[1,self.btn_count]))
                 can_sends.extend([hyundaican.create_clu11(self.packer, self.resume_cnt, CS.clu11, btn_signal)] * btn_count) if not self.longcontrol \
                 else can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_signal, clu11_speed, self.CP.sccBus)] * btn_count)
                 self.resume_cnt += 1

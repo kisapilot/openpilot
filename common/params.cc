@@ -420,6 +420,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"CruiseSpammingSpd", PERSISTENT},
     {"CruiseSpammingLevel", PERSISTENT},
     {"KISACruiseSpammingInterval", PERSISTENT},
+    {"KISACruiseSpammingBtnCount", PERSISTENT},
     {"KisaCruiseGapSet", PERSISTENT},
     {"KisaPilotCurrentDescription", PERSISTENT},
     {"UseLegacyLaneModel", PERSISTENT},

@@ -4267,8 +4267,19 @@ This may take up to a minute.</source>
         <translation>크루즈 버튼 타이밍 간격</translation>
     </message>
     <message>
-        <source>Adjust Cruise Spamming Interval if SetSpeed is not changed appropriately. Low values can make SetSpeed quickly, but could make cluster(CAN) error. Default Value: 7</source>
+        <source>Adjust Cruise Spamming Interval if SCC SetSpeed is not changed appropriately. Low values can make SetSpeed quickly, but could make cluster(CAN) error. Default Value: 7</source>
         <translation>가변 크루즈 속도 변화가 없을 시 값을 낮춰보세요. 너무 낮은 값은 클러스터(캔) 오류를 발생시킬 수 있습니다. 기본값: 7</translation>
+    </message>
+</context>
+<context>
+    <name>KISACruiseSpammingBtnCount</name>
+    <message>
+        <source>Cruise Spamming Btn Count</source>
+        <translation>크루즈 버튼 전송 개수</translation>
+    </message>
+    <message>
+        <source>Increase Count if SCC SetSpeed is not changed appropriately, but could make cluster(CAN) error. Default Value: 2</source>
+        <translation>가변 크루즈 속도 변화가 없을 시 값을 높여보세요. 너무 높은 값은 클러스터(캔) 오류를 발생시킬 수 있습니다. 기본값: 2</translation>
     </message>
 </context>
 </TS>
