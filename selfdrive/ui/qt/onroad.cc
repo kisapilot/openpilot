@@ -1092,7 +1092,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.translate(sp_xr + 90, sp_yr + 20);
     p.rotate(-90);
     p.setFont(InterFont(27, QFont::DemiBold));
-    p.drawText(-45, 0, QString::number(s->scene.altitudeUblox, 'f', 0) + "m");
+    p.drawText(-45, 0, QString::number(s->scene.altitude, 'f', 0) + "m");
     p.resetMatrix();
 
     // kisapilot tpms
