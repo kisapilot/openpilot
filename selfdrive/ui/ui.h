@@ -89,9 +89,11 @@ typedef struct UIScene {
   bool gasPress;
   bool autoHold;
 
-  float gpsAccuracyUblox;
-  float altitudeUblox;
-  float bearingUblox;
+  // gps
+  int satelliteCount;
+  float gpsAccuracy;
+  float altitude;
+  float bearing;
 
   int cpuPerc;
   float cpuTemp;
@@ -204,9 +206,6 @@ typedef struct UIScene {
   bool low_ui_profile;
   bool multi_btn_touched = false;
   float multi_btn_slide_timer = 0;
-  // gps
-  int satelliteCount;
-  float gpsAccuracy;
 
   bool hotspot_on_boot;
   bool hotspot_trigger = false;
