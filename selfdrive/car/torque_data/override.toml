@@ -69,6 +69,7 @@ legend = ["LAT_ACCEL_FACTOR", "MAX_LAT_ACCEL_MEASURED", "FRICTION"]
 "HYUNDAI_STARIA_4TH_GEN" = [1.8, 2.0, 0.15]
 "KIA_K8_GL3" = [2.5, 2.5, 0.1]
 "KIA_K5_HEV_JF" = [2.5, 2.5, 0.1]
+"HYUNDAI_IONIQ_5_PE" = [1.75, 1.75, 0.15]
 
 # Dashcam or fallback configured as ideal car
 "MOCK" = [10.0, 10, 0.0]

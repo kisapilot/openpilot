@@ -5,7 +5,7 @@ from openpilot.selfdrive.car.hyundai.tunes import LatTunes, LongTunes, set_long_
 from openpilot.selfdrive.car.hyundai.hyundaicanfd import CanBus
 from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, CANFD_CAR, CAMERA_SCC_CAR, CANFD_RADAR_SCC_CAR, \
                                          CANFD_UNSUPPORTED_LONGITUDINAL_CAR, EV_CAR, HYBRID_CAR, LEGACY_SAFETY_MODE_CAR, \
-                                         UNSUPPORTED_LONGITUDINAL_CAR, Buttons, LEGACY_SAFETY_MODE_CAR_ALT
+                                         UNSUPPORTED_LONGITUDINAL_CAR, Buttons, LEGACY_SAFETY_MODE_CAR_ALT, ANGLE_CONTROL_CAR
 from openpilot.selfdrive.car.hyundai.radar_interface import RADAR_START_ADDR
 from openpilot.selfdrive.car import create_button_events, get_safety_config
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
@@ -18,6 +18,7 @@ from decimal import Decimal
 Ecu = car.CarParams.Ecu
 ButtonType = car.CarState.ButtonEvent.Type
 EventName = car.CarEvent.EventName
+SteerControlType = car.CarParams.SteerControlType
 ENABLE_BUTTONS = (Buttons.RES_ACCEL, Buttons.SET_DECEL, Buttons.CANCEL)
 BUTTONS_DICT = {Buttons.RES_ACCEL: ButtonType.accelCruise, Buttons.SET_DECEL: ButtonType.decelCruise,
                 Buttons.GAP_DIST: ButtonType.gapAdjustCruise, Buttons.CANCEL: ButtonType.cancel}
@@ -95,20 +96,21 @@ class CarInterface(CarInterfaceBase):
     ret.experimentalLong = Params().get_bool("ExperimentalLongitudinalEnabled")
     ret.experimentalLongAlt = candidate in LEGACY_SAFETY_MODE_CAR_ALT
     
-
-    #set_long_tune(ret.longitudinalTuning, LongTunes.KISA)
-    lat_control_method = int(params.get("LateralControlMethod", encoding="utf8"))
-    if lat_control_method == 0:
-      set_lat_tune(ret.lateralTuning, LatTunes.PID)
-    elif lat_control_method == 1:
-      set_lat_tune(ret.lateralTuning, LatTunes.INDI)
-    elif lat_control_method == 2:
-      set_lat_tune(ret.lateralTuning, LatTunes.LQR)
-    elif lat_control_method == 3:
-      #set_lat_tune(ret.lateralTuning, LatTunes.TORQUE)
-      CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
-    elif lat_control_method == 4:
-      set_lat_tune(ret.lateralTuning, LatTunes.ATOM)    # Hybrid tune
+    if candidate in ANGLE_CONTROL_CAR:
+      ret.steerControlType = SteerControlType.angle
+    else:
+      lat_control_method = int(params.get("LateralControlMethod", encoding="utf8"))
+      if lat_control_method == 0:
+        set_lat_tune(ret.lateralTuning, LatTunes.PID)
+      elif lat_control_method == 1:
+        set_lat_tune(ret.lateralTuning, LatTunes.INDI)
+      elif lat_control_method == 2:
+        set_lat_tune(ret.lateralTuning, LatTunes.LQR)
+      elif lat_control_method == 3:
+        #set_lat_tune(ret.lateralTuning, LatTunes.TORQUE)
+        CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
+      elif lat_control_method == 4:
+        set_lat_tune(ret.lateralTuning, LatTunes.ATOM)    # Hybrid tune
 
     # *** longitudinal control ***
     if candidate in CANFD_CAR:

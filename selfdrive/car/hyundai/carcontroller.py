@@ -3,10 +3,10 @@ from openpilot.common.conversions import Conversions as CV
 from openpilot.common.numpy_fast import clip, interp
 from openpilot.common.realtime import DT_CTRL
 from opendbc.can.packer import CANPacker
-from openpilot.selfdrive.car import apply_driver_steer_torque_limits, common_fault_avoidance
+from openpilot.selfdrive.car import apply_driver_steer_torque_limits, common_fault_avoidance, apply_std_steer_angle_limits
 from openpilot.selfdrive.car.hyundai import hyundaicanfd, hyundaican
 from openpilot.selfdrive.car.hyundai.hyundaicanfd import CanBus
-from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, Buttons, CarControllerParams, CANFD_CAR, CAR, LEGACY_SAFETY_MODE_CAR_ALT
+from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, Buttons, CarControllerParams, CANFD_CAR, CAR, LEGACY_SAFETY_MODE_CAR_ALT, ANGLE_CONTROL_CAR
 from openpilot.selfdrive.car.interfaces import CarControllerBase
 
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
@@ -67,6 +67,8 @@ class CarController(CarControllerBase):
     self.car_fingerprint = CP.carFingerprint
     self.last_button_frame = 0
 
+    self.apply_angle_last = 0
+    self.lkas_max_torque = 0
 
     self.scc12_cnt = 0
     self.aq_value = 0
@@ -264,16 +266,20 @@ class CarController(CarControllerBase):
 
     # self.usf = 0
 
-    self.str_log2 = 'MultiLateral'
-    if CP.lateralTuning.which() == 'pid':
-      self.str_log2 = 'T={:0.2f}/{:0.3f}/{:0.5f}/{:0.2f}'.format(CP.lateralTuning.pid.kpV[1], CP.lateralTuning.pid.kiV[1], CP.lateralTuning.pid.kf, CP.lateralTuning.pid.kd)
-    elif CP.lateralTuning.which() == 'indi':
-      self.str_log2 = 'T={:03.1f}/{:03.1f}/{:03.1f}/{:03.1f}'.format(CP.lateralTuning.indi.innerLoopGainV[0], CP.lateralTuning.indi.outerLoopGainV[0], \
-       CP.lateralTuning.indi.timeConstantV[0], CP.lateralTuning.indi.actuatorEffectivenessV[0])
-    elif CP.lateralTuning.which() == 'lqr':
-      self.str_log2 = 'T={:04.0f}/{:05.3f}/{:07.5f}'.format(CP.lateralTuning.lqr.scale, CP.lateralTuning.lqr.ki, CP.lateralTuning.lqr.dcGain)
-    elif CP.lateralTuning.which() == 'torque':
-      self.str_log2 = 'T={:0.2f}/{:0.2f}/{:0.2f}/{:0.3f}'.format(CP.lateralTuning.torque.kp, CP.lateralTuning.torque.kf, CP.lateralTuning.torque.ki, CP.lateralTuning.torque.friction)
+    self.str_log2 = ''
+
+    if self.car_fingerprint in ANGLE_CONTROL_CAR:
+      pass
+    else:
+      if CP.lateralTuning.which() == 'pid':
+        self.str_log2 = 'T={:0.2f}/{:0.3f}/{:0.5f}/{:0.2f}'.format(CP.lateralTuning.pid.kpV[1], CP.lateralTuning.pid.kiV[1], CP.lateralTuning.pid.kf, CP.lateralTuning.pid.kd)
+      elif CP.lateralTuning.which() == 'indi':
+        self.str_log2 = 'T={:03.1f}/{:03.1f}/{:03.1f}/{:03.1f}'.format(CP.lateralTuning.indi.innerLoopGainV[0], CP.lateralTuning.indi.outerLoopGainV[0], \
+        CP.lateralTuning.indi.timeConstantV[0], CP.lateralTuning.indi.actuatorEffectivenessV[0])
+      elif CP.lateralTuning.which() == 'lqr':
+        self.str_log2 = 'T={:04.0f}/{:05.3f}/{:07.5f}'.format(CP.lateralTuning.lqr.scale, CP.lateralTuning.lqr.ki, CP.lateralTuning.lqr.dcGain)
+      elif CP.lateralTuning.which() == 'torque':
+        self.str_log2 = 'T={:0.2f}/{:0.2f}/{:0.2f}/{:0.3f}'.format(CP.lateralTuning.torque.kp, CP.lateralTuning.torque.kf, CP.lateralTuning.torque.ki, CP.lateralTuning.torque.friction)
 
     self.sm = messaging.SubMaster(['controlsState', 'radarState', 'lateralPlan', 'longitudinalPlan', 'liveTorqueParameters'])
 
@@ -379,13 +385,39 @@ class CarController(CarControllerBase):
       self.angle_limit_counter, apply_steer_req = common_fault_avoidance(abs(CS.out.steeringAngleDeg) >= self.to_avoid_lkas_fault_max_angle, lat_active,
                                                                          self.angle_limit_counter, self.to_avoid_lkas_fault_max_frame,
                                                                          MAX_ANGLE_CONSECUTIVE_FRAMES)
-      # Hold torque with induced temporary fault when cutting the actuation bit
+      apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgoRaw, self.params)
+
+      # Figure out torque value.  On Stock when LKAS is active, this is variable,
+      # but 0 when LKAS is not actively steering, so because we're "tricking" ADAS
+      # into thinking LKAS is always active, we need to make sure we're applying
+      # torque when the driver is not actively steering. The default value chosen
+      # here is based on observations of the stock LKAS system when it's engaged
+      # CS.out.steeringPressed and steeringTorque are based on the
+      # STEERING_COL_TORQUE value
+      MAX_TORQUE = 200
+      if not bool(CS.out.steeringPressed):
+        # If steering is not pressed, use max torque (TODO: need to find this value)
+        self.lkas_max_torque = MAX_TORQUE
+      else:
+        # Steering torque seems to be a different scale than applied torque, so we
+        # calculate a percentage based on observed "max" values (~|1200| based on
+        # MDPS STEERING_COL_TORQUE) and then apply that percentage to our normal
+        # max torque, use min to clamp to 100%
+        driver_applied_torque_pct = min(abs(CS.out.steeringTorque) / 1200.0, 1.0)
+        # Use max(0, ...) to avoid negative torque in case the
+        self.lkas_max_torque = MAX_TORQUE - (driver_applied_torque_pct * MAX_TORQUE)
+
+        # Hold torque with induced temporary fault when cutting the actuation bit
       torque_fault = lat_active and not apply_steer_req
     else:
       torque_fault = False
 
     if not lat_active:
+      apply_angle = CS.out.steeringAngleDeg
       apply_steer = 0
+      self.lkas_max_torque = 0
+
+    self.apply_angle_last = apply_angle
 
     self.apply_steer_last = apply_steer
 
@@ -438,10 +470,12 @@ class CarController(CarControllerBase):
     # CAN-FD platforms
     if self.CP.carFingerprint in CANFD_CAR:
       hda2 = self.CP.flags & HyundaiFlags.CANFD_HDA2
-      hda2_long = hda2 and self.CP.openpilotLongitudinalControl
+      #hda2_long = hda2 and self.CP.openpilotLongitudinalControl
 
       # steering control
-      can_sends.extend(hyundaicanfd.create_steering_messages(self.packer, self.CP, self.CAN, CC.enabled, apply_steer_req, apply_steer))
+      can_sends.extend(hyundaicanfd.create_steering_messages(self.packer, self.CP, self.CAN, CC.enabled,
+                                                             apply_steer_req, CS.out.steeringPressed,
+                                                             apply_steer, apply_angle, self.lkas_max_torque))
 
       # prevent LFA from activating on HDA2 by sending "no lane lines detected" to ADAS ECU
       if self.frame % 5 == 0 and hda2:
@@ -449,7 +483,8 @@ class CarController(CarControllerBase):
                                                           self.CP.flags & HyundaiFlags.CANFD_HDA2_ALT_STEERING))
 
       # LFA and HDA icons
-      if self.frame % 5 == 0 and (not hda2 or hda2_long):
+      updateLfaHdaIcons = (not hda2) or self.CP.carFingerprint in ANGLE_CONTROL_CAR
+      if self.frame % 5 == 0 and updateLfaHdaIcons:
         can_sends.append(hyundaicanfd.create_lfahda_cluster(self.packer, self.CAN, CC.enabled))
 
       # blinkers
@@ -986,8 +1021,8 @@ class CarController(CarControllerBase):
       if self.CP.mdpsBus: # send mdps12 to LKAS to prevent LKAS error
         can_sends.append(hyundaican.create_mdps12(self.packer, self.frame, CS.mdps12))
 
-      # if not self.CP.openpilotLongitudinalControl:
-      #   can_sends.extend(self.create_button_messages(CC, CS, use_clu11=True))
+      if not self.CP.openpilotLongitudinalControl and self.CP.carFingerprint in CANFD_CAR:
+        can_sends.extend(self.create_button_messages(CC, CS, use_clu11=True))
 
       if self.CP.openpilotLongitudinalControl and self.experimental_long_enabled:
         if self.prev_gapButton != CS.cruise_buttons[-1]:  # gap change.
@@ -1289,7 +1324,9 @@ class CarController(CarControllerBase):
       # self.experimental_mode = self.c_params.get_bool("ExperimentalMode")
       # self.usf = int(Params().get("UserSpecificFeature", encoding="utf8"))
       if self.c_params.get_bool("KisaLiveTunePanelEnable"):
-        if self.CP.lateralTuning.which() == 'pid':
+        if self.car_fingerprint in ANGLE_CONTROL_CAR:
+          pass
+        elif self.CP.lateralTuning.which() == 'pid':
           self.str_log2 = 'T={:0.2f}/{:0.3f}/{:0.1f}/{:0.5f}'.format(float(Decimal(self.c_params.get("PidKp", encoding="utf8"))*Decimal('0.01')), \
           float(Decimal(self.c_params.get("PidKi", encoding="utf8"))*Decimal('0.001')), float(Decimal(self.c_params.get("PidKd", encoding="utf8"))*Decimal('0.01')), \
           float(Decimal(self.c_params.get("PidKf", encoding="utf8"))*Decimal('0.00001')))
@@ -1314,6 +1351,7 @@ class CarController(CarControllerBase):
     new_actuators = actuators.copy()
     new_actuators.steer = apply_steer / self.params.STEER_MAX
     new_actuators.steerOutputCan = apply_steer
+    new_actuators.steeringAngleDeg = apply_angle
     new_actuators.accel = self.accel if self.CP.sccBus == 2 else accel
 
     new_actuators.aqValue = self.aq_value
