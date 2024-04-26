@@ -955,6 +955,14 @@ FW_VERSIONS = {
       b'\xf1\x00NE1 MFC  AT USA LHD 1.00 1.06 99211-GI010 230110',
     ],
   },
+  CAR.HYUNDAI_IONIQ_5_PE: {
+    (Ecu.fwdRadar, 0x7d0, None): [
+      b'\xf1\x00NE__ RDR -----      1.00 1.00 99110-GI500         ',
+    ],
+    (Ecu.fwdCamera, 0x7c4, None): [
+      b'\xf1\x00NE  MFC  AT KOR LHD 1.00 1.02 99211-GI500 240221',
+    ],
+  },
   CAR.HYUNDAI_IONIQ_6: {
     (Ecu.fwdRadar, 0x7d0, None): [
       b'\xf1\x00CE__ RDR -----      1.00 1.01 99110-KL000         ',

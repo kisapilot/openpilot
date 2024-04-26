@@ -5,8 +5,8 @@ from enum import Enum, IntFlag
 from cereal import car
 from panda.python import uds
 from openpilot.common.conversions import Conversions as CV
-from openpilot.selfdrive.car import CarSpecs, DbcDict, PlatformConfig, Platforms, dbc_dict
-from openpilot.selfdrive.car.docs_definitions import CarFootnote, CarHarness, CarDocs, CarParts, Column
+from openpilot.selfdrive.car import CarSpecs, DbcDict, PlatformConfig, Platforms, dbc_dict, AngleRateLimit
+from openpilot.selfdrive.car.docs_definitions import CarFootnote, CarHarness, CarDocs, CarParts, Column, Mount
 from openpilot.selfdrive.car.fw_query_definitions import FwQueryConfig, Request, p16
 
 from openpilot.common.params import Params
@@ -17,6 +17,10 @@ Ecu = car.CarParams.Ecu
 class CarControllerParams:
   ACCEL_MIN = -4.0 # m/s
   ACCEL_MAX = 2.0 # m/s
+
+  # seen changing at 0.2 deg/frame down, 0.1 deg/frame up at 100Hz
+  ANGLE_RATE_LIMIT_UP = AngleRateLimit(speed_bp=[0., 5., 15.], angle_v=[5., .8, .15])
+  ANGLE_RATE_LIMIT_DOWN = AngleRateLimit(speed_bp=[0., 5., 15.], angle_v=[5., 3.5, 0.4])
 
   def __init__(self, CP):
     self.STEER_DELTA_UP = int(Params().get("SteerDeltaUpAdj", encoding="utf8"))  # default 3
@@ -92,6 +96,8 @@ class HyundaiFlags(IntFlag):
 
   LEGACY_ALT = 2 ** 24
   LEGACY_ALT2 = 2 ** 25
+
+  ANGLE_CONTROL = 2 ** 26
 
 class Footnote(Enum):
   CANFD = CarFootnote(
@@ -310,6 +316,13 @@ class CAR(Platforms):
     CarSpecs(mass=1948, wheelbase=2.97, steerRatio=14.26, tireStiffnessFactor=0.65),
     flags=HyundaiFlags.EV,
   )
+  HYUNDAI_IONIQ_5_PE = HyundaiCanFDPlatformConfig(
+    [
+      HyundaiCarDocs("Hyundai The New Ioniq 5 (with HDA II) 2024", "Highway Driving Assist II", car_parts=CarParts.common([CarHarness.hyundai_q])),
+    ],
+    CarSpecs(mass=2015, wheelbase=3, steerRatio=14.26, tireStiffnessFactor=0.65),
+    flags=HyundaiFlags.EV | HyundaiFlags.ANGLE_CONTROL,
+  )
   HYUNDAI_IONIQ_6 = HyundaiCanFDPlatformConfig(
     [HyundaiCarDocs("Hyundai Ioniq 6 (with HDA II) 2023", "Highway Driving Assist II", car_parts=CarParts.common([CarHarness.hyundai_p]))],
     HYUNDAI_IONIQ_5.specs,
@@ -488,6 +501,13 @@ class CAR(Platforms):
     ],
     CarSpecs(mass=2087, wheelbase=3.09, steerRatio=14.23),
     flags=HyundaiFlags.RADAR_SCC,
+  )
+  KIA_EV9 = HyundaiCanFDPlatformConfig(
+    [
+      HyundaiCarDocs("Kia EV9 2024", car_parts=CarParts.common([CarHarness.hyundai_r, Mount.angled_mount_8_degrees]))
+    ],
+    CarSpecs(mass=2625, wheelbase=3.1, steerRatio=16.02),
+    flags=HyundaiFlags.EV | HyundaiFlags.ANGLE_CONTROL,
   )
 
   # Genesis
@@ -834,6 +854,8 @@ LEGACY_SAFETY_MODE_CAR = CAR.with_flags(HyundaiFlags.LEGACY)
 
 LEGACY_SAFETY_MODE_CAR_ALT = CAR.with_flags(HyundaiFlags.LEGACY_ALT)
 LEGACY_SAFETY_MODE_CAR_ALT2 = CAR.with_flags(HyundaiFlags.LEGACY_ALT2)
+
+ANGLE_CONTROL_CAR = CAR.with_flags(HyundaiFlags.ANGLE_CONTROL)
 
 UNSUPPORTED_LONGITUDINAL_CAR = CAR.with_flags(HyundaiFlags.LEGACY) | CAR.with_flags(HyundaiFlags.UNSUPPORTED_LONGITUDINAL)
 
