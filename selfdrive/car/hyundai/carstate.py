@@ -526,6 +526,7 @@ class CarState(CarStateBase):
       ret.gasPressed = bool(cp.vl[self.accelerator_msg_canfd]["ACCELERATOR_PEDAL_PRESSED"])
 
     ret.brakePressed = cp.vl["TCS"]["DriverBraking"] == 1
+    ret.brakeLights = bool(cp.vl["TCS2"]["BRAKE_LIGHT"])
 
     ret.doorOpen = cp.vl["DOORS_SEATBELTS"]["DRIVER_DOOR"] == 1
     ret.seatbeltUnlatched = cp.vl["DOORS_SEATBELTS"]["DRIVER_SEATBELT"] == 0
@@ -542,6 +543,10 @@ class CarState(CarStateBase):
     )
     ret.vEgoRaw = (ret.wheelSpeeds.fl + ret.wheelSpeeds.fr + ret.wheelSpeeds.rl + ret.wheelSpeeds.rr) / 4.
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
+
+    ret.vEgoOP = ret.vEgo
+    ret.vEgo = cp.vl["CRUISE_BUTTON_ALT"]["CLUSTER_SPEED"] * CV.KPH_TO_MS if self.is_metric else cp.vl["CRUISE_BUTTON_ALT"]["CLUSTER_SPEED"] * CV.MPH_TO_MS
+
     ret.standstill = ret.wheelSpeeds.fl <= STANDSTILL_THRESHOLD and ret.wheelSpeeds.rr <= STANDSTILL_THRESHOLD
 
     ret.steeringRateDeg = cp.vl["STEERING_SENSORS"]["STEERING_RATE"]
@@ -555,7 +560,7 @@ class CarState(CarStateBase):
     left_blinker_sig, right_blinker_sig = "LEFT_LAMP", "RIGHT_LAMP"
     if self.CP.carFingerprint in (CAR.HYUNDAI_KONA_EV_2ND_GEN, ANGLE_CONTROL_CAR):
       left_blinker_sig, right_blinker_sig = "LEFT_LAMP_ALT", "RIGHT_LAMP_ALT"
-    ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(50, cp.vl["BLINKERS"][left_blinker_sig],
+    ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(75, cp.vl["BLINKERS"][left_blinker_sig],
                                                                       cp.vl["BLINKERS"][right_blinker_sig])
     if self.CP.enableBsm:
       if self.CP.carFingerprint in ANGLE_CONTROL_CAR:
@@ -591,14 +596,14 @@ class CarState(CarStateBase):
       cp_cruise_info = cp_cam if self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC else cp
       # cruise state
       # CAN FD cars enable on main button press, set available if no TCS faults preventing engagement
-      ret.cruiseState.available = cp.vl["TCS"]["ACCEnable"] == 0
+      ret.cruiseState.available = cp_cruise_info.vl["SCC_CONTROL"]["MainMode_ACC"] != 0
       ret.cruiseState.enabled = cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"] in (1, 2)
       ret.cruiseState.standstill = cp_cruise_info.vl["SCC_CONTROL"]["CRUISE_STANDSTILL"] == 1
       ret.cruiseState.speed = cp_cruise_info.vl["SCC_CONTROL"]["VSetDis"] * speed_factor
       self.VSetDis = cp_cruise_info.vl["SCC_CONTROL"]["VSetDis"]
       ret.vSetDis = self.VSetDis
-      self.cruise_info = copy.copy(cp_cruise_info.vl["SCC_CONTROL"])
       self.cruiseState_standstill = ret.cruiseState.standstill
+      self.cruise_info = copy.copy(cp_cruise_info.vl["SCC_CONTROL"])
 
       self.acc_active = ret.cruiseState.enabled
       ret.cruiseState.accActive = self.acc_active
@@ -616,6 +621,13 @@ class CarState(CarStateBase):
         ret.cruiseState.speed = 0
       self.cruise_active = self.acc_active
       ret.cruiseAccStatus = self.acc_active
+
+    if not self.exp_long:
+      self.lead_distance = cp_cruise_info.vl["SCC_CONTROL"]["ACC_ObjDist"]
+      ret.radarDistance = self.lead_distance
+      ret.aReqValue = cp_cruise_info.vl["SCC_CONTROL"]["aReqValue"]
+      lead_objspd = cp_cruise_info.vl["SCC_CONTROL"]["ACC_ObjRelSpd"]
+      self.lead_objspd = lead_objspd * CV.MS_TO_KPH
 
     # Manual Speed Limit Assist is a feature that replaces non-adaptive cruise control on EV CAN FD platforms.
     # It limits the vehicle speed, overridable by pressing the accelerator past a certain point.

@@ -54,6 +54,7 @@ def create_steering_messages(packer, CP, CAN, enabled, lat_active, steering_pres
     # a torque scale value? ramps up when steering, highest seen is 234
     # "UNKNOWN": 50 if lat_active and not steering_pressed else 0,
     "UNKNOWN": max_torque if lat_active else 0,
+    "NEW_SIGNAL_3": 9,
   }
 
   if CP.flags & HyundaiFlags.CANFD_HDA2:
