@@ -87,6 +87,7 @@ class CarState(CarStateBase):
     self.prev_acc_active = False
     self.prev_acc_set_btn = False
     self.prev_cruise_btn = False
+    self.prev_main_btn = False
     self.acc_active = False
     self.cruise_set_speed_kph = 0
     self.cruise_set_mode = int(Params().get("CruiseStatemodeSelInit", encoding="utf8"))
@@ -103,7 +104,7 @@ class CarState(CarStateBase):
     self.sm = messaging.SubMaster(['controlsState'])
 
   #@staticmethod
-  def cruise_speed_button(self):
+  def cruise_speed_button_alt(self):
     self.sm.update(0)
     set_speed_kph = self.cruise_set_speed_kph
     if 1 < round(self.sm['controlsState'].vCruise) < 255:
@@ -115,12 +116,23 @@ class CarState(CarStateBase):
       self.cruise_buttons_time = 0
      
     # long press should set scc speed with cluster scc number
-    if self.cruise_buttons_time >= 60:
+    if self.cruise_buttons_time >= 70:
       self.cruise_set_speed_kph = self.VSetDis
       return self.cruise_set_speed_kph
 
     if self.prev_cruise_btn == self.cruise_buttons[-1]:
       return self.cruise_set_speed_kph
+    elif self.prev_main_btn != self.main_buttons[-1]:
+      self.prev_main_btn = self.main_buttons[-1]
+      if not self.cruise_active:
+        if not self.prev_acc_set_btn: # first scc active
+          self.prev_acc_set_btn = self.acc_active
+          if self.main_buttons[-1] == 1:
+            self.cruise_set_speed_kph = max(int(round(self.clu_Vanz)), (30 if self.is_metric else 20))
+            return self.cruise_set_speed_kph
+      else:
+        self.cruise_set_speed_kph = 255
+        return self.cruise_set_speed_kph
     elif self.prev_cruise_btn != self.cruise_buttons[-1]:
       self.prev_cruise_btn = self.cruise_buttons[-1]
       if not self.cruise_active:
@@ -135,8 +147,9 @@ class CarState(CarStateBase):
             self.cruise_set_speed_kph = max(int(round(self.clu_Vanz)), (30 if self.is_metric else 20))
           elif self.cruise_buttons[-1] == Buttons.RES_ACCEL:
             self.cruise_set_speed_kph = max(set_speed_kph, int(round(self.clu_Vanz)), (30 if self.is_metric else 20))
+          elif self.cruise_buttons[-1] == Buttons.CANCEL:
+            self.cruise_set_speed_kph = max(set_speed_kph, int(round(self.clu_Vanz)), (30 if self.is_metric else 20))
           return self.cruise_set_speed_kph
-
       elif self.cruise_buttons[-1] == Buttons.RES_ACCEL and not self.cruiseState_standstill:   # up 
         if self.set_spd_five:
           set_speed_kph += 5
@@ -151,15 +164,17 @@ class CarState(CarStateBase):
             set_speed_kph = int(round(set_speed_kph/5)*5)
         else:
           set_speed_kph -= 1
+      elif self.cruise_buttons[-1] == Buttons.CANCEL and not self.cruiseState_standstill:  # dn
+        set_speed_kph = 255
 
       if set_speed_kph <= 30 and not self.is_set_speed_in_mph:
         set_speed_kph = 30
       elif set_speed_kph <= 20 and self.is_set_speed_in_mph:
         set_speed_kph = 20
-
       self.cruise_set_speed_kph = set_speed_kph
     else:
-      self.prev_cruise_btn = False
+      self.prev_cruise_btn = False 
+      self.prev_main_btn = False
 
     return set_speed_kph
 
@@ -231,6 +246,66 @@ class CarState(CarStateBase):
           set_speed_kph = 10
         elif set_speed_kph <= 5 and self.is_set_speed_in_mph:
           set_speed_kph = 5
+
+      self.cruise_set_speed_kph = set_speed_kph
+    else:
+      self.prev_cruise_btn = False
+
+    return set_speed_kph
+
+  def cruise_speed_button(self):
+    self.sm.update(0)
+    set_speed_kph = self.cruise_set_speed_kph
+    if 1 < round(self.sm['controlsState'].vCruise) < 255:
+      set_speed_kph = round(self.sm['controlsState'].vCruise)
+
+    if self.cruise_buttons[-1]:
+      self.cruise_buttons_time += 1
+    else:
+      self.cruise_buttons_time = 0
+     
+    # long press should set scc speed with cluster scc number
+    if self.cruise_buttons_time >= 60:
+      self.cruise_set_speed_kph = self.VSetDis
+      return self.cruise_set_speed_kph
+
+    if self.prev_cruise_btn == self.cruise_buttons[-1]:
+      return self.cruise_set_speed_kph
+    elif self.prev_cruise_btn != self.cruise_buttons[-1]:
+      self.prev_cruise_btn = self.cruise_buttons[-1]
+      if not self.cruise_active:
+        if self.cruise_buttons[-1] == Buttons.GAP_DIST:  # mode change
+          self.cruise_set_mode += 1
+          if self.cruise_set_mode > 5:
+            self.cruise_set_mode = 0
+          return None
+        elif not self.prev_acc_set_btn: # first scc active
+          self.prev_acc_set_btn = self.acc_active
+          if self.cruise_buttons[-1] == Buttons.SET_DECEL:
+            self.cruise_set_speed_kph = max(int(round(self.clu_Vanz)), (30 if self.is_metric else 20))
+          elif self.cruise_buttons[-1] == Buttons.RES_ACCEL:
+            self.cruise_set_speed_kph = max(set_speed_kph, int(round(self.clu_Vanz)), (30 if self.is_metric else 20))
+          return self.cruise_set_speed_kph
+
+      elif self.cruise_buttons[-1] == Buttons.RES_ACCEL and not self.cruiseState_standstill:   # up 
+        if self.set_spd_five:
+          set_speed_kph += 5
+          if set_speed_kph % 5 != 0:
+            set_speed_kph = int(round(set_speed_kph/5)*5)
+        else:
+          set_speed_kph += 1
+      elif self.cruise_buttons[-1] == Buttons.SET_DECEL and not self.cruiseState_standstill:  # dn
+        if self.set_spd_five:
+          set_speed_kph -= 5
+          if set_speed_kph % 5 != 0:
+            set_speed_kph = int(round(set_speed_kph/5)*5)
+        else:
+          set_speed_kph -= 1
+
+      if set_speed_kph <= 30 and not self.is_set_speed_in_mph:
+        set_speed_kph = 30
+      elif set_speed_kph <= 20 and self.is_set_speed_in_mph:
+        set_speed_kph = 20
 
       self.cruise_set_speed_kph = set_speed_kph
     else:
@@ -518,6 +593,8 @@ class CarState(CarStateBase):
     self.is_set_speed_in_mph = not self.is_metric
     speed_factor = CV.KPH_TO_MS if self.is_metric else CV.MPH_TO_MS
 
+    self.clu_Vanz = cp.vl["CRUISE_BUTTONS_ALT"]["CLUSTER_SPEED"]
+
     if self.CP.flags & (HyundaiFlags.EV | HyundaiFlags.HYBRID):
       offset = 255. if self.CP.flags & HyundaiFlags.EV else 1023.
       ret.gas = cp.vl[self.accelerator_msg_canfd]["ACCELERATOR_PEDAL"] / offset
@@ -526,6 +603,7 @@ class CarState(CarStateBase):
       ret.gasPressed = bool(cp.vl[self.accelerator_msg_canfd]["ACCELERATOR_PEDAL_PRESSED"])
 
     ret.brakePressed = cp.vl["TCS"]["DriverBraking"] == 1
+    ret.brakeLights = bool(cp.vl["BRAKE"]["BRAKE_LIGHT"])
 
     ret.doorOpen = cp.vl["DOORS_SEATBELTS"]["DRIVER_DOOR"] == 1
     ret.seatbeltUnlatched = cp.vl["DOORS_SEATBELTS"]["DRIVER_SEATBELT"] == 0
@@ -542,6 +620,10 @@ class CarState(CarStateBase):
     )
     ret.vEgoRaw = (ret.wheelSpeeds.fl + ret.wheelSpeeds.fr + ret.wheelSpeeds.rl + ret.wheelSpeeds.rr) / 4.
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
+
+    ret.vEgoOP = ret.vEgo
+    ret.vEgo = cp.vl["CRUISE_BUTTONS_ALT"]["CLUSTER_SPEED"] * CV.KPH_TO_MS if self.is_metric else cp.vl["CRUISE_BUTTONS_ALT"]["CLUSTER_SPEED"] * CV.MPH_TO_MS
+
     ret.standstill = ret.wheelSpeeds.fl <= STANDSTILL_THRESHOLD and ret.wheelSpeeds.rr <= STANDSTILL_THRESHOLD
 
     ret.steeringRateDeg = cp.vl["STEERING_SENSORS"]["STEERING_RATE"]
@@ -553,7 +635,7 @@ class CarState(CarStateBase):
 
     # TODO: alt signal usage may be described by cp.vl['BLINKERS']['USE_ALT_LAMP']
     left_blinker_sig, right_blinker_sig = "LEFT_LAMP", "RIGHT_LAMP"
-    if self.CP.carFingerprint in (CAR.HYUNDAI_KONA_EV_2ND_GEN, ANGLE_CONTROL_CAR):
+    if self.CP.carFingerprint in (CAR.HYUNDAI_KONA_EV_2ND_GEN, CAR.HYUNDAI_IONIQ_5_PE, CAR.KIA_EV9):
       left_blinker_sig, right_blinker_sig = "LEFT_LAMP_ALT", "RIGHT_LAMP_ALT"
     ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(50, cp.vl["BLINKERS"][left_blinker_sig],
                                                                       cp.vl["BLINKERS"][right_blinker_sig])
@@ -564,6 +646,11 @@ class CarState(CarStateBase):
       else:
         ret.leftBlindspot = cp.vl["BLINDSPOTS_REAR_CORNERS"]["FL_INDICATOR"] != 0
         ret.rightBlindspot = cp.vl["BLINDSPOTS_REAR_CORNERS"]["FR_INDICATOR"] != 0
+
+    if self.main_buttons[-1]:
+      ret.cruiseButtons = 2
+    else:
+      ret.cruiseButtons = self.cruise_buttons[-1]
 
     if self.CP.openpilotLongitudinalControl:
       # These are not used for engage/disengage since openpilot keeps track of state using the buttons
@@ -591,16 +678,16 @@ class CarState(CarStateBase):
       cp_cruise_info = cp_cam if self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC else cp
       # cruise state
       # CAN FD cars enable on main button press, set available if no TCS faults preventing engagement
-      ret.cruiseState.available = cp.vl["TCS"]["ACCEnable"] == 0
+      ret.cruiseState.available = cp_cruise_info.vl["SCC_CONTROL"]["MainMode_ACC"] != 0
       ret.cruiseState.enabled = cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"] in (1, 2)
       ret.cruiseState.standstill = cp_cruise_info.vl["SCC_CONTROL"]["CRUISE_STANDSTILL"] == 1
       ret.cruiseState.speed = cp_cruise_info.vl["SCC_CONTROL"]["VSetDis"] * speed_factor
       self.VSetDis = cp_cruise_info.vl["SCC_CONTROL"]["VSetDis"]
       ret.vSetDis = self.VSetDis
-      self.cruise_info = copy.copy(cp_cruise_info.vl["SCC_CONTROL"])
       self.cruiseState_standstill = ret.cruiseState.standstill
+      self.cruise_info = copy.copy(cp_cruise_info.vl["SCC_CONTROL"])
 
-      self.acc_active = ret.cruiseState.enabled
+      self.acc_active = cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"] in (1, 2)
       ret.cruiseState.accActive = self.acc_active
       if self.acc_active:
         self.brake_check = False
@@ -608,7 +695,7 @@ class CarState(CarStateBase):
       elif not ret.cruiseState.available:
         self.prev_acc_set_btn = False
 
-      set_speed = self.cruise_speed_button()
+      set_speed = self.cruise_speed_button_alt()
       if ret.cruiseState.enabled and (self.brake_check == False or self.cancel_check == False):
         speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
         ret.cruiseState.speed = set_speed * speed_factor
@@ -616,6 +703,16 @@ class CarState(CarStateBase):
         ret.cruiseState.speed = 0
       self.cruise_active = self.acc_active
       ret.cruiseAccStatus = self.acc_active
+
+      ret.brakeHoldActive = cp.vl["ESP_STATUS"]["AUTO_HOLD"] == 1 and cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"] not in (1, 2)
+      ret.autoHold = ret.brakeHoldActive
+
+    if not self.exp_long:
+      self.lead_distance = cp_cruise_info.vl["SCC_CONTROL"]["ACC_ObjDist"]
+      ret.radarDistance = self.lead_distance
+      ret.aReqValue = cp_cruise_info.vl["SCC_CONTROL"]["aReqValue"]
+      lead_objspd = cp_cruise_info.vl["SCC_CONTROL"]["ACC_ObjRelSpd"]
+      self.lead_objspd = lead_objspd * CV.MS_TO_KPH
 
     # Manual Speed Limit Assist is a feature that replaces non-adaptive cruise control on EV CAN FD platforms.
     # It limits the vehicle speed, overridable by pressing the accelerator past a certain point.
@@ -755,6 +852,8 @@ class CarState(CarStateBase):
       ("WHEEL_SPEEDS", 100),
       ("STEERING_SENSORS", 100),
       ("MDPS", 100),
+      ("BRAKE", 100),
+      ("ESP_STATUS", 100),
       ("TCS", 50),
       ("CRUISE_BUTTONS_ALT", 50),
       ("BLINKERS", 4),

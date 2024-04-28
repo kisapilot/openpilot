@@ -54,6 +54,7 @@ def create_steering_messages(packer, CP, CAN, enabled, lat_active, steering_pres
     # a torque scale value? ramps up when steering, highest seen is 234
     # "UNKNOWN": 50 if lat_active and not steering_pressed else 0,
     "UNKNOWN": max_torque if lat_active else 0,
+    "NEW_SIGNAL_3": 9,
   }
 
   if CP.flags & HyundaiFlags.CANFD_HDA2:
@@ -66,7 +67,7 @@ def create_steering_messages(packer, CP, CAN, enabled, lat_active, steering_pres
 
   return ret
 
-def create_suppress_lfa(packer, CAN, hda2_lfa_block_msg, hda2_alt_steering):
+def create_suppress_lfa(packer, CAN, hda2_lfa_block_msg, hda2_alt_steering, enabled):
   suppress_msg = "CAM_0x362" if hda2_alt_steering else "CAM_0x2a4"
   msg_bytes = 32 if hda2_alt_steering else 24
 
@@ -74,8 +75,8 @@ def create_suppress_lfa(packer, CAN, hda2_lfa_block_msg, hda2_alt_steering):
   values["COUNTER"] = hda2_lfa_block_msg["COUNTER"]
   values["SET_ME_0"] = 0
   values["SET_ME_0_2"] = 0
-  values["LEFT_LANE_LINE"] = 0
-  values["RIGHT_LANE_LINE"] = 0
+  values["LEFT_LANE_LINE"] = 0 if enabled else 3
+  values["RIGHT_LANE_LINE"] = 0 if enabled else 3
   return packer.make_can_msg(suppress_msg, CAN.ACAN, values)
 
 def create_buttons(packer, CP, CAN, cnt, btn):
@@ -121,7 +122,7 @@ def create_acc_cancel(packer, CP, CAN, cruise_info_copy):
 def create_lfahda_cluster(packer, CAN, enabled):
   values = {
     "HDA_ICON": 1 if enabled else 0,
-    "LFA_ICON": 2 if enabled else 0,
+    "LFA_ICON": 3 if enabled else 0,
   }
   return packer.make_can_msg("LFAHDA_CLUSTER", CAN.ECAN, values)
 
