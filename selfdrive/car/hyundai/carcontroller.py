@@ -1207,6 +1207,12 @@ class CarController(CarControllerBase):
 
 
   def create_button_spamming(self, CC: car.CarControl, CS: car.CarState, canfd: bool):
+    if canfd:
+      GAP_BTN = can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST))
+    else:
+      GAP_BTN = can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST)) if not self.longcontrol \
+                else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST, clu11_speed, self.CP.sccBus))
+
     if self.kisa_variablecruise and CS.acc_active and not canfd:
       can_sends = []
       btn_signal = self.NC.update(CS)
@@ -1221,8 +1227,7 @@ class CarController(CarControllerBase):
         if self.switch_timer > 0:
           self.switch_timer -= 1
         elif self.dRel > 15 and self.vRel*3.6 < 5 and self.cruise_gap_prev != CS.cruiseGapSet and self.cruise_gap_set_init and self.kisa_autoresume:
-          can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST)) if not self.longcontrol \
-            else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST, clu11_speed, self.CP.sccBus))
+          GAP_BTN
           self.cruise_gap_adjusting = True
           self.resume_cnt += 1
           if self.resume_cnt >= int(randint(4, 5) * 2):
@@ -1244,8 +1249,7 @@ class CarController(CarControllerBase):
             if self.switch_timer > 0:
               self.switch_timer -= 1
             else:
-              can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST)) if not self.longcontrol \
-                else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST, clu11_speed, self.CP.sccBus))
+              GAP_BTN
               self.resume_cnt += 1
               if self.resume_cnt >= int(randint(4, 5) * 2):
                 self.resume_cnt = 0
@@ -1256,8 +1260,11 @@ class CarController(CarControllerBase):
             else:
               btn_count = 1
               btn_count = int(interp(self.NC.t_interval, [self.nt_interval+3,70],[1,self.btn_count])) if CS.is_set_speed_in_mph else int(interp(self.NC.t_interval, [self.nt_interval,40],[1,self.btn_count]))
-              can_sends.extend([hyundaican.create_clu11(self.packer, self.resume_cnt, CS.clu11, btn_signal)] * btn_count) if not self.longcontrol \
-              else can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_signal, clu11_speed, self.CP.sccBus)] * btn_count)
+              if canfd:
+                can_sends.extend([hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, btn_signal)] * btn_count)
+              else:
+                can_sends.extend([hyundaican.create_clu11(self.packer, self.resume_cnt, CS.clu11, btn_signal)] * btn_count) if not self.longcontrol \
+                 else can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_signal, clu11_speed, self.CP.sccBus)] * btn_count)
               self.resume_cnt += 1
               if self.resume_cnt >= int(randint(4, 5) * 2):
                 self.resume_cnt = 0
@@ -1268,8 +1275,7 @@ class CarController(CarControllerBase):
             if self.switch_timer > 0:
               self.switch_timer -= 1
             else:
-              can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST)) if not self.longcontrol \
-                else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST, clu11_speed, self.CP.sccBus))
+              GAP_BTN
               self.resume_cnt += 1
               if self.resume_cnt >= int(randint(4, 5) * 2):
                 self.resume_cnt = 0
@@ -1287,8 +1293,7 @@ class CarController(CarControllerBase):
             if self.switch_timer > 0:
               self.switch_timer -= 1
             else:
-              can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST)) if not self.longcontrol \
-                else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST, clu11_speed, self.CP.sccBus))
+              GAP_BTN
               self.resume_cnt += 1
               if self.resume_cnt >= int(randint(4, 5) * 2):
                 self.resume_cnt = 0
@@ -1303,8 +1308,7 @@ class CarController(CarControllerBase):
             self.gap_by_spd_gap4 = False
             self.gap_by_spd_on_buffer1 = 0
             self.gap_by_spd_on_buffer2 = 0
-            can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST)) if not self.longcontrol \
-              else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST, clu11_speed, self.CP.sccBus))
+            GAP_BTN
             self.resume_cnt += 1
             if self.resume_cnt >= int(randint(4, 5) * 2):
               self.resume_cnt = 0
@@ -1316,8 +1320,7 @@ class CarController(CarControllerBase):
             self.gap_by_spd_gap4 = False
             self.gap_by_spd_on_buffer1 = -5
             self.gap_by_spd_on_buffer3 = 0
-            can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST)) if not self.longcontrol \
-              else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST, clu11_speed, self.CP.sccBus))
+            GAP_BTN
             self.resume_cnt += 1
             if self.resume_cnt >= int(randint(4, 5) * 2):
               self.resume_cnt = 0
@@ -1328,8 +1331,7 @@ class CarController(CarControllerBase):
             self.gap_by_spd_gap3 = True
             self.gap_by_spd_gap4 = False
             self.gap_by_spd_on_buffer2 = -5
-            can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST)) if not self.longcontrol \
-              else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST, clu11_speed, self.CP.sccBus))
+            GAP_BTN
             self.resume_cnt += 1
             if self.resume_cnt >= int(randint(4, 5) * 2):
               self.resume_cnt = 0
@@ -1340,8 +1342,7 @@ class CarController(CarControllerBase):
             self.gap_by_spd_gap3 = False
             self.gap_by_spd_gap4 = True
             self.gap_by_spd_on_buffer3 = -5
-            can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST)) if not self.longcontrol \
-              else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST, clu11_speed, self.CP.sccBus))
+            GAP_BTN
             self.resume_cnt += 1
             if self.resume_cnt >= int(randint(4, 5) * 2):
               self.resume_cnt = 0
@@ -1354,8 +1355,11 @@ class CarController(CarControllerBase):
             else:
               btn_count = 1
               btn_count = int(interp(self.NC.t_interval, [self.nt_interval+3,70],[1,self.btn_count])) if CS.is_set_speed_in_mph else int(interp(self.NC.t_interval, [self.nt_interval,40],[1,self.btn_count]))
-              can_sends.extend([hyundaican.create_clu11(self.packer, self.resume_cnt, CS.clu11, btn_signal)] * btn_count) if not self.longcontrol \
-              else can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_signal, clu11_speed, self.CP.sccBus)] * btn_count)
+              if canfd:
+                can_sends.extend([hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, btn_signal)] * btn_count)
+              else:
+                can_sends.extend([hyundaican.create_clu11(self.packer, self.resume_cnt, CS.clu11, btn_signal)] * btn_count) if not self.longcontrol \
+                 else can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_signal, clu11_speed, self.CP.sccBus)] * btn_count)
               self.resume_cnt += 1
               if self.resume_cnt >= int(randint(4, 5) * 2):
                 self.resume_cnt = 0
@@ -1370,8 +1374,7 @@ class CarController(CarControllerBase):
             if self.switch_timer > 0:
               self.switch_timer -= 1
             else:
-              can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST)) if not self.longcontrol \
-                else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST, clu11_speed, self.CP.sccBus))
+              GAP_BTN
               self.resume_cnt += 1
               if self.resume_cnt >= int(randint(4, 5) * 2):
                 self.resume_cnt = 0
