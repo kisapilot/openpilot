@@ -261,6 +261,8 @@ class CarController(CarControllerBase):
     self.counter_init = False
     self.radarDisableOverlapTimer = 0
 
+    self.canfd_cruise_btn_running = False
+
     self.e2e_x = 0
     self.l_stat = 0
 
@@ -501,6 +503,8 @@ class CarController(CarControllerBase):
       else:
         # button presses
         can_sends.extend(self.create_button_messages(CC, CS, use_clu11=False))
+        if not self.canfd_cruise_btn_running:
+          self.create_button_spamming(CC, CS, canfd=True)
     else:
       if CS.cruise_active and CS.lead_distance > 149 and self.dRel < ((CS.out.vEgo * CV.MS_TO_KPH)+5) < 100 and \
       self.vRel*3.6 < -(CS.out.vEgo * CV.MS_TO_KPH * 0.16) and CS.out.vEgo > 7 and abs(CS.out.steeringAngleDeg) < 10 and not self.longcontrol:
@@ -1178,6 +1182,7 @@ class CarController(CarControllerBase):
           if (self.frame - self.last_button_frame) * DT_CTRL >= 0.15:
             self.last_button_frame = self.frame
     else:
+      self.canfd_cruise_btn_running = False
       if (self.frame - self.last_button_frame) * DT_CTRL > 0.25:
         # cruise cancel
         resume = False
@@ -1186,10 +1191,12 @@ class CarController(CarControllerBase):
           resume = CS.out.cruiseState.standstill and speeds[-1] > 0.1
         if CC.cruiseControl.cancel:
           if self.CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS:
+            self.canfd_cruise_btn_running = True
             can_sends.append(hyundaicanfd.create_acc_cancel(self.packer, self.CP, self.CAN, CS.cruise_info))
             self.last_button_frame = self.frame
           else:
             for _ in range(20):
+              self.canfd_cruise_btn_running = True
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.CANCEL))
             self.last_button_frame = self.frame
 
@@ -1200,6 +1207,7 @@ class CarController(CarControllerBase):
             pass
           else:
             for _ in range(20):
+              self.canfd_cruise_btn_running = True
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.RES_ACCEL))
             self.last_button_frame = self.frame
 
