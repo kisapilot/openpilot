@@ -109,6 +109,8 @@ class CarState(CarStateBase):
     if 1 < round(self.sm['controlsState'].vCruise) < 255:
       set_speed_kph = round(self.sm['controlsState'].vCruise)
 
+    print('cruise_button={}'.format(self.cruise_buttons[-1]))
+
     if self.cruise_buttons[-1]:
       self.cruise_buttons_time += 1
     else:
