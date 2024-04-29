@@ -647,7 +647,10 @@ class CarState(CarStateBase):
         ret.leftBlindspot = cp.vl["BLINDSPOTS_REAR_CORNERS"]["FL_INDICATOR"] != 0
         ret.rightBlindspot = cp.vl["BLINDSPOTS_REAR_CORNERS"]["FR_INDICATOR"] != 0
 
-    ret.cruiseButtons = self.cruise_buttons[-1]
+    if self.main_buttons[-1]:
+      ret.cruiseButtons = 2
+    else:
+      ret.cruiseButtons = self.cruise_buttons[-1]
 
     if self.CP.openpilotLongitudinalControl:
       # These are not used for engage/disengage since openpilot keeps track of state using the buttons
