@@ -1183,7 +1183,7 @@ class CarController(CarControllerBase):
         resume = False
         speeds = self.sm['longitudinalPlan'].speeds
         if len(speeds):
-          resume = CS.cruiseState.standstill and speeds[-1] > 0.1
+          resume = CS.out.cruiseState.standstill and speeds[-1] > 0.1
         if CC.cruiseControl.cancel:
           if self.CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS:
             can_sends.append(hyundaicanfd.create_acc_cancel(self.packer, self.CP, self.CAN, CS.cruise_info))
