@@ -122,14 +122,17 @@ class CarState(CarStateBase):
 
     if self.prev_cruise_btn == self.cruise_buttons[-1]:
       return self.cruise_set_speed_kph
-    elif self.prev_main_btn != self.acc_active:
-      self.prev_main_btn = self.acc_active
-      print('self.acc_active={}'.format(self.acc_active))
-      if self.acc_active:
-        self.cruise_set_speed_kph = max(int(round(self.clu_Vanz)), (30 if self.is_metric else 20))
+    elif self.prev_main_btn != self.main_buttons[-1]:
+      self.prev_main_btn = self.main_buttons[-1]
+      if not self.cruise_active:
+        if not self.prev_acc_set_btn: # first scc active
+          self.prev_acc_set_btn = self.acc_active
+          if self.main_buttons[-1] == 1:
+            self.cruise_set_speed_kph = max(int(round(self.clu_Vanz)), (30 if self.is_metric else 20))
+            return self.cruise_set_speed_kph
       else:
         self.cruise_set_speed_kph = 255
-      return self.cruise_set_speed_kph
+        return self.cruise_set_speed_kph
     elif self.prev_cruise_btn != self.cruise_buttons[-1]:
       self.prev_cruise_btn = self.cruise_buttons[-1]
       if not self.cruise_active:
@@ -171,6 +174,7 @@ class CarState(CarStateBase):
       self.cruise_set_speed_kph = set_speed_kph
     else:
       self.prev_cruise_btn = False 
+      self.prev_main_btn = False
 
     return set_speed_kph
 
@@ -642,6 +646,8 @@ class CarState(CarStateBase):
       else:
         ret.leftBlindspot = cp.vl["BLINDSPOTS_REAR_CORNERS"]["FL_INDICATOR"] != 0
         ret.rightBlindspot = cp.vl["BLINDSPOTS_REAR_CORNERS"]["FR_INDICATOR"] != 0
+
+    ret.cruiseButtons = self.cruise_buttons[-1]
 
     if self.CP.openpilotLongitudinalControl:
       # These are not used for engage/disengage since openpilot keeps track of state using the buttons
