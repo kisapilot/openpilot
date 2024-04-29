@@ -163,9 +163,9 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
   const int button_addr2 = hyundai_canfd_alt_buttons ? 0x1aa : 0x1cf;
   if (addr == button_addr2) {
     bool main_button_stat = false;
-    if (addr == 0x1cf) {
+    if (button_addr2 == 0x1cf) {
       main_button_stat = GET_BIT(to_push, 19U);
-    } else {
+    } else if (button_addr2 == 0x1aa){
       main_button_stat = GET_BIT(to_push, 34U);
     }
     hyundai_common_cruise_state_check_alt(main_button_stat);
