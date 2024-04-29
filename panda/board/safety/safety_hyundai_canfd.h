@@ -157,19 +157,7 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
   int addr = GET_ADDR(to_push);
 
   const int pt_bus = hyundai_canfd_hda2 ? 1 : 0;
-  // const int scc_bus = hyundai_camera_scc ? 2 : pt_bus;
-
-  // Main Button
-  const int button_addr2 = hyundai_canfd_alt_buttons ? 0x1aa : 0x1cf;
-  if (addr == button_addr2) {
-    bool main_button_stat = false;
-    if (button_addr2 == 0x1cf) {
-      main_button_stat = GET_BIT(to_push, 19U);
-    } else if (button_addr2 == 0x1aa){
-      main_button_stat = GET_BIT(to_push, 34U);
-    }
-    hyundai_common_cruise_state_check_alt(main_button_stat);
-  }
+  const int scc_bus = hyundai_camera_scc ? 2 : pt_bus;
 
   if (bus == pt_bus) {
     // driver torque
@@ -218,15 +206,15 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
     }
   }
 
-  // if (bus == scc_bus) {
-  //   // cruise state
-  //   if ((addr == 0x1a0) && !hyundai_longitudinal) {
-  //     // 1=enabled, 2=driver override
-  //     int cruise_status = ((GET_BYTE(to_push, 8) >> 4) & 0x7U);
-  //     bool cruise_engaged = (cruise_status == 1) || (cruise_status == 2);
-  //     hyundai_common_cruise_state_check(cruise_engaged);
-  //   }
-  // }
+  if (bus == scc_bus) {
+    // cruise state
+    if ((addr == 0x1a0) && !hyundai_longitudinal) {
+      // 1=enabled, 2=driver override
+      int cruise_status = ((GET_BYTE(to_push, 8) >> 4) & 0x7U);
+      bool cruise_engaged = (cruise_status == 1) || (cruise_status == 2) || (cruise_status == 4);
+      hyundai_common_cruise_state_check(cruise_engaged);
+    }
+  }
 
   const int steer_addr = hyundai_canfd_hda2 ? hyundai_canfd_hda2_get_lkas_addr() : 0x12a;
   bool stock_ecu_detected = (addr == steer_addr) && (bus == 0);
