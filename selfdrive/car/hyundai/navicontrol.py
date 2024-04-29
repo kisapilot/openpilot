@@ -142,7 +142,7 @@ class NaviControl():
       self.btn_cnt += 1
       #if self.btn_cnt == 1:
       #  btn_signal = Buttons.NONE
-      if self.btn_cnt >= self.t_interval2:    # 버튼 클릭후 일정시간 기다린다.  (반드시 필요함)
+      if self.btn_cnt > self.t_interval:    # 버튼 클릭후 일정시간 기다린다.  (반드시 필요함)
         self.seq_command = 0   # case_0 번으로 이동.  (다음 명령을 실행) 
       return btn_signal
 
