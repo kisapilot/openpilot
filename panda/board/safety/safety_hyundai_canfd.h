@@ -157,7 +157,7 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
   int addr = GET_ADDR(to_push);
 
   const int pt_bus = hyundai_canfd_hda2 ? 1 : 0;
-  const int scc_bus = hyundai_camera_scc ? 2 : pt_bus;
+  // const int scc_bus = hyundai_camera_scc ? 2 : pt_bus;
 
   // Main Button
   const int button_addr2 = hyundai_canfd_alt_buttons ? 0x1aa : 0x1cf;
