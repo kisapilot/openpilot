@@ -520,6 +520,8 @@ class CarState(CarStateBase):
     self.is_set_speed_in_mph = not self.is_metric
     speed_factor = CV.KPH_TO_MS if self.is_metric else CV.MPH_TO_MS
 
+    self.clu_Vanz = cp.vl["CRUISE_BUTTONS_ALT"]["CLUSTER_SPEED"]
+
     if self.CP.flags & (HyundaiFlags.EV | HyundaiFlags.HYBRID):
       offset = 255. if self.CP.flags & HyundaiFlags.EV else 1023.
       ret.gas = cp.vl[self.accelerator_msg_canfd]["ACCELERATOR_PEDAL"] / offset
@@ -643,6 +645,8 @@ class CarState(CarStateBase):
     self.main_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["ADAPTIVE_CRUISE_MAIN_BTN"])
     self.buttons_counter = cp.vl[self.cruise_btns_msg_canfd]["COUNTER"]
     ret.accFaulted = cp.vl["TCS"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
+
+    print('main_btn={}'.format(self.main_buttons[-1]))
 
     if self.CP.flags & HyundaiFlags.CANFD_HDA2:
       self.hda2_lfa_block_msg = copy.copy(cp_cam.vl["CAM_0x362"] if self.CP.flags & HyundaiFlags.CANFD_HDA2_ALT_STEERING
