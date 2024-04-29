@@ -1215,6 +1215,7 @@ class CarController(CarControllerBase):
 
 
   def create_button_spamming(self, CC: car.CarControl, CS: car.CarState, canfd: bool):
+    can_sends = []
     if canfd:
       GAP_BTN = can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST))
     else:
@@ -1222,7 +1223,6 @@ class CarController(CarControllerBase):
                 else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST, clu11_speed, self.CP.sccBus))
 
     if self.kisa_variablecruise and CS.acc_active and not canfd:
-      can_sends = []
       btn_signal = self.NC.update(CS)
       self.btnsignal = btn_signal
       self.on_speed_control = self.NC.onSpeedControl
