@@ -104,7 +104,7 @@ class CarState(CarStateBase):
     self.sm = messaging.SubMaster(['controlsState'])
 
   #@staticmethod
-  def cruise_speed_button(self):
+  def cruise_speed_button_alt(self):
     self.sm.update(0)
     set_speed_kph = self.cruise_set_speed_kph
     if 1 < round(self.sm['controlsState'].vCruise) < 255:
@@ -691,7 +691,7 @@ class CarState(CarStateBase):
       elif not ret.cruiseState.available:
         self.prev_acc_set_btn = False
 
-      set_speed = self.cruise_speed_button()
+      set_speed = self.cruise_speed_button_alt()
       if ret.cruiseState.enabled and (self.brake_check == False or self.cancel_check == False):
         speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
         ret.cruiseState.speed = set_speed * speed_factor
