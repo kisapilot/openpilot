@@ -208,6 +208,7 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
     if (addr == 0x175) {
       brake_pressed = GET_BIT(to_push, 81U);
     }
+    gas_pressed = brake_pressed = false;
 
     // vehicle moving
     if (addr == 0xa0) {
