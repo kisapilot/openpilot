@@ -1222,7 +1222,7 @@ class CarController(CarControllerBase):
       GAP_BTN = can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST)) if not self.longcontrol \
                 else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST, clu11_speed, self.CP.sccBus))
 
-    if self.kisa_variablecruise and CS.acc_active and not canfd:
+    if self.kisa_variablecruise and CS.acc_active:
       btn_signal = self.NC.update(CS)
       self.btnsignal = btn_signal
       self.on_speed_control = self.NC.onSpeedControl
