@@ -92,6 +92,7 @@ class VCruiseHelper:
     self.v_cruise_kph_last = self.v_cruise_kph
     self.sm.update(0)
     if CS.cruiseState.available:
+      print('CS.cruiseState.available={}'.format(CS.cruiseState.available))
       m_unit = CV.MS_TO_KPH if self.is_kph else CV.MS_TO_MPH
       if not self.CP.pcmCruise:
         if self.CP.carName == "hyundai":
@@ -125,6 +126,7 @@ class VCruiseHelper:
               self.cruise_road_limit_spd_switch_prev = self.sm['liveENaviData'].roadLimitSpeed
               self.cruise_road_limit_spd_switch = False
             self.v_cruise_kph = round(CS.cruiseState.speed * m_unit)
+            print('CS.cruiseState.speed={}'.format(CS.cruiseState.speed))
             self.v_cruise_cluster_kph = self.v_cruise_kph
             self.v_cruise_kph_last = self.v_cruise_kph
             if self.osm_speedlimit_enabled or self.navi_selection == 2:

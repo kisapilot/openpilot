@@ -116,7 +116,7 @@ class CarState(CarStateBase):
       self.cruise_buttons_time = 0
      
     # long press should set scc speed with cluster scc number
-    if self.cruise_buttons_time >= 60:
+    if self.cruise_buttons_time >= 70:
       self.cruise_set_speed_kph = self.VSetDis
       return self.cruise_set_speed_kph
 
@@ -124,6 +124,7 @@ class CarState(CarStateBase):
       return self.cruise_set_speed_kph
     elif self.prev_main_btn != self.acc_active:
       self.prev_main_btn = self.acc_active
+      print('self.acc_active={}'.format(self.acc_active))
       if self.acc_active:
         self.cruise_set_speed_kph = max(int(round(self.clu_Vanz)), (30 if self.is_metric else 20))
       else:
