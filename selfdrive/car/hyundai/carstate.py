@@ -122,13 +122,11 @@ class CarState(CarStateBase):
 
     if self.prev_cruise_btn == self.cruise_buttons[-1]:
       return self.cruise_set_speed_kph
-    elif self.prev_main_btn != self.main_buttons[-1]:
-      self.prev_main_btn = self.main_buttons[-1]
+    elif self.prev_main_btn != self.acc_active:
+      self.prev_main_btn = self.acc_active
       if self.acc_active:
-        self.prev_main_btn = False
         self.cruise_set_speed_kph = max(int(round(self.clu_Vanz)), (30 if self.is_metric else 20))
       else:
-        self.prev_main_btn = True
         self.cruise_set_speed_kph = 255
       return self.cruise_set_speed_kph
     elif self.prev_cruise_btn != self.cruise_buttons[-1]:
@@ -171,8 +169,7 @@ class CarState(CarStateBase):
         set_speed_kph = 20
       self.cruise_set_speed_kph = set_speed_kph
     else:
-      self.prev_cruise_btn = False
-      self.prev_main_btn = False      
+      self.prev_cruise_btn = False 
 
     return set_speed_kph
 
