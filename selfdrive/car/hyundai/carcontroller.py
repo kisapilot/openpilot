@@ -396,18 +396,16 @@ class CarController(CarControllerBase):
       # here is based on observations of the stock LKAS system when it's engaged
       # CS.out.steeringPressed and steeringTorque are based on the
       # STEERING_COL_TORQUE value
-      MAX_TORQUE = 200
       if not bool(CS.out.steeringPressed):
         # If steering is not pressed, use max torque (TODO: need to find this value)
-        self.lkas_max_torque = MAX_TORQUE
+        ego_weight = interp(CS.out.vEgo, [8.3, 35.6], [1, 1.5])
+        self.lkas_max_torque = min(200, interp(abs(apply_angle), [5, 30], [110, 200] * ego_weight))
       else:
         # Steering torque seems to be a different scale than applied torque, so we
         # calculate a percentage based on observed "max" values (~|1200| based on
         # MDPS STEERING_COL_TORQUE) and then apply that percentage to our normal
         # max torque, use min to clamp to 100%
-        driver_applied_torque_pct = min(abs(CS.out.steeringTorque) / 1200.0, 1.0)
-        # Use max(0, ...) to avoid negative torque in case the
-        self.lkas_max_torque = MAX_TORQUE - (driver_applied_torque_pct * MAX_TORQUE)
+        self.lkas_max_torque = max(10, self.lkas_max_torque - self.lkas_max_torque*0.1)
 
         # Hold torque with induced temporary fault when cutting the actuation bit
       torque_fault = lat_active and not apply_steer_req
@@ -1089,8 +1087,12 @@ class CarController(CarControllerBase):
           can_sends.append(hyundaican.create_scc42a(self.packer))
 
     if self.CP.carFingerprint in CANFD_CAR:
-      str_log1 = 'EN/LA/LO={}/{}{}/{}  MD={}  BS={:1.0f}/{:1.0f}  CV={:03.0f}/{:0.4f}  TQ={:03.0f}/{:03.0f}  VF={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}'.format(
-        int(CC.enabled), int(CC.latActive), int(lat_active), int(CC.longActive), CS.out.cruiseState.modeSel, self.CP.mdpsBus, self.CP.sccBus, self.model_speed, abs(self.sm['controlsState'].curvature), abs(new_steer), abs(CS.out.steeringTorque), self.vFuture, self.params.STEER_MAX, self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN)
+      if self.car_fingerprint in ANGLE_CONTROL_CAR:
+        str_log1 = 'EN/LA/LO={}/{}{}/{}  MD={}  BS={:1.0f}/{:1.0f}  CV={:03.0f}/{:0.4f}  TQ={:03.0f}/{:03.0f}  VF={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}'.format(
+          int(CC.enabled), int(CC.latActive), int(lat_active), int(CC.longActive), CS.out.cruiseState.modeSel, self.CP.mdpsBus, self.CP.sccBus, self.model_speed, abs(self.sm['controlsState'].curvature), self.lkas_max_torque, abs(CS.out.steeringTorque), self.vFuture, self.params.STEER_MAX, self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN)
+      else:
+        str_log1 = 'EN/LA/LO={}/{}{}/{}  MD={}  BS={:1.0f}/{:1.0f}  CV={:03.0f}/{:0.4f}  TQ={:03.0f}/{:03.0f}  VF={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}'.format(
+          int(CC.enabled), int(CC.latActive), int(lat_active), int(CC.longActive), CS.out.cruiseState.modeSel, self.CP.mdpsBus, self.CP.sccBus, self.model_speed, abs(self.sm['controlsState'].curvature), abs(new_steer), abs(CS.out.steeringTorque), self.vFuture, self.params.STEER_MAX, self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN)
       if CS.out.cruiseState.accActive:
         str_log2 = 'AQ={:+04.2f}  SS={:03.0f}  VF={:03.0f}/{:03.0f}  TS/VS={:03.0f}/{:03.0f}  RD/ED/C/T={:04.1f}/{:04.1f}/{}/{}  C={:1.0f}/{:1.0f}/{}'.format(
         self.aq_value if self.longcontrol else 0, set_speed_in_units, self.vFuture, self.vFutureA, self.NC.ctrl_speed, round(CS.VSetDis), 0, self.dRel, int(self.NC.cut_in), self.NC.cut_in_run_timer, 0, self.btnsignal if self.btnsignal is not None else 0, self.NC.t_interval)
@@ -1216,7 +1218,7 @@ class CarController(CarControllerBase):
 
   def create_button_spamming(self, CC: car.CarControl, CS: car.CarState, canfd: bool):
     can_sends = []
-    if canfd:
+    if canfd:self.lkas_max_torque
       GAP_BTN = can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST))
     else:
       GAP_BTN = can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.GAP_DIST)) if not self.longcontrol \

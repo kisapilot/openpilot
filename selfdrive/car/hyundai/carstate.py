@@ -603,7 +603,7 @@ class CarState(CarStateBase):
       ret.gasPressed = bool(cp.vl[self.accelerator_msg_canfd]["ACCELERATOR_PEDAL_PRESSED"])
 
     ret.brakePressed = cp.vl["TCS"]["DriverBraking"] == 1
-    ret.brakeLights = False # bool(cp.vl["BRAKE"]["BRAKE_LIGHT"])
+    ret.brakeLights = bool(cp.vl["BRAKE"]["BRAKE_LIGHT"])
 
     ret.doorOpen = cp.vl["DOORS_SEATBELTS"]["DRIVER_DOOR"] == 1
     ret.seatbeltUnlatched = cp.vl["DOORS_SEATBELTS"]["DRIVER_SEATBELT"] == 0
@@ -849,6 +849,7 @@ class CarState(CarStateBase):
       ("WHEEL_SPEEDS", 100),
       ("STEERING_SENSORS", 100),
       ("MDPS", 100),
+      ("BRAKE", 100),
       ("TCS", 50),
       ("CRUISE_BUTTONS_ALT", 50),
       ("BLINKERS", 4),
