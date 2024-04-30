@@ -399,7 +399,7 @@ class CarController(CarControllerBase):
       if not bool(CS.out.steeringPressed):
         # If steering is not pressed, use max torque (TODO: need to find this value)
         ego_weight = interp(CS.out.vEgo, [8.3, 35.6], [1, 1.5])
-        self.lkas_max_torque = min(200, self.lkas_max_torque + CS.out.vEgo*3.6, interp(abs(apply_angle), [5, 30], [110, 200] * ego_weight))
+        self.lkas_max_torque = min(200, self.lkas_max_torque + (CS.out.vEgo*3.6), interp(abs(apply_angle), [5, 30], [110, 200]) * ego_weight)
       else:
         # Steering torque seems to be a different scale than applied torque, so we
         # calculate a percentage based on observed "max" values (~|1200| based on
