@@ -622,9 +622,9 @@ class CAR(Platforms):
     flags=HyundaiFlags.HYBRID | HyundaiFlags.LEGACY | HyundaiFlags.LEGACY_ALT,
   )
   KIA_K7_YG = HyundaiPlatformConfig(
-    [HyundaiCarDocs("Kia K7 2017-18", "Advanced Smart Cruise Control", car_parts=CarParts.common([CarHarness.hyundai_b]))],
+    [HyundaiCarDocs("Kia K7 2017-18", "Advanced Smart Cruise Control", car_parts=CarParts.common([CarHarness.hyundai_c]))],
     CarSpecs(mass=1555, wheelbase=2.855, steerRatio=14.4),
-    flags=HyundaiFlags.LEGACY | HyundaiFlags.TCU_GEARS,
+    flags=HyundaiFlags.LEGACY | HyundaiFlags.CLUSTER_GEARS,
   )
   KIA_K7_HEV_YG = HyundaiPlatformConfig(
     [HyundaiCarDocs("Kia K7 Hybrid 2017-18", "Advanced Smart Cruise Control", car_parts=CarParts.common([CarHarness.hyundai_c]))],
