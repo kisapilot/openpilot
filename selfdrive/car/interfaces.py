@@ -106,6 +106,9 @@ class CarInterfaceBase(ABC):
     self.long_alt = int(Params().get("KISALongAlt", encoding="utf8"))
     self.exp_long = self.CP.sccBus <= 0 and self.CP.openpilotLongitudinalControl and self.long_alt not in (1, 2)
 
+  def apply(self, c: car.CarControl, now_nanos: int) -> tuple[car.CarControl.Actuators, list[tuple[int, int, bytes, int]]]:
+    return self.CC.update(c, self.CS, now_nanos)
+
   @staticmethod
   def get_pid_accel_limits(CP, current_speed, cruise_speed):
     return ACCEL_MIN, ACCEL_MAX
