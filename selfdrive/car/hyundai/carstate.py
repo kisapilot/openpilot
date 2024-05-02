@@ -611,6 +611,15 @@ class CarState(CarStateBase):
     gear = cp.vl[self.gear_msg_canfd]["GEAR"]
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(gear))
 
+    # kisa
+    ret.tpms = self.get_tpms(
+      cp.vl["TPMS"]["UNIT"],
+      cp.vl["TPMS"]["PRESSURE_FL"],
+      cp.vl["TPMS"]["PRESSURE_FR"],
+      cp.vl["TPMS"]["PRESSURE_RL"],
+      cp.vl["TPMS"]["PRESSURE_RR"],
+    )
+
     # TODO: figure out positions
     ret.wheelSpeeds = self.get_wheel_speeds(
       cp.vl["WHEEL_SPEEDS"]["WHEEL_SPEED_1"],
@@ -856,6 +865,7 @@ class CarState(CarStateBase):
       ("ESP_STATUS", 100),
       ("TCS", 50),
       ("CRUISE_BUTTONS_ALT", 50),
+      ("TPMS", 5),
       ("BLINKERS", 4),
       ("DOORS_SEATBELTS", 4),
     ]
