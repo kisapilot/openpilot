@@ -83,8 +83,8 @@ class CarController(CarControllerBase):
 
     self.lanechange_manual_timer = 0
     self.emergency_manual_timer = 0
-    self.driver_steering_torque_above = False
     self.driver_steering_torque_above_timer = 150
+    self.driver_steering_angle_above_timer = 150
     
     self.mode_change_timer = 0
 
@@ -330,15 +330,10 @@ class CarController(CarControllerBase):
       self.e2e_x = self.sm['longitudinalPlan'].e2eX[12]
 
     if abs(CS.out.steeringTorque) > 170 and CS.out.vEgo < LANE_CHANGE_SPEED_MIN and self.CP.carFingerprint not in CANFD_CAR:
-      self.driver_steering_torque_above = True
-    else:
-      self.driver_steering_torque_above = False
-
-    if self.driver_steering_torque_above == True:
       self.driver_steering_torque_above_timer -= 1
       if self.driver_steering_torque_above_timer <= 0:
         self.driver_steering_torque_above_timer = 0
-    elif self.driver_steering_torque_above == False:
+    else:
       self.driver_steering_torque_above_timer += 10
       if self.driver_steering_torque_above_timer >= 150:
         self.driver_steering_torque_above_timer = 150
@@ -396,18 +391,25 @@ class CarController(CarControllerBase):
       # here is based on observations of the stock LKAS system when it's engaged
       # CS.out.steeringPressed and steeringTorque are based on the
       # STEERING_COL_TORQUE value
-      if not bool(CS.out.steeringPressed):
-        # If steering is not pressed, use max torque (TODO: need to find this value)
-        ego_weight = interp(CS.out.vEgo, [8.3, 35.6], [0.5, 1.5])
-        self.lkas_max_torque = min(200, self.lkas_max_torque + (CS.out.vEgo*3.6), interp(abs(apply_angle), [5, 30], [110, 200]) * ego_weight)
-      else:
-        # Steering torque seems to be a different scale than applied torque, so we
-        # calculate a percentage based on observed "max" values (~|1200| based on
-        # MDPS STEERING_COL_TORQUE) and then apply that percentage to our normal
-        # max torque, use min to clamp to 100%
-        self.lkas_max_torque = max(10, self.lkas_max_torque - self.lkas_max_torque*0.2)
 
-        # Hold torque with induced temporary fault when cutting the actuation bit
+      lkas_max_torque = 150
+      if abs(CS.out.steeringTorque) > 200:
+        self.driver_steering_angle_above_timer -= 1
+        if self.driver_steering_angle_above_timer <= 0:
+          self.driver_steering_angle_above_timer = 0
+      else:
+        self.driver_steering_angle_above_timer += 1
+        if self.driver_steering_angle_above_timer >= 150:
+          self.driver_steering_angle_above_timer = 150
+
+      ego_weight = interp(CS.out.vEgo, [0, 16.67], [0.1, 1.0])
+
+      if 0 <= self.driver_steering_angle_above_timer < 150:
+        self.lkas_max_torque = int(round(lkas_max_torque * (self.driver_steering_angle_above_timer / 150) * ego_weight))
+      else:
+        self.lkas_max_torque = lkas_max_torque * ego_weight
+
+      # Hold torque with induced temporary fault when cutting the actuation bit
       torque_fault = lat_active and not apply_steer_req
     else:
       torque_fault = False

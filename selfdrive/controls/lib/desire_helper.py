@@ -142,9 +142,10 @@ class DesireHelper:
     else:
       lane_direction = 2
 
+    cancel_condition = (abs(self.output_scale) >= 0.8 and self.lane_change_timer > 0.3) or (carstate.steeringTorque > 270 and controlsstate.lateralControlMethod == 0)
     if self.lane_change_state == LaneChangeState.off and road_edge_stat == lane_direction:
       self.lane_change_direction = LaneChangeDirection.none
-    elif not lateral_active or (self.lane_change_timer > LANE_CHANGE_TIME_MAX) or (abs(self.output_scale) >= 0.8 and self.lane_change_timer > 0.3):
+    elif not lateral_active or (self.lane_change_timer > LANE_CHANGE_TIME_MAX) or cancel_condition:
       self.lane_change_state = LaneChangeState.off
       self.lane_change_direction = LaneChangeDirection.none
     else:
