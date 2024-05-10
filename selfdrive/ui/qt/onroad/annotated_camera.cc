@@ -555,7 +555,8 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
 
     // gear step and cruise gap
-    if (0 < s->scene.gear_step && s->scene.gear_step < 9) {
+    // if (0 < s->scene.gear_step && s->scene.gear_step < 9) {
+    if (true) {
       num_l = num_l + 1;
       sp_yl = sp_yl + j_num;
       if (s->scene.charge_meter > 0) {

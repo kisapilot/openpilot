@@ -49,6 +49,7 @@ class CarState(CarStateBase):
     self.buttons_counter = 0
 
     self.cruise_info = {}
+    self.cruise_btn_info = {}
 
     # On some cars, CLU15->CF_Clu_VehicleSpeed can oscillate faster than the dash updates. Sample at 5 Hz
     self.cluster_speed = 0
@@ -635,6 +636,8 @@ class CarState(CarStateBase):
 
     ret.standstill = ret.wheelSpeeds.fl <= STANDSTILL_THRESHOLD and ret.wheelSpeeds.rr <= STANDSTILL_THRESHOLD
 
+    ret.standStill = self.CP.standStill
+
     ret.steeringRateDeg = cp.vl["STEERING_SENSORS"]["STEERING_RATE"]
     ret.steeringAngleDeg = cp.vl["STEERING_SENSORS"]["STEERING_ANGLE"] * -1
     ret.steeringTorque = cp.vl["MDPS"]["STEERING_COL_TORQUE"]
@@ -716,6 +719,10 @@ class CarState(CarStateBase):
       ret.brakeHoldActive = cp.vl["ESP_STATUS"]["AUTO_HOLD"] == 1 and cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"] not in (1, 2)
       ret.autoHold = ret.brakeHoldActive
 
+      ret.cruiseState.gapSet = cp.vl["ADRV_0x200"]["TauGapSet"]
+      self.cruiseGapSet = ret.cruiseState.gapSet
+      ret.cruiseGapSet = self.cruiseGapSet
+
     if not self.exp_long:
       self.lead_distance = cp_cruise_info.vl["SCC_CONTROL"]["ACC_ObjDist"]
       ret.radarDistance = self.lead_distance
@@ -735,6 +742,9 @@ class CarState(CarStateBase):
     self.main_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["ADAPTIVE_CRUISE_MAIN_BTN"])
     self.buttons_counter = cp.vl[self.cruise_btns_msg_canfd]["COUNTER"]
     ret.accFaulted = cp.vl["TCS"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
+
+    if self.cruise_btns_msg_canfd == "CRUISE_BUTTONS":
+      self.cruise_btn_info = copy.copy(cp_cruise_info.vl[self.cruise_btns_msg_canfd])
 
     if self.CP.flags & HyundaiFlags.CANFD_HDA2:
       self.hda2_lfa_block_msg = copy.copy(cp_cam.vl["CAM_0x362"] if self.CP.flags & HyundaiFlags.CANFD_HDA2_ALT_STEERING
@@ -865,6 +875,7 @@ class CarState(CarStateBase):
       ("ESP_STATUS", 100),
       ("TCS", 50),
       ("CRUISE_BUTTONS_ALT", 50),
+      ("ADRV_0x200", 20),
       ("TPMS", 5),
       ("BLINKERS", 4),
       ("DOORS_SEATBELTS", 4),
