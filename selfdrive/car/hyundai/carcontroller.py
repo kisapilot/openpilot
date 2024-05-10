@@ -528,7 +528,7 @@ class CarController(CarControllerBase):
         # button presses
         can_sends.extend(self.create_button_messages(CC, CS, use_clu11=False))
         if not self.canfd_cruise_btn_running:
-          self.create_button_spamming(CC, CS, canfd=True)
+          can_sends.extend(self.create_button_spamming(CC, CS, canfd=True))
     else:
       clu11_speed = CS.clu11["CF_Clu_Vanz"]
       enabled_speed = 38 if CS.is_set_speed_in_mph else 60
@@ -670,7 +670,7 @@ class CarController(CarControllerBase):
         self.last_lead_distance = 0
         self.standstill_res_button = False
       else:
-        self.create_button_spamming(CC, CS, canfd=False)
+        can_sends.extend(self.create_button_spamming(CC, CS, canfd=False))
 
       if not CC.enabled:
         self.cruise_init = False
