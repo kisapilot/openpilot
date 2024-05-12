@@ -402,7 +402,7 @@ class CarController(CarControllerBase):
         if self.driver_steering_angle_above_timer >= 150:
           self.driver_steering_angle_above_timer = 150
 
-      ego_weight = interp(CS.out.vEgo, [0, 16.67], [0.1, 1.0])
+      ego_weight = interp(CS.out.vEgo, [0, 20], [0.01, 1.0])
 
       if 0 <= self.driver_steering_angle_above_timer < 150:
         self.lkas_max_torque = int(round(lkas_max_torque * (self.driver_steering_angle_above_timer / 150) * ego_weight))
@@ -1384,12 +1384,12 @@ class CarController(CarControllerBase):
           if (self.frame - self.last_button_frame) * DT_CTRL >= 0.15:
             self.last_button_frame = self.frame
     else:
-      if (self.frame - self.last_button_frame) * DT_CTRL > (randint(1, 3) * 0.1): # 0.25
+      if (self.frame - self.last_button_frame) * DT_CTRL > (randint(1, 3) * 0.1) and CS.acc_active: # 0.25
         # cruise cancel
         resume = False
         speeds = self.sm['longitudinalPlan'].speeds
         if len(speeds):
-          resume = CS.out.cruiseState.standstill and speeds[-1] > 0.1 and 5 > CS.lead_distance > 0
+          resume = CS.out.cruiseState.standstill and speeds[-1] > 0.1 and 6 > CS.lead_distance > 0
         # if CC.cruiseControl.cancel:
         #   if self.CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS:
         #     can_sends.append(hyundaicanfd.create_acc_cancel(self.packer, self.CP, self.CAN, CS.cruise_info))
@@ -1399,8 +1399,21 @@ class CarController(CarControllerBase):
         #       can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.CANCEL, CS.cruise_btn_info))
         #     self.last_button_frame = self.frame
 
+        standstill = CS.out.cruiseState.standstill and 6 > CS.lead_distance > 0 and not resume
         # cruise standstill resume
-        if resume:
+        if standstill:
+          if self.cruise_gap_prev == 0 and CS.cruiseGapSet != 1.0 and self.kisa_cruisegap_auto_adj and not self.gap_by_spd_on and not self.cruise_gap_set_init:
+            self.cruise_gap_prev = CS.cruiseGapSet
+            self.cruise_gap_set_init = True
+          elif CS.cruiseGapSet != 1.0 and self.kisa_cruisegap_auto_adj and not self.gap_by_spd_on and self.cruise_gap_set_init:
+            for _ in range(randint(self.btn_count, self.btn_count+2)):
+              can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST, CS.cruise_btn_info))
+            self.last_button_frame = self.frame
+            self.cruise_gap_adjusting = True
+          else:
+            self.cruise_gap_adjusting = False
+            self.cruise_gap_set_init = False
+        elif resume:
           self.resume_running = True
           if self.CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS:
             self.resume_running = False
@@ -1411,12 +1424,77 @@ class CarController(CarControllerBase):
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.RES_ACCEL, CS.cruise_btn_info))
             self.last_button_frame = self.frame
             self.resume_running = False
-      if (self.frame - self.last_button_frame) * DT_CTRL > (randint(1, 2) * 0.1) and not self.resume_running:
-        if self.kisa_variablecruise and CS.acc_active:
+            self.cruise_gap_adjusting = False
+            self.cruise_gap_set_init = False
+      if (self.frame - self.last_button_frame) * DT_CTRL > 0.15 and not (self.resume_running or self.cruise_gap_adjusting) and CS.acc_active:
+        if 0 < CS.lead_distance <= 149 and CS.lead_objspd < -4 and CS.cruiseGapSet != 4.0 and CS.clu_Vanz > 30 and 0 < self.e2e_x < 120 and self.try_early_stop:
+          if not self.try_early_stop_retrieve:
+            self.try_early_stop_org_gap = CS.cruiseGapSet
+            self.try_early_stop_retrieve = True
+          if self.try_early_stop_retrieve:
+            for _ in range(randint(self.btn_count, self.btn_count+2)):
+              can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST, CS.cruise_btn_info))
+            self.last_button_frame = self.frame
+        elif 0 < CS.lead_distance <= 149 and self.try_early_stop_retrieve and CS.cruiseGapSet != self.try_early_stop_org_gap and \
+          (CS.clu_Vanz <= 20 or (CS.lead_objspd >= 0 and self.e2e_x > 50 and CS.clu_Vanz > 20)) and self.try_early_stop:
+          for _ in range(randint(self.btn_count, self.btn_count+2)):
+            can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST, CS.cruise_btn_info))
+          self.last_button_frame = self.frame
+        elif self.try_early_stop_retrieve and CS.cruiseGapSet == self.try_early_stop_org_gap and self.try_early_stop:
+          self.try_early_stop_retrieve = False
+          self.try_early_stop_org_gap = 0
+        elif self.gap_by_spd_on and CS.cruiseGapSet != self.gap_by_spd_gap[0] and ((CS.clu_Vanz < self.gap_by_spd_spd[0]+self.gap_by_spd_on_buffer1) or self.gap_by_spd_gap1) and not self.try_early_stop_retrieve and not CS.lead_objspd < 0:
+          self.gap_by_spd_gap1 = True
+          self.gap_by_spd_gap2 = False
+          self.gap_by_spd_gap3 = False
+          self.gap_by_spd_gap4 = False
+          self.gap_by_spd_on_buffer1 = 0
+          self.gap_by_spd_on_buffer2 = 0
+          for _ in range(randint(self.btn_count, self.btn_count+2)):
+            can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST, CS.cruise_btn_info))
+          self.last_button_frame = self.frame
+        elif self.gap_by_spd_on and CS.cruiseGapSet != self.gap_by_spd_gap[1] and ((self.gap_by_spd_spd[0] <= CS.clu_Vanz < self.gap_by_spd_spd[1]+self.gap_by_spd_on_buffer2) or self.gap_by_spd_gap2) and not self.try_early_stop_retrieve and not CS.lead_objspd < 0:
+          self.gap_by_spd_gap1 = False
+          self.gap_by_spd_gap2 = True
+          self.gap_by_spd_gap3 = False
+          self.gap_by_spd_gap4 = False
+          self.gap_by_spd_on_buffer1 = -5
+          self.gap_by_spd_on_buffer3 = 0
+          for _ in range(randint(self.btn_count, self.btn_count+2)):
+            can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST, CS.cruise_btn_info))
+          self.last_button_frame = self.frame
+        elif self.gap_by_spd_on and CS.cruiseGapSet != self.gap_by_spd_gap[2] and ((self.gap_by_spd_spd[1] <= CS.clu_Vanz < self.gap_by_spd_spd[2]+self.gap_by_spd_on_buffer3) or self.gap_by_spd_gap3) and not self.try_early_stop_retrieve and not CS.lead_objspd < 0:
+          self.gap_by_spd_gap1 = False
+          self.gap_by_spd_gap2 = False
+          self.gap_by_spd_gap3 = True
+          self.gap_by_spd_gap4 = False
+          self.gap_by_spd_on_buffer2 = -5
+          for _ in range(randint(self.btn_count, self.btn_count+2)):
+            can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST, CS.cruise_btn_info))
+          self.last_button_frame = self.frame
+        elif self.gap_by_spd_on and CS.cruiseGapSet != self.gap_by_spd_gap[3] and ((self.gap_by_spd_spd[2] <= CS.clu_Vanz) or self.gap_by_spd_gap4) and not self.try_early_stop_retrieve and not CS.lead_objspd < 0:
+          self.gap_by_spd_gap1 = False
+          self.gap_by_spd_gap2 = False
+          self.gap_by_spd_gap3 = False
+          self.gap_by_spd_gap4 = True
+          self.gap_by_spd_on_buffer3 = -5
+          for _ in range(randint(self.btn_count, self.btn_count+2)):
+            can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST, CS.cruise_btn_info))
+          self.last_button_frame = self.frame
+        elif self.kisa_variablecruise:
+          self.gap_by_spd_gap1 = False
+          self.gap_by_spd_gap2 = False
+          self.gap_by_spd_gap3 = False
+          self.gap_by_spd_gap4 = False
           btn_signal = self.NC.update(CS)
           self.btnsignal = btn_signal
+          self.on_speed_control = self.NC.onSpeedControl
+          self.on_speed_bump_control = self.NC.onSpeedBumpControl
+          self.curv_speed_control = self.NC.curvSpeedControl
+          self.cut_in_control = self.NC.cutInControl
+          self.driver_scc_set_control = self.NC.driverSccSetControl
           if btn_signal is not None:
-            for _ in range(self.standstill_res_count):
+            for _ in range(randint(self.btn_count, self.btn_count+2)):
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, btn_signal, CS.cruise_btn_info))
             self.last_button_frame = self.frame
 

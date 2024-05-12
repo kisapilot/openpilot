@@ -175,7 +175,7 @@ def manager_init() -> None:
     ("KISAServer", "0"),
     ("KISAMapboxStyleSelect", "0"),
     ("IgnoreCANErroronISG", "0"),
-    ("RESCountatStandstill", "18"),
+    ("RESCountatStandstill", "20"),
     ("KisaSpeedLimitOffsetOption", "0"),
     ("KisaSpeedLimitSignType", "0"),
     ("StockLKASEnabled", "0"),
