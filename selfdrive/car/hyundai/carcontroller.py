@@ -598,6 +598,82 @@ class CarController(CarControllerBase):
       self.acc_standstill = False
       self.acc_standstill_timer = 0
 
+    if CS.cruise_active: # to toggle lkas, hold gap button for 1 sec
+      if CS.cruise_buttons[-1] == 3:
+        self.lkas_onoff_counter += 1
+        self.gap_by_spd_on_sw = True
+        self.gap_by_spd_on_sw_cnt2 = 0
+        if self.lkas_onoff_counter > 100:
+          self.lkas_onoff_counter = 0
+          self.lkas_temp_disabled = not self.lkas_temp_disabled
+          if self.lkas_temp_disabled:
+            self.lkas_temp_disabled_timer = 0
+          else:
+            self.lkas_temp_disabled_timer = 15
+      else:
+        if self.lkas_temp_disabled_timer:
+          self.lkas_temp_disabled_timer -= 1
+        self.lkas_onoff_counter = 0
+        if self.gap_by_spd_on_sw:
+          self.gap_by_spd_on_sw = False
+          self.gap_by_spd_on_sw_cnt += 1
+          if self.gap_by_spd_on_sw_cnt > 4: #temporary disable of auto gap if you press gap button 5 times quickly.
+            self.gap_by_spd_on_sw_trg = not self.gap_by_spd_on_sw_trg
+            self.gap_by_spd_on_sw_cnt = 0
+            self.gap_by_spd_on_sw_cnt2 = 0
+        elif self.gap_by_spd_on_sw_cnt:
+          self.gap_by_spd_on_sw_cnt2 += 1
+          if self.gap_by_spd_on_sw_cnt2 > 20:
+            self.gap_by_spd_on_sw_cnt = 0
+            self.gap_by_spd_on_sw_cnt2 = 0
+      self.second2 += 1
+      if self.second2 > 100:
+        self.second2 = 100
+      if CS.cruise_buttons[-1] == 3: # push gap 2 times quickly, this is toggle.
+        self.exp_mode_push = True
+        self.second2 = 0
+      elif self.exp_mode_push:
+        self.exp_mode_push = False
+        self.exp_mode_push_cnt += 1
+      elif self.exp_mode_push_cnt == 2 and self.second2 > 50:
+        self.exp_mode_push_cnt = 0
+        self.experimental_mode_temp = not self.experimental_mode_temp
+        if self.experimental_mode_temp:
+          self.c_params.put_bool("ExperimentalMode", True)
+        else:
+          self.c_params.put_bool("ExperimentalMode", False)
+      elif self.second2 > 50 and self.exp_mode_push_cnt > 0:
+        self.exp_mode_push_cnt = 0
+    else:
+      self.lkas_onoff_counter = 0
+      if self.lkas_temp_disabled_timer:
+        self.lkas_temp_disabled_timer -= 1
+      self.gap_by_spd_on_sw_cnt = 0
+      self.gap_by_spd_on_sw_cnt2 = 0
+      self.gap_by_spd_on_sw = False
+      self.gap_by_spd_on_sw_trg = True
+
+    if CS.out.cruiseState.modeSel == 0 and self.mode_change_switch == 5:
+      self.mode_change_timer = 50
+      self.mode_change_switch = 0
+    elif CS.out.cruiseState.modeSel == 1 and self.mode_change_switch == 0:
+      self.mode_change_timer = 50
+      self.mode_change_switch = 1
+    elif CS.out.cruiseState.modeSel == 2 and self.mode_change_switch == 1:
+      self.mode_change_timer = 50
+      self.mode_change_switch = 2
+    elif CS.out.cruiseState.modeSel == 3 and self.mode_change_switch == 2:
+      self.mode_change_timer = 50
+      self.mode_change_switch = 3
+    elif CS.out.cruiseState.modeSel == 4 and self.mode_change_switch == 3:
+      self.mode_change_timer = 50
+      self.mode_change_switch = 4
+    elif CS.out.cruiseState.modeSel == 5 and self.mode_change_switch == 4:
+      self.mode_change_timer = 50
+      self.mode_change_switch = 5
+    if self.mode_change_timer > 0:
+      self.mode_change_timer -= 1
+
     # CAN-FD platforms
     if self.CP.carFingerprint in CANFD_CAR:
       hda2 = self.CP.flags & HyundaiFlags.CANFD_HDA2
@@ -635,85 +711,6 @@ class CarController(CarControllerBase):
         can_sends.extend(self.create_button_messages(CC, CS, use_clu11=False))
     else:
       clu11_speed = CS.clu11["CF_Clu_Vanz"]
-      enabled_speed = 38 if CS.is_set_speed_in_mph else 60
-      if clu11_speed > enabled_speed or not lat_active:
-        enabled_speed = clu11_speed
-
-      if CS.cruise_active: # to toggle lkas, hold gap button for 1 sec
-        if CS.cruise_buttons[-1] == 3:
-          self.lkas_onoff_counter += 1
-          self.gap_by_spd_on_sw = True
-          self.gap_by_spd_on_sw_cnt2 = 0
-          if self.lkas_onoff_counter > 100:
-            self.lkas_onoff_counter = 0
-            self.lkas_temp_disabled = not self.lkas_temp_disabled
-            if self.lkas_temp_disabled:
-              self.lkas_temp_disabled_timer = 0
-            else:
-              self.lkas_temp_disabled_timer = 15
-        else:
-          if self.lkas_temp_disabled_timer:
-            self.lkas_temp_disabled_timer -= 1
-          self.lkas_onoff_counter = 0
-          if self.gap_by_spd_on_sw:
-            self.gap_by_spd_on_sw = False
-            self.gap_by_spd_on_sw_cnt += 1
-            if self.gap_by_spd_on_sw_cnt > 4: #temporary disable of auto gap if you press gap button 5 times quickly.
-              self.gap_by_spd_on_sw_trg = not self.gap_by_spd_on_sw_trg
-              self.gap_by_spd_on_sw_cnt = 0
-              self.gap_by_spd_on_sw_cnt2 = 0
-          elif self.gap_by_spd_on_sw_cnt:
-            self.gap_by_spd_on_sw_cnt2 += 1
-            if self.gap_by_spd_on_sw_cnt2 > 20:
-              self.gap_by_spd_on_sw_cnt = 0
-              self.gap_by_spd_on_sw_cnt2 = 0
-        self.second2 += 1
-        if self.second2 > 100:
-          self.second2 = 100
-        if CS.cruise_buttons[-1] == 3: # push gap 2 times quickly, this is toggle.
-          self.exp_mode_push = True
-          self.second2 = 0
-        elif self.exp_mode_push:
-          self.exp_mode_push = False
-          self.exp_mode_push_cnt += 1
-        elif self.exp_mode_push_cnt == 2 and self.second2 > 50:
-          self.exp_mode_push_cnt = 0
-          self.experimental_mode_temp = not self.experimental_mode_temp
-          if self.experimental_mode_temp:
-            self.c_params.put_bool("ExperimentalMode", True)
-          else:
-            self.c_params.put_bool("ExperimentalMode", False)
-        elif self.second2 > 50 and self.exp_mode_push_cnt > 0:
-          self.exp_mode_push_cnt = 0
-      else:
-        self.lkas_onoff_counter = 0
-        if self.lkas_temp_disabled_timer:
-          self.lkas_temp_disabled_timer -= 1
-        self.gap_by_spd_on_sw_cnt = 0
-        self.gap_by_spd_on_sw_cnt2 = 0
-        self.gap_by_spd_on_sw = False
-        self.gap_by_spd_on_sw_trg = True
-
-      if CS.out.cruiseState.modeSel == 0 and self.mode_change_switch == 5:
-        self.mode_change_timer = 50
-        self.mode_change_switch = 0
-      elif CS.out.cruiseState.modeSel == 1 and self.mode_change_switch == 0:
-        self.mode_change_timer = 50
-        self.mode_change_switch = 1
-      elif CS.out.cruiseState.modeSel == 2 and self.mode_change_switch == 1:
-        self.mode_change_timer = 50
-        self.mode_change_switch = 2
-      elif CS.out.cruiseState.modeSel == 3 and self.mode_change_switch == 2:
-        self.mode_change_timer = 50
-        self.mode_change_switch = 3
-      elif CS.out.cruiseState.modeSel == 4 and self.mode_change_switch == 3:
-        self.mode_change_timer = 50
-        self.mode_change_switch = 4
-      elif CS.out.cruiseState.modeSel == 5 and self.mode_change_switch == 4:
-        self.mode_change_timer = 50
-        self.mode_change_switch = 5
-      if self.mode_change_timer > 0:
-        self.mode_change_timer -= 1
 
       can_sends.append(hyundaican.create_lkas11(self.packer, self.frame, self.CP, apply_steer, lat_active and not self.lkas_temp_disabled,
                                                 torque_fault, CS.lkas11, sys_warning, sys_state, CC.enabled,

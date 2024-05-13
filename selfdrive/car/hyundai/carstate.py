@@ -722,6 +722,7 @@ class CarState(CarStateBase):
       ret.cruiseState.gapSet = cp.vl["ADRV_0x200"]["TauGapSet"]
       self.cruiseGapSet = ret.cruiseState.gapSet
       ret.cruiseGapSet = self.cruiseGapSet
+      ret.cruiseState.modeSel = self.cruise_set_mode
 
     if not self.exp_long:
       self.lead_distance = cp_cruise_info.vl["SCC_CONTROL"]["ACC_ObjDist"]
