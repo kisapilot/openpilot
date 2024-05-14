@@ -15,13 +15,18 @@ USE_RADAR_TRACK = Params().get_bool("UseRadarTrack") or (Params().get_bool("Expe
 # POC for parsing corner radars: https://github.com/commaai/openpilot/pull/24221/
 
 def get_radar_can_parser(CP):
-  if USE_RADAR_TRACK or CP.carFingerprint in CANFD_CAR:
+  if USE_RADAR_TRACK:
     if DBC[CP.carFingerprint]['radar'] is None:
       return None
 
     messages = [(f"RADAR_TRACK_{addr:x}", 50) for addr in range(RADAR_START_ADDR, RADAR_START_ADDR + RADAR_MSG_COUNT)]
     return CANParser(DBC[CP.carFingerprint]['radar'], messages, 1)
 
+  elif CP.carFingerprint in CANFD_CAR:
+    messages = [
+      # address, frequency
+      ("SCC_CONTROL", 50),
+    ]
   else:
     messages = [
       # address, frequency
@@ -36,13 +41,19 @@ class RadarInterface(RadarInterfaceBase):
 
     self.CP = CP
     
-    if USE_RADAR_TRACK or self.CP.carFingerprint in CANFD_CAR:
+    if USE_RADAR_TRACK:
       self.updated_messages = set()
       self.trigger_msg = RADAR_START_ADDR + RADAR_MSG_COUNT - 1
       self.track_id = 0
 
       self.radar_off_can = CP.radarUnavailable
       self.rcp = get_radar_can_parser(CP)
+    elif self.CP.carFingerprint in CANFD_CAR:
+      self.rcp = get_radar_can_parser(CP)
+      self.updated_messages = set()
+      self.trigger_msg = 0x1A0
+      self.track_id = 0
+      self.radar_off_can = CP.radarUnavailable
     else:
       self.rcp = get_radar_can_parser(CP)
       self.updated_messages = set()
@@ -51,9 +62,12 @@ class RadarInterface(RadarInterfaceBase):
       self.radar_off_can = CP.radarUnavailable
 
   def update(self, can_strings):
-    if USE_RADAR_TRACK or self.CP.carFingerprint in CANFD_CAR:
+    if USE_RADAR_TRACK:
       if self.radar_off_can or (self.rcp is None):
         return super().update(None)
+    elif self.CP.carFingerprint in CANFD_CAR:
+      if self.radar_off_can:
+        return super().update(None)      
     else:
       if self.radar_off_can:
         return super().update(None)
@@ -72,7 +86,7 @@ class RadarInterface(RadarInterfaceBase):
   def _update(self, updated_messages):
     ret = car.RadarData.new_message()
 
-    if USE_RADAR_TRACK or self.CP.carFingerprint in CANFD_CAR:
+    if USE_RADAR_TRACK:
       if self.rcp is None:
         return ret
 
@@ -102,6 +116,31 @@ class RadarInterface(RadarInterfaceBase):
 
         else:
           del self.pts[addr]
+
+    elif self.CP.carFingerprint in CANFD_CAR:
+      cpt = self.rcp.vl
+      errors = []
+      if not self.rcp.can_valid:
+        errors.append("canError")
+      ret.errors = errors
+
+      valid = cpt["SCC_CONTROL"]['ObjValid']
+
+      for ii in range(1):
+        if valid:
+          if ii not in self.pts:
+            self.pts[ii] = car.RadarData.RadarPoint.new_message()
+            self.pts[ii].trackId = self.track_id
+            self.track_id += 1
+          self.pts[ii].dRel = cpt["SCC_CONTROL"]['ACC_ObjDist']  # from front of car
+          self.pts[ii].yRel = float('nan')
+          self.pts[ii].vRel = cpt["SCC_CONTROL"]['ACC_ObjRelSpd']
+          self.pts[ii].aRel = float('nan')
+          self.pts[ii].yvRel = float('nan')
+          self.pts[ii].measured = True
+        else:
+          if ii in self.pts:
+            del self.pts[ii]
 
     else:
       cpt = self.rcp.vl

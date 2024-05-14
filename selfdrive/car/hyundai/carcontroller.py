@@ -1537,6 +1537,6 @@ class CarController(CarControllerBase):
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, btn_signal, CS.cruise_btn_info))
             self.last_button_frame = self.frame
           differ = abs(self.NC.ctrl_speed - round(CS.VSetDis))
-          self.refresh_time2 = interp(differ, [1,2,3], [3,2,1])
+          self.refresh_time2 = interp(differ, [1,2,3], [5,3,1])
 
     return can_sends
