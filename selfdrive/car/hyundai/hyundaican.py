@@ -225,19 +225,6 @@ def create_frt_radar_opt(packer):
     "CF_FCA_Equip_Front_Radar": 1,
   }
   return packer.make_can_msg("FRT_RADAR11", 0, frt_radar11_values)
-
-def create_mdps12(packer, frame, mdps12):
-  values = mdps12
-  values["CF_Mdps_ToiActive"] = 0
-  values["CF_Mdps_ToiUnavail"] = 1
-  values["CF_Mdps_MsgCount2"] = frame % 0x100
-  values["CF_Mdps_Chksum2"] = 0
-
-  dat = packer.make_can_msg("MDPS12", 2, values)[2]
-  checksum = sum(dat) % 256
-  values["CF_Mdps_Chksum2"] = checksum
-  
-  return packer.make_can_msg("MDPS12", 2, values)
   
 def create_scc11(packer, frame, set_speed, lead_visible, scc_live, lead_dist, lead_vrel, lead_yrel, car_fingerprint, speed, standstill, gap_setting, stopping, radar_recognition, scc11):
   values = scc11
@@ -346,22 +333,3 @@ def create_scc42a(packer):
     "CF_FCA_Equip_Front_Radar": 1
   }
   return packer.make_can_msg("FRT_RADAR11", 0, values)
-
-def create_fca11(packer, fca11, fca11cnt, fca11supcnt):
-  values = fca11
-  values["CR_FCA_Alive"] = fca11cnt
-  values["Supplemental_Counter"] = fca11supcnt
-  values["CR_FCA_ChkSum"] = 0
-  dat = packer.make_can_msg("FCA11", 0, values)[2]
-  values["CR_FCA_ChkSum"] = 16 - sum([sum(divmod(i, 16)) for i in dat]) % 16
-  return packer.make_can_msg("FCA11", 0, values)
-
-def create_fca12(packer):
-  values = {
-    "FCA_USM": 3,
-    "FCA_DrvSetState": 2,
-  }
-  return packer.make_can_msg("FCA12", 0, values)
-
-def create_scc7d0(cmd):
-  return[2000, 0, cmd, 0]

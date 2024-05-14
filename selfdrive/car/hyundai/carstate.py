@@ -123,16 +123,11 @@ class CarState(CarStateBase):
 
     if self.prev_cruise_btn == self.cruise_buttons[-1]:
       return self.cruise_set_speed_kph
-    elif self.prev_main_btn != self.main_buttons[-1]:
-      self.prev_main_btn = self.main_buttons[-1]
-      if not self.cruise_active:
-        if not self.prev_acc_set_btn: # first scc active
-          self.prev_acc_set_btn = self.acc_active
-          if self.main_buttons[-1] == 1:
-            self.cruise_set_speed_kph = max(int(round(self.clu_Vanz)), (30 if self.is_metric else 20))
-            return self.cruise_set_speed_kph
-      else:
-        self.cruise_set_speed_kph = 255
+    elif self.acc_active and not self.cruise_buttons[-1] and not self.prev_main_btn:
+      if not self.prev_acc_set_btn: # first scc active
+        self.prev_acc_set_btn = self.acc_active
+        self.prev_main_btn = self.acc_active
+        self.cruise_set_speed_kph = max(int(round(self.clu_Vanz)), (30 if self.is_metric else 20))
         return self.cruise_set_speed_kph
     elif self.prev_cruise_btn != self.cruise_buttons[-1]:
       self.prev_cruise_btn = self.cruise_buttons[-1]
@@ -175,7 +170,6 @@ class CarState(CarStateBase):
       self.cruise_set_speed_kph = set_speed_kph
     else:
       self.prev_cruise_btn = False 
-      self.prev_main_btn = False
 
     return set_speed_kph
 
@@ -324,13 +318,11 @@ class CarState(CarStateBase):
     tpms.rr = rr * factor
     return tpms
 
-  def update(self, cp, cp2, cp_cam):
+  def update(self, cp, cp_cam):
     if self.CP.carFingerprint in CANFD_CAR:
       return self.update_canfd(cp, cp_cam)
 
-    cp_mdps = cp2 if self.CP.mdpsBus == 1 else cp
-    cp_sas = cp2 if self.CP.sasBus else cp
-    cp_scc = cp_cam if self.CP.sccBus == 2 else cp2 if self.CP.sccBus == 1 else cp
+    cp_scc = cp_cam if self.CP.sccBus == 2 else cp
 
     self.prev_cruise_main_button = self.cruise_main_button
     self.prev_lkas_button_on = self.lkas_button_on
@@ -374,18 +366,18 @@ class CarState(CarStateBase):
     
     ret.standStill = self.CP.standStill
 
-    ret.steeringAngleDeg = cp_sas.vl["SAS11"]["SAS_Angle"] - self.steer_anglecorrection
-    ret.steeringRateDeg = cp_sas.vl["SAS11"]["SAS_Speed"]
+    ret.steeringAngleDeg = cp.vl["SAS11"]["SAS_Angle"] - self.steer_anglecorrection
+    ret.steeringRateDeg = cp.vl["SAS11"]["SAS_Speed"]
     ret.yawRate = cp.vl["ESP12"]["YAW_RATE"]
     ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(
       50, cp.vl["CGW1"]["CF_Gway_TurnSigLh"], cp.vl["CGW1"]["CF_Gway_TurnSigRh"])
-    ret.steeringTorque = cp_mdps.vl["MDPS12"]["CR_Mdps_StrColTq"]
-    ret.steeringTorqueEps = cp_mdps.vl["MDPS12"]["CR_Mdps_OutTq"]
+    ret.steeringTorque = cp.vl["MDPS12"]["CR_Mdps_StrColTq"]
+    ret.steeringTorqueEps = cp.vl["MDPS12"]["CR_Mdps_OutTq"]
     ret.steeringPressed = self.update_steering_pressed(abs(ret.steeringTorque) > self.params.STEER_THRESHOLD, 5)
-    self.mdps_error_cnt += 1 if cp_mdps.vl["MDPS12"]["CF_Mdps_ToiUnavail"] != 0 else -self.mdps_error_cnt
-    ret.steerFaultTemporary = self.mdps_error_cnt > 100 #cp_mdps.vl["MDPS12"]["CF_Mdps_ToiUnavail"] != 0
+    self.mdps_error_cnt += 1 if cp.vl["MDPS12"]["CF_Mdps_ToiUnavail"] != 0 else -self.mdps_error_cnt
+    ret.steerFaultTemporary = self.mdps_error_cnt > 100 #cp.vl["MDPS12"]["CF_Mdps_ToiUnavail"] != 0
 
-    self.Mdps_ToiUnavail = cp_mdps.vl["MDPS12"]["CF_Mdps_ToiUnavail"]
+    self.Mdps_ToiUnavail = cp.vl["MDPS12"]["CF_Mdps_ToiUnavail"]
     self.driverOverride = cp.vl["TCS13"]["DriverOverride"]
     if self.driverOverride == 1:
       self.driverAcc_time = 100
@@ -460,6 +452,7 @@ class CarState(CarStateBase):
         self.cancel_check = False
       elif not ret.cruiseState.available:
         self.prev_acc_set_btn = False
+        self.prev_main_btn = False
       self.cruiseState_standstill = ret.cruiseState.standstill
 
       set_speed = self.cruise_speed_button()
@@ -559,7 +552,7 @@ class CarState(CarStateBase):
     # save the entire LKAS11 and CLU11
     self.lkas11 = copy.copy(cp_cam.vl["LKAS11"])
     self.clu11 = copy.copy(cp.vl["CLU11"])
-    self.steer_state = cp_mdps.vl["MDPS12"]["CF_Mdps_ToiActive"]  # 0 NOT ACTIVE, 1 ACTIVE
+    self.steer_state = cp.vl["MDPS12"]["CF_Mdps_ToiActive"]  # 0 NOT ACTIVE, 1 ACTIVE
     self.prev_cruise_buttons = self.cruise_buttons[-1]
     self.cruise_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwState"])
     self.main_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwMain"])
@@ -583,7 +576,7 @@ class CarState(CarStateBase):
       if self.CP.scc14Available:
         self.scc14 = copy.copy(cp_scc.vl["SCC14"])
 
-    self.mdps12 = copy.copy(cp_mdps.vl["MDPS12"])
+    self.mdps12 = copy.copy(cp.vl["MDPS12"])
 
     return ret
 
@@ -659,11 +652,6 @@ class CarState(CarStateBase):
         ret.leftBlindspot = cp.vl["BLINDSPOTS_REAR_CORNERS"]["FL_INDICATOR"] != 0
         ret.rightBlindspot = cp.vl["BLINDSPOTS_REAR_CORNERS"]["FR_INDICATOR"] != 0
 
-    if self.main_buttons[-1]:
-      ret.cruiseButtons = 2
-    else:
-      ret.cruiseButtons = self.cruise_buttons[-1]
-
     if self.CP.openpilotLongitudinalControl:
       # These are not used for engage/disengage since openpilot keeps track of state using the buttons
       # ret.cruiseState.enabled = cp.vl["TCS"]["ACC_REQ"] == 1
@@ -706,6 +694,7 @@ class CarState(CarStateBase):
         self.cancel_check = False
       elif not ret.cruiseState.available:
         self.prev_acc_set_btn = False
+        self.prev_main_btn = False
 
       set_speed = self.cruise_speed_button_alt()
       if ret.cruiseState.enabled and (self.brake_check == False or self.cancel_check == False):
@@ -745,6 +734,11 @@ class CarState(CarStateBase):
     self.buttons_counter = cp.vl[self.cruise_btns_msg_canfd]["COUNTER"]
     ret.accFaulted = cp.vl["TCS"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
 
+    if self.main_buttons[-1]:
+      ret.cruiseButtons = 2
+    else:
+      ret.cruiseButtons = self.cruise_buttons[-1]
+
     if self.cruise_btns_msg_canfd == "CRUISE_BUTTONS":
       self.cruise_btn_info = copy.copy(cp_cruise_info.vl[self.cruise_btns_msg_canfd])
 
@@ -760,6 +754,8 @@ class CarState(CarStateBase):
 
     messages = [
       # address, frequency
+      ("MDPS12", 50)
+      ("SAS11", 100)
       ("TCS13", 50),
       ("TCS15", 10),
       ("CLU11", 50),
@@ -779,12 +775,6 @@ class CarState(CarStateBase):
       ]
       if CP.flags & HyundaiFlags.USE_FCA.value:
         messages.append(("FCA11", 50))
-
-    if CP.mdpsBus == 0:
-      messages += [("MDPS12", 50)]
-
-    if CP.sasBus == 0:
-      messages += [("SAS11", 100)]
 
     if CP.enableBsm:
       messages.append(("LCA11", 50))
@@ -818,23 +808,6 @@ class CarState(CarStateBase):
       ]
 
     return CANParser(DBC[CP.carFingerprint]["pt"], messages, 0)
-
-  @staticmethod
-  def get_can2_parser(CP):
-    messages = []
-    if CP.mdpsBus == 1:
-      messages += [("MDPS12", 50)]
-    if CP.sasBus == 1:
-      messages += [("SAS11", 100)]
-
-    if CP.sccBus == 1:
-      messages += [
-        ("SCC11", 50),
-        ("SCC12", 50)
-      ]
-
-    return CANParser(DBC[CP.carFingerprint]["pt"], messages, 1)
-
 
   @staticmethod
   def get_cam_can_parser(CP):

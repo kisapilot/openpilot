@@ -84,6 +84,8 @@ class VCruiseHelper:
 
     self.setspdfive = self.params.get_bool("SetSpeedFive") 
 
+    self.first_acc = False
+
   @property
   def v_cruise_initialized(self):
     return self.v_cruise_kph != V_CRUISE_UNSET
@@ -115,8 +117,10 @@ class VCruiseHelper:
             self.v_cruise_kph = self.CP.vCruisekph
             self.v_cruise_kph_last = self.v_cruise_kph
             self.v_cruise_cluster_kph = self.v_cruise_kph
-          elif CS.cruiseButtons == Buttons.RES_ACCEL or CS.cruiseButtons == Buttons.SET_DECEL:
-            if self.cruise_road_limit_spd_enabled and CS.cruiseButtons == Buttons.SET_DECEL:
+          elif CS.cruiseButtons == Buttons.RES_ACCEL or CS.cruiseButtons == Buttons.SET_DECEL or (CS.cruiseState.accActive and CS.cruiseButtons == 0 and not self.first_acc):
+            if CS.cruiseState.accActive and CS.cruiseButtons == 0:
+              self.first_acc = True
+            if self.cruise_road_limit_spd_enabled and (CS.cruiseButtons == Buttons.SET_DECEL or self.first_acc):
               if 1 < int(self.sm['liveENaviData'].roadLimitSpeed) < 150:
                 self.cruise_road_limit_spd_switch = True
               else:
@@ -133,6 +137,8 @@ class VCruiseHelper:
                 self.osm_waze_speedlimit = round(self.sm['liveENaviData'].wazeRoadSpeedLimit)
               elif self.osm_speedlimit_enabled:
                 self.osm_waze_speedlimit = round(self.sm['liveMapData'].speedLimit)
+          elif self.first_acc and not CS.cruiseState.available:
+            self.first_acc = False
           elif CS.driverAcc and self.variable_cruise and (self.cruise_over_maxspeed or self.cruise_road_limit_spd_enabled) and t_speed <= self.v_cruise_kph < round(CS.vEgo*m_unit):
             self.cruise_road_limit_spd_switch_prev = self.sm['liveENaviData'].roadLimitSpeed
             self.cruise_road_limit_spd_switch = False

@@ -1017,9 +1017,6 @@ class CarController(CarControllerBase):
             self.resume_cnt = 0
             self.auto_res_timer = int(randint(20, 25) * 2)
 
-      if self.CP.mdpsBus: # send mdps12 to LKAS to prevent LKAS error
-        can_sends.append(hyundaican.create_mdps12(self.packer, self.frame, CS.mdps12))
-
       if not self.CP.openpilotLongitudinalControl and self.CP.carFingerprint in CANFD_CAR:
         can_sends.extend(self.create_button_messages(CC, CS, use_clu11=True))
 
@@ -1285,11 +1282,11 @@ class CarController(CarControllerBase):
 
     if self.CP.carFingerprint in CANFD_CAR:
       if self.car_fingerprint in ANGLE_CONTROL_CAR:
-        str_log1 = 'EN/LA/LO={}/{}{}/{}  MD={}  BS={:1.0f}/{:1.0f}  CV={:03.0f}/{:0.4f}  TQ={:03.0f}/{:03.0f}  VF={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}'.format(
-          int(CC.enabled), int(CC.latActive), int(lat_active), int(CC.longActive), CS.out.cruiseState.modeSel, self.CP.mdpsBus, self.CP.sccBus, self.model_speed, abs(self.sm['controlsState'].curvature), self.lkas_max_torque, abs(CS.out.steeringTorque), self.vFuture, self.params.STEER_MAX, self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN)
+        str_log1 = 'EN/LA/LO={}/{}{}/{}  MD={}  BS={:1.0f}  CV={:03.0f}/{:0.4f}  TQ={:03.0f}/{:03.0f}  VF={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}'.format(
+          int(CC.enabled), int(CC.latActive), int(lat_active), int(CC.longActive), CS.out.cruiseState.modeSel, self.CP.sccBus, self.model_speed, abs(self.sm['controlsState'].curvature), self.lkas_max_torque, abs(CS.out.steeringTorque), self.vFuture, self.params.STEER_MAX, self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN)
       else:
-        str_log1 = 'EN/LA/LO={}/{}{}/{}  MD={}  BS={:1.0f}/{:1.0f}  CV={:03.0f}/{:0.4f}  TQ={:03.0f}/{:03.0f}  VF={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}'.format(
-          int(CC.enabled), int(CC.latActive), int(lat_active), int(CC.longActive), CS.out.cruiseState.modeSel, self.CP.mdpsBus, self.CP.sccBus, self.model_speed, abs(self.sm['controlsState'].curvature), abs(new_steer), abs(CS.out.steeringTorque), self.vFuture, self.params.STEER_MAX, self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN)
+        str_log1 = 'EN/LA/LO={}/{}{}/{}  MD={}  BS={:1.0f}  CV={:03.0f}/{:0.4f}  TQ={:03.0f}/{:03.0f}  VF={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}'.format(
+          int(CC.enabled), int(CC.latActive), int(lat_active), int(CC.longActive), CS.out.cruiseState.modeSel, self.CP.sccBus, self.model_speed, abs(self.sm['controlsState'].curvature), abs(new_steer), abs(CS.out.steeringTorque), self.vFuture, self.params.STEER_MAX, self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN)
       if CS.out.cruiseState.accActive:
         str_log2 = 'AQ={:+04.2f}  SS={:03.0f}  VF={:03.0f}/{:03.0f}  TS/VS={:03.0f}/{:03.0f}  RD/ED/C/T={:04.1f}/{:04.1f}/{}/{}  C={:1.0f}/{:1.0f}/{}'.format(
         self.aq_value if self.longcontrol else CS.scc_control["aReqValue"], set_speed_in_units, self.vFuture, self.vFutureA, self.NC.ctrl_speed, round(CS.VSetDis), CS.lead_distance, self.dRel, int(self.NC.cut_in), self.NC.cut_in_run_timer, 0, CS.cruiseGapSet, self.btnsignal if self.btnsignal is not None else 0, self.NC.t_interval)
@@ -1298,8 +1295,8 @@ class CarController(CarControllerBase):
         int(not CS.out.steerFaultTemporary), 0, int(bool(0 < CS.lead_distance < 149)), self.aq_value if self.longcontrol else CS.scc_control["aReqValue"], self.vFuture, self.vFutureA, CS.cruiseGapSet)
       trace1.printf2( '{}'.format( str_log2 ) )
     else:
-      str_log1 = 'EN/LA/LO={}/{}{}/{}  MD={}  BS={:1.0f}/{:1.0f}  CV={:03.0f}/{:0.4f}  TQ={:03.0f}/{:03.0f}  VF={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}'.format(
-        int(CC.enabled), int(CC.latActive), int(lat_active), int(CC.longActive), CS.out.cruiseState.modeSel, self.CP.mdpsBus, self.CP.sccBus, self.model_speed, abs(self.sm['controlsState'].curvature), abs(new_steer), abs(CS.out.steeringTorque), self.vFuture, self.params.STEER_MAX, self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN)
+      str_log1 = 'EN/LA/LO={}/{}{}/{}  MD={}  BS={:1.0f}  CV={:03.0f}/{:0.4f}  TQ={:03.0f}/{:03.0f}  VF={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}'.format(
+        int(CC.enabled), int(CC.latActive), int(lat_active), int(CC.longActive), CS.out.cruiseState.modeSel, self.CP.sccBus, self.model_speed, abs(self.sm['controlsState'].curvature), abs(new_steer), abs(CS.out.steeringTorque), self.vFuture, self.params.STEER_MAX, self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN)
       if CS.out.cruiseState.accActive:
         str_log2 = 'AQ={:+04.2f}  SS={:03.0f}  VF={:03.0f}/{:03.0f}  TS/VS={:03.0f}/{:03.0f}  RD/ED/C/T={:04.1f}/{:04.1f}/{}/{}/{}  C={:1.0f}/{:1.0f}/{}/{:1.0f}'.format(
         self.aq_value if self.longcontrol else CS.scc12["aReqValue"], set_speed_in_units, self.vFuture, self.vFutureA, self.NC.ctrl_speed, round(CS.VSetDis), CS.lead_distance, self.dRel, int(self.NC.cut_in), self.NC.cut_in_run_timer, self.ed_rd_diff_on_timer, CS.cruiseGapSet, self.btnsignal if self.btnsignal is not None else 0, self.NC.t_interval, self.l_stat)
@@ -1403,7 +1400,7 @@ class CarController(CarControllerBase):
             self.cruise_gap_prev = CS.cruiseGapSet
             self.cruise_gap_set_init = True
           elif CS.cruiseGapSet != 1.0 and self.kisa_cruisegap_auto_adj and not self.gap_by_spd_on and self.cruise_gap_set_init:
-            for _ in range(randint(self.btn_count, self.btn_count+2)):
+            for _ in range(self.btn_count):
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST, CS.cruise_btn_info))
             self.last_button_frame = self.frame
             self.cruise_gap_adjusting = True
@@ -1423,18 +1420,18 @@ class CarController(CarControllerBase):
             self.resume_running = False
             self.cruise_gap_adjusting = False
             self.cruise_gap_set_init = False
-      if (self.frame - self.last_button_frame) * DT_CTRL > 0.15 and not (self.resume_running or self.cruise_gap_adjusting) and CS.acc_active:
+      if (self.frame - self.last_button_frame) * DT_CTRL > 0.1 and not (self.resume_running or self.cruise_gap_adjusting) and CS.acc_active:
         if 0 < CS.lead_distance <= 149 and CS.lead_objspd < -4 and CS.cruiseGapSet != 4.0 and CS.clu_Vanz > 30 and 0 < self.e2e_x < 120 and self.try_early_stop:
           if not self.try_early_stop_retrieve:
             self.try_early_stop_org_gap = CS.cruiseGapSet
             self.try_early_stop_retrieve = True
           if self.try_early_stop_retrieve:
-            for _ in range(randint(self.btn_count, self.btn_count+2)):
+            for _ in range(self.btn_count):
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST, CS.cruise_btn_info))
             self.last_button_frame = self.frame
         elif 0 < CS.lead_distance <= 149 and self.try_early_stop_retrieve and CS.cruiseGapSet != self.try_early_stop_org_gap and \
           (CS.clu_Vanz <= 20 or (CS.lead_objspd >= 0 and self.e2e_x > 50 and CS.clu_Vanz > 20)) and self.try_early_stop:
-          for _ in range(randint(self.btn_count, self.btn_count+2)):
+          for _ in range(self.btn_count):
             can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST, CS.cruise_btn_info))
           self.last_button_frame = self.frame
         elif self.try_early_stop_retrieve and CS.cruiseGapSet == self.try_early_stop_org_gap and self.try_early_stop:
@@ -1447,7 +1444,7 @@ class CarController(CarControllerBase):
           self.gap_by_spd_gap4 = False
           self.gap_by_spd_on_buffer1 = 0
           self.gap_by_spd_on_buffer2 = 0
-          for _ in range(randint(self.btn_count, self.btn_count+2)):
+          for _ in range(self.btn_count):
             can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST, CS.cruise_btn_info))
           self.last_button_frame = self.frame
         elif self.gap_by_spd_on and CS.cruiseGapSet != self.gap_by_spd_gap[1] and ((self.gap_by_spd_spd[0] <= CS.clu_Vanz < self.gap_by_spd_spd[1]+self.gap_by_spd_on_buffer2) or self.gap_by_spd_gap2) and not self.try_early_stop_retrieve and not CS.lead_objspd < 0:
@@ -1457,7 +1454,7 @@ class CarController(CarControllerBase):
           self.gap_by_spd_gap4 = False
           self.gap_by_spd_on_buffer1 = -5
           self.gap_by_spd_on_buffer3 = 0
-          for _ in range(randint(self.btn_count, self.btn_count+2)):
+          for _ in range(self.btn_count):
             can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST, CS.cruise_btn_info))
           self.last_button_frame = self.frame
         elif self.gap_by_spd_on and CS.cruiseGapSet != self.gap_by_spd_gap[2] and ((self.gap_by_spd_spd[1] <= CS.clu_Vanz < self.gap_by_spd_spd[2]+self.gap_by_spd_on_buffer3) or self.gap_by_spd_gap3) and not self.try_early_stop_retrieve and not CS.lead_objspd < 0:
@@ -1466,7 +1463,7 @@ class CarController(CarControllerBase):
           self.gap_by_spd_gap3 = True
           self.gap_by_spd_gap4 = False
           self.gap_by_spd_on_buffer2 = -5
-          for _ in range(randint(self.btn_count, self.btn_count+2)):
+          for _ in range(self.btn_count):
             can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST, CS.cruise_btn_info))
           self.last_button_frame = self.frame
         elif self.gap_by_spd_on and CS.cruiseGapSet != self.gap_by_spd_gap[3] and ((self.gap_by_spd_spd[2] <= CS.clu_Vanz) or self.gap_by_spd_gap4) and not self.try_early_stop_retrieve and not CS.lead_objspd < 0:
@@ -1475,7 +1472,7 @@ class CarController(CarControllerBase):
           self.gap_by_spd_gap3 = False
           self.gap_by_spd_gap4 = True
           self.gap_by_spd_on_buffer3 = -5
-          for _ in range(randint(self.btn_count, self.btn_count+2)):
+          for _ in range(self.btn_count):
             can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.GAP_DIST, CS.cruise_btn_info))
           self.last_button_frame = self.frame
         elif self.kisa_variablecruise:
@@ -1491,7 +1488,7 @@ class CarController(CarControllerBase):
           self.cut_in_control = self.NC.cutInControl
           self.driver_scc_set_control = self.NC.driverSccSetControl
           if btn_signal is not None:
-            for _ in range(randint(self.btn_count, self.btn_count+2)):
+            for _ in range(self.btn_count):
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, btn_signal, CS.cruise_btn_info))
             self.last_button_frame = self.frame
 
