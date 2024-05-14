@@ -402,7 +402,7 @@ class CarController(CarControllerBase):
         if self.driver_steering_angle_above_timer >= 150:
           self.driver_steering_angle_above_timer = 150
 
-      ego_weight = interp(CS.out.vEgo, [0, 20], [0.01, 1.0])
+      ego_weight = interp(CS.out.vEgo, [0, 20], [0.05, 1.0])
 
       if 0 <= self.driver_steering_angle_above_timer < 150:
         self.lkas_max_torque = int(round(lkas_max_torque * (self.driver_steering_angle_above_timer / 150) * ego_weight))
