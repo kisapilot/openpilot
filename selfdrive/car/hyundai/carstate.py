@@ -87,6 +87,7 @@ class CarState(CarStateBase):
     # acc button 
     self.prev_acc_active = False
     self.prev_acc_set_btn = False
+    self.prev_acc_reset_btn = False
     self.prev_cruise_btn = False
     self.prev_main_btn = False
     self.acc_active = False
@@ -121,14 +122,14 @@ class CarState(CarStateBase):
       self.cruise_set_speed_kph = self.VSetDis
       return self.cruise_set_speed_kph
 
-    if self.prev_cruise_btn == self.cruise_buttons[-1]:
-      return self.cruise_set_speed_kph
-    elif self.acc_active and not self.cruise_buttons[-1] and not self.prev_main_btn:
+    if self.acc_active and not self.cruise_buttons[-1] and not self.prev_main_btn:
       if not self.prev_acc_set_btn: # first scc active
         self.prev_acc_set_btn = self.acc_active
         self.prev_main_btn = self.acc_active
         self.cruise_set_speed_kph = max(int(round(self.clu_Vanz)), (30 if self.is_metric else 20))
         return self.cruise_set_speed_kph
+    elif self.prev_cruise_btn == self.cruise_buttons[-1]:
+      return self.cruise_set_speed_kph
     elif self.prev_cruise_btn != self.cruise_buttons[-1]:
       self.prev_cruise_btn = self.cruise_buttons[-1]
       if not self.cruise_active:
@@ -137,8 +138,8 @@ class CarState(CarStateBase):
           if self.cruise_set_mode > 5:
             self.cruise_set_mode = 0
           return None
-        elif not self.prev_acc_set_btn: # first scc active
-          self.prev_acc_set_btn = self.acc_active
+        elif not self.prev_acc_reset_btn: # first scc active
+          self.prev_acc_reset_btn = True
           if self.cruise_buttons[-1] == Buttons.SET_DECEL:
             self.cruise_set_speed_kph = max(int(round(self.clu_Vanz)), (30 if self.is_metric else 20))
           elif self.cruise_buttons[-1] == Buttons.RES_ACCEL:
@@ -695,6 +696,8 @@ class CarState(CarStateBase):
       elif not ret.cruiseState.available:
         self.prev_acc_set_btn = False
         self.prev_main_btn = False
+      elif not self.acc_active:
+        self.prev_acc_reset_btn = False
 
       set_speed = self.cruise_speed_button_alt()
       if ret.cruiseState.enabled and (self.brake_check == False or self.cancel_check == False):
@@ -733,11 +736,7 @@ class CarState(CarStateBase):
     self.main_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["ADAPTIVE_CRUISE_MAIN_BTN"])
     self.buttons_counter = cp.vl[self.cruise_btns_msg_canfd]["COUNTER"]
     ret.accFaulted = cp.vl["TCS"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
-
-    if self.main_buttons[-1]:
-      ret.cruiseButtons = 2
-    else:
-      ret.cruiseButtons = self.cruise_buttons[-1]
+    ret.cruiseButtons = self.cruise_buttons[-1]
 
     if self.cruise_btns_msg_canfd == "CRUISE_BUTTONS":
       self.cruise_btn_info = copy.copy(cp_cruise_info.vl[self.cruise_btns_msg_canfd])

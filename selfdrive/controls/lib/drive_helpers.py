@@ -120,14 +120,14 @@ class VCruiseHelper:
           elif CS.cruiseButtons == Buttons.RES_ACCEL or CS.cruiseButtons == Buttons.SET_DECEL or (CS.cruiseState.accActive and CS.cruiseButtons == 0 and not self.first_acc):
             if CS.cruiseState.accActive and CS.cruiseButtons == 0:
               self.first_acc = True
-            if self.cruise_road_limit_spd_enabled and (CS.cruiseButtons == Buttons.SET_DECEL or self.first_acc):
+            if self.cruise_road_limit_spd_enabled and CS.cruiseButtons == Buttons.RES_ACCEL:
+              self.cruise_road_limit_spd_switch_prev = self.sm['liveENaviData'].roadLimitSpeed
+              self.cruise_road_limit_spd_switch = False
+            elif self.cruise_road_limit_spd_enabled and (CS.cruiseButtons == Buttons.SET_DECEL or self.first_acc):
               if 1 < int(self.sm['liveENaviData'].roadLimitSpeed) < 150:
                 self.cruise_road_limit_spd_switch = True
               else:
                 self.cruise_road_limit_spd_switch = False
-            elif self.cruise_road_limit_spd_enabled and CS.cruiseButtons == Buttons.RES_ACCEL:
-              self.cruise_road_limit_spd_switch_prev = self.sm['liveENaviData'].roadLimitSpeed
-              self.cruise_road_limit_spd_switch = False
             self.v_cruise_kph = round(CS.cruiseState.speed * m_unit)
             self.v_cruise_cluster_kph = self.v_cruise_kph
             self.v_cruise_kph_last = self.v_cruise_kph
