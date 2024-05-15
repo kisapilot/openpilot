@@ -9582,7 +9582,7 @@ KISACruiseSpammingInterval::KISACruiseSpammingInterval() : AbstractControl(tr("C
     int value = str.toInt();
     value = value - 1;
     if (value <= -1) {
-      value = 7;
+      value = 20;
     }
     QString values = QString::number(value);
     params.put("KISACruiseSpammingInterval", values.toStdString());
@@ -9593,7 +9593,7 @@ KISACruiseSpammingInterval::KISACruiseSpammingInterval() : AbstractControl(tr("C
     auto str = QString::fromStdString(params.get("KISACruiseSpammingInterval"));
     int value = str.toInt();
     value = value + 1;
-    if (value >= 8) {
+    if (value >= 21) {
       value = 0;
     }
     QString values = QString::number(value);
