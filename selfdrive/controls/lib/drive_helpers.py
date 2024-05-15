@@ -52,7 +52,7 @@ class VCruiseHelper:
     self.button_timers = {ButtonType.decelCruise: 0, ButtonType.accelCruise: 0}
     self.button_change_states = {btn: {"standstill": False, "enabled": False} for btn in self.button_timers}
 
-    self.sm = messaging.SubMaster(['liveENaviData', 'liveMapData'])
+    self.sm = messaging.SubMaster(['controlsState', 'liveENaviData', 'liveMapData'])
 
     self.params = Params()
     self.is_kph = self.params.get_bool("IsMetric")
@@ -113,8 +113,8 @@ class VCruiseHelper:
           if self.cruise_road_limit_spd_enabled and not self.cruise_road_limit_spd_switch and self.cruise_road_limit_spd_switch_prev != 0 and self.cruise_road_limit_spd_switch_prev != self.sm['liveENaviData'].roadLimitSpeed:
             self.cruise_road_limit_spd_switch = True
             self.cruise_road_limit_spd_switch_prev = 0
-          if self.variable_cruise and CS.cruiseState.modeSel != 0 and self.CP.vCruisekph > t_speed:
-            self.v_cruise_kph = self.CP.vCruisekph
+          if self.variable_cruise and CS.cruiseState.modeSel != 0 and self.sm['controlsState'].autoResvCruisekph > t_speed:
+            self.v_cruise_kph = self.sm['controlsState'].autoResvCruisekph
             self.v_cruise_kph_last = self.v_cruise_kph
             self.v_cruise_cluster_kph = self.v_cruise_kph
           elif CS.cruiseButtons == Buttons.RES_ACCEL or CS.cruiseButtons == Buttons.SET_DECEL or (CS.cruiseState.accActive and CS.cruiseButtons == 0 and not self.first_acc):

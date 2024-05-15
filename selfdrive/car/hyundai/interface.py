@@ -289,14 +289,6 @@ class CarInterface(CarInterfaceBase):
       self.CP.standStill = True
     else:
       self.CP.standStill = False
-    if self.CC.v_cruise_kph_auto_res > (20 if self.CS.is_set_speed_in_mph else 30):
-      self.CP.vCruisekph = self.CC.v_cruise_kph_auto_res
-    else:
-      self.CP.vCruisekph = 0
-    if self.CC.res_speed != 0:
-      self.CP.resSpeed = self.CC.res_speed
-    else:
-      self.CP.resSpeed = 0
     if self.CC.vFuture >= 1:
       self.CP.vFuture = self.CC.vFuture
     else:

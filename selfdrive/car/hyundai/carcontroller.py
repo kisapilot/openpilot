@@ -1365,6 +1365,9 @@ class CarController(CarControllerBase):
     new_actuators.expModeTemp = self.experimental_mode_temp
     new_actuators.btnPressing = self.btnsignal if self.btnsignal is not None else 0
 
+    new_actuators.autoResvCruisekph = self.v_cruise_kph_auto_res
+    new_actuators.resSpeed = self.res_speed
+
     self.frame += 1
     return new_actuators, can_sends
 

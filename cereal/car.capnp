@@ -421,9 +421,10 @@ struct CarControl {
     gapBySpdOnTemp @12: Bool;
     expModeTemp @13: Bool;
     btnPressing @14: Int8;
-
     aqValue @15: Float32;
     aqValueRaw @16: Float32;
+    autoResvCruisekph @17: Float32;
+    resSpeed @18: Float32;
 
     enum LongControlState @0xe40f3a917d908282{
       off @0;

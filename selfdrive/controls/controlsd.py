@@ -1047,6 +1047,8 @@ class Controls:
     controlsState.gapBySpeedOn = bool(CO.actuatorsOutput.gapBySpdOnTemp)
     controlsState.expModeTemp = bool(CO.actuatorsOutput.expModeTemp)
     controlsState.btnPressing = int(CO.actuatorsOutput.btnPressing)
+    controlsState.autoResvCruisekph = float(CO.actuatorsOutput.autoResvCruisekph)
+    controlsState.resSpeed = float(CO.actuatorsOutput.resSpeed)
 
     lat_tuning = self.CP.lateralTuning.which()
     if self.joystick_mode:

@@ -743,7 +743,8 @@ struct ControlsState @0x97ff69c53601abf1 {
   mismatchCounter @87 :Bool;
   expModeTemp @88 :Bool;
   btnPressing @89 :UInt8;
-
+  autoResvCruisekph @90 :Float32;
+  resSpeed @91 :Float32;
 
   lateralControlState :union {
     indiState @52 :LateralINDIState;

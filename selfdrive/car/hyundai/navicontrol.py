@@ -374,9 +374,9 @@ class NaviControl():
     #   clu_Vanz = CS.clu_Vanz
     #   ctrl_speed = max(min_control_speed, ctrl_speed, clu_Vanz)
     #   CS.set_cruise_speed(ctrl_speed)
-    elif CS.CP.resSpeed > 21:
+    elif self.sm['controlsState'].resSpeed > 21:
       self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
-      res_speed = max(min_control_speed, CS.CP.resSpeed)
+      res_speed = max(min_control_speed, self.sm['controlsState'].resSpeed)
       return min(res_speed, navi_speed)
     elif CS.cruise_set_mode in (1,2,4):
       if CS.out.brakeLights and CS.out.vEgo == 0:
