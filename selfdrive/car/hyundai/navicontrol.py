@@ -366,7 +366,7 @@ class NaviControl():
 
     self.driverSccSetControl = False
 
-    if CS.driverAcc_time and CS.cruise_set_mode in (1,2,4):
+    if CS.driverAcc_time and CS.cruise_set_mode in (1,2,3,4):
       self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
       self.driverSccSetControl = True
       return min(CS.clu_Vanz + (3 if CS.is_set_speed_in_mph else 5), navi_speed)
@@ -378,8 +378,8 @@ class NaviControl():
       self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
       res_speed = max(min_control_speed, self.sm['controlsState'].resSpeed)
       return min(res_speed, navi_speed)
-    elif CS.cruise_set_mode in (1,2,4):
-      if CS.out.brakeLights and CS.out.vEgo == 0:
+    elif CS.cruise_set_mode in (1,2,3,4):
+      if CS.out.brakeLights and CS.out.vEgo == 0 and CS.cruise_set_mode in (1,2,4):
         self.faststart = True
         self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
         var_speed = min(navi_speed, 30 if CS.is_set_speed_in_mph else 50)
@@ -391,7 +391,7 @@ class NaviControl():
         self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
       elif self.faststart and CS.CP.vFuture <= (25 if CS.is_set_speed_in_mph else 40):
         var_speed = min(navi_speed, 30 if CS.is_set_speed_in_mph else 50)
-      elif (self.lead_0.status or self.lead_1.status) and CS.CP.vFuture >= (min_control_speed-(4 if CS.is_set_speed_in_mph else 7)):
+      elif (self.lead_0.status or self.lead_1.status) and CS.CP.vFuture >= (min_control_speed-(4 if CS.is_set_speed_in_mph else 7)) and CS.cruise_set_mode in (1,2,4):
         self.faststart = False
         # dRel = CS.lead_distance if 0 < CS.lead_distance < 149 and not self.cut_in_run_timer else int(self.lead_0.dRel)
         # vRel = CS.lead_objspd * (CV.KPH_TO_MPH if CS.is_set_speed_in_mph else 1) if 0 < CS.lead_distance < 149 and \
@@ -417,7 +417,7 @@ class NaviControl():
           self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
           self.cut_in_run_timer = 0
           self.cutInControl = False
-      elif self.lead_0.status and CS.CP.vFuture < min_control_speed:
+      elif self.lead_0.status and CS.CP.vFuture < min_control_speed and CS.cruise_set_mode in (1,2,4):
         self.faststart = False
         var_speed = min(CS.CP.vFuture, navi_speed)
         self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
