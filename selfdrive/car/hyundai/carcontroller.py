@@ -1541,12 +1541,12 @@ class CarController(CarControllerBase):
           self.curv_speed_control = self.NC.curvSpeedControl
           self.cut_in_control = self.NC.cutInControl
           self.driver_scc_set_control = self.NC.driverSccSetControl
-          if btn_signal is not None:
+          if btn_signal is not None and self.NC.ctrl_speed != round(CS.VSetDis):
             for _ in range(self.btn_count):
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter, btn_signal, CS.cruise_btn_info))
             self.last_button_frame = self.frame
           differ = round(abs(self.NC.ctrl_speed - round(CS.VSetDis)))
-          self.refresh_time = interp(differ, [1,2,3], [6,4,0])
+          self.refresh_time = interp(differ, [1,2,3], [4,2,0])
         else:
           self.gap_by_spd_gap1 = False
           self.gap_by_spd_gap2 = False
