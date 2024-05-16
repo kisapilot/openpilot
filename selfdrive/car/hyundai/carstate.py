@@ -565,7 +565,7 @@ class CarState(CarStateBase):
 
     if not self.exp_long:
       ret.cruiseAccStatus = cp_scc.vl["SCC12"]["ACCMode"] == 1
-      ret.driverAcc = self.driverOverride
+      ret.driverAcc = bool(self.driverOverride)
       ret.aReqValue = cp_scc.vl["SCC12"]["aReqValue"]
       self.highway_cam = cp_scc.vl["SCC11"]["Navi_SCC_Camera_Act"]
       self.lead_distance = cp_scc.vl["SCC11"]["ACC_ObjDist"]
@@ -723,12 +723,12 @@ class CarState(CarStateBase):
       lead_objspd = cp_cruise_info.vl["SCC_CONTROL"]["ACC_ObjRelSpd"]
       self.lead_objspd = lead_objspd * CV.MS_TO_KPH
       self.scc_control = copy.copy(cp_cruise_info.vl["SCC_CONTROL"])
-      self.driverOverride = cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"] == 2
+      self.driverOverride = cp.vl["TCS"]["DriverOverride"]
       if self.driverOverride:
         self.driverAcc_time = 100
       elif self.driverAcc_time:
         self.driverAcc_time -= 1
-      ret.driverAcc = self.driverOverride
+      ret.driverAcc = bool(self.driverOverride)
 
     # Manual Speed Limit Assist is a feature that replaces non-adaptive cruise control on EV CAN FD platforms.
     # It limits the vehicle speed, overridable by pressing the accelerator past a certain point.
