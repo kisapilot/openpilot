@@ -300,11 +300,10 @@ class CarInterfaceBase(ABC):
       ret.cruiseState.speedCluster = ret.cruiseState.speed
 
     # copy back for next iteration
-    reader = ret.as_reader()
     if self.CS is not None:
-      self.CS.out = reader
+      self.CS.out = ret.as_reader()
 
-    return reader
+    return ret
 
 
   def create_common_events(self, cs_out, extra_gears=None, pcm_enable=True, allow_enable=True,
@@ -347,6 +346,10 @@ class CarInterfaceBase(ABC):
       events.add(EventName.accFaulted)
     if cs_out.steeringPressed:
       events.add(EventName.steerOverride)
+    if cs_out.brakePressed and cs_out.standstill and not self.ufc_mode:
+      events.add(EventName.preEnableStandstill)
+    if cs_out.gasPressed and not self.ufc_mode:
+      events.add(EventName.gasPressedOverride)
 
     # Handle button presses
     for b in cs_out.buttonEvents:

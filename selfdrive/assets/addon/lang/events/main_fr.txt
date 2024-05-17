@@ -191,3 +191,5 @@ Ne pas perturber le mode d'allumage
 Touchez la boîte en haut à gauche pour éteindre
 Carillon pour le départ
 Ralentir pour l'alerte Waze
+Mauvaise réception GPS
+Assurez-vous que l'appareil a une vue dégagée sur le ciel
