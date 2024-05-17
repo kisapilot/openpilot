@@ -82,6 +82,8 @@ class CarD:
     self.events = Events()
     self.v_cruise_helper = VCruiseHelper(self.CP)
 
+    self.ufc_mode = self.params.get_bool("UFCModeEnabled")
+
   def initialize(self):
     """Initialize CarInterface, once controls are ready"""
     self.CI.init(self.CP, self.can_sock, self.pm.sock['sendcan'])
@@ -127,10 +129,11 @@ class CarD:
       self.events.add(EventName.resumeBlocked)
 
     # Disable on rising edge of accelerator or brake. Also disable on brake when speed > 0
-    if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
-      (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)) or \
-      (CS.regenBraking and (not self.CS_prev.regenBraking or not CS.standstill)):
-      self.events.add(EventName.pedalPressed)
+    if not self.ufc_mode:
+      if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+        (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)) or \
+        (CS.regenBraking and (not self.CS_prev.regenBraking or not CS.standstill)):
+        self.events.add(EventName.pedalPressed)
 
     CS.events = self.events.to_msg()
 
