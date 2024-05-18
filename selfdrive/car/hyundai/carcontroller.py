@@ -1401,7 +1401,6 @@ class CarController(CarControllerBase):
         standstill = CS.out.cruiseState.standstill and 6 > CS.lead_distance > 0 and not resume
         # cruise standstill resume
         if standstill and not self.gap_by_spd_on:
-          print('test1')
           if self.cruise_gap_prev == 0 and CS.cruiseGapSet != 1.0 and self.kisa_cruisegap_auto_adj and not self.cruise_gap_set_init:
             self.cruise_gap_prev = CS.cruiseGapSet
             self.cruise_gap_set_init = True
