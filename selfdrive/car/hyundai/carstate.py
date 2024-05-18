@@ -759,8 +759,8 @@ class CarState(CarStateBase):
 
     messages = [
       # address, frequency
-      ("MDPS12", 50)
-      ("SAS11", 100)
+      ("MDPS12", 50),
+      ("SAS11", 100),
       ("TCS13", 50),
       ("TCS15", 10),
       ("CLU11", 50),
