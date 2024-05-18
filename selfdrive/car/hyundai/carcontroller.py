@@ -1553,6 +1553,26 @@ class CarController(CarControllerBase):
           self.gap_by_spd_gap2 = False
           self.gap_by_spd_gap3 = False
           self.gap_by_spd_gap4 = False
+          self.on_speed_control = False
+          self.on_speed_bump_control = False
+          self.curv_speed_control = False
+          self.cut_in_control = False
+          self.driver_scc_set_control = False
           self.cruise_gap_adjusting = False
+          self.standstill_res_button = False
+          self.auto_res_starting = False
+      else:
+        self.on_speed_control = False
+        self.on_speed_bump_control = False
+        self.curv_speed_control = False
+        self.cut_in_control = False
+        self.driver_scc_set_control = False
+        self.cruise_gap_adjusting = False
+        self.standstill_res_button = False
+        self.auto_res_starting = False
+        self.gap_by_spd_gap1 = False
+        self.gap_by_spd_gap2 = False
+        self.gap_by_spd_gap3 = False
+        self.gap_by_spd_gap4 = False
 
     return can_sends
