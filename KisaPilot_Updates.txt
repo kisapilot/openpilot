@@ -1,3 +1,9 @@
+2024-05-18
+- AgnOS 10.1
+- Support CanFD cars overally with UFC
+- Variable Cruise(button spamming) for CanFD cars
+- More reliable resume spamming
+- Support angle controlled cars(EV9, IONIQ5 PE 2024)
 2024-05-05
 - North Dakota Model
 2024-04-15
