@@ -1424,6 +1424,7 @@ class CarController(CarControllerBase):
             for _ in range(self.standstill_res_count):
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter, Buttons.RES_ACCEL, CS.cruise_btn_info))
             self.last_button_frame = self.frame
+            self.standstill_res_button = True
             self.resume_running = False
             self.cruise_gap_adjusting = False
             self.cruise_gap_set_init = False
@@ -1534,6 +1535,7 @@ class CarController(CarControllerBase):
           self.gap_by_spd_gap3 = False
           self.gap_by_spd_gap4 = False
           self.cruise_gap_adjusting = False
+          self.standstill_res_button = False
           btn_signal = self.NC.update(CS)
           self.btnsignal = btn_signal
           self.on_speed_control = self.NC.onSpeedControl
