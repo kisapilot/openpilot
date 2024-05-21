@@ -266,7 +266,7 @@ BO_ 416 SCC_CONTROL: 32 ADRV
  SG_ OBJ_STATUS : 176|3@1+ (1,0) [0|7] "" XXX
  SG_ ACC_ObjDist : 24|11@1+ (0.1,0) [0|204.7] "m" XXX
  SG_ ZEROS_5 : 77|11@1+ (1,0) [0|2047] "" XXX
- SG_ DISTANCE_SETTING : 88|4@1+ (1,0) [0|3] "" XXX
+ SG_ DISTANCE_SETTING : 88|4@1+ (1,-5) [0|3] "" XXX
  SG_ ZEROS_2 : 207|5@0+ (1,0) [0|63] "" XXX
  SG_ CRUISE_STANDSTILL : 76|1@1+ (1,0) [0|1] "" XXX
  SG_ aReqRaw : 140|11@1+ (0.01,-10.23) [-10.23|10.24] "m/s^2" XXX

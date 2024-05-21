@@ -102,6 +102,7 @@ class CarState(CarStateBase):
     self.exp_long_alt = CP.sccBus <= 0 and CP.carFingerprint in LEGACY_SAFETY_MODE_CAR_ALT and self.CP.openpilotLongitudinalControl
     self.exp_long = (CP.sccBus <= 0 and self.CP.openpilotLongitudinalControl and self.long_alt not in (1, 2)) or self.exp_long_alt
     self.lead_distance = 0
+    self.distance_setting = 0
 
     self.sm = messaging.SubMaster(['controlsState'])
 
@@ -686,6 +687,7 @@ class CarState(CarStateBase):
       self.VSetDis = cp_cruise_info.vl["SCC_CONTROL"]["VSetDis"]
       ret.vSetDis = self.VSetDis
       self.cruiseState_standstill = ret.cruiseState.standstill
+      self.distance_setting = cp_cruise_info.vl["SCC_CONTROL"]["DISTANCE_SETTING"]
       self.cruise_info = copy.copy(cp_cruise_info.vl["SCC_CONTROL"])
 
       self.acc_active = cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"] in (1, 2)
