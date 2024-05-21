@@ -394,17 +394,17 @@ class CarController(CarControllerBase):
       # CS.out.steeringPressed and steeringTorque are based on the
       # STEERING_COL_TORQUE value
 
-      lkas_max_torque = 170
+      lkas_max_torque = 180
       if abs(CS.out.steeringTorque) > 200:
         self.driver_steering_angle_above_timer -= 1
-        if self.driver_steering_angle_above_timer <= 0:
-          self.driver_steering_angle_above_timer = 0
+        if self.driver_steering_angle_above_timer <= 30:
+          self.driver_steering_angle_above_timer = 30
       else:
         self.driver_steering_angle_above_timer += 1
         if self.driver_steering_angle_above_timer >= 150:
           self.driver_steering_angle_above_timer = 150
 
-      ego_weight = interp(CS.out.vEgo, [0, 20], [0.05, 1.0])
+      ego_weight = interp(CS.out.vEgo, [0, 10, 20], [0.2, 0.4, 1.0])
 
       if 0 <= self.driver_steering_angle_above_timer < 150:
         self.lkas_max_torque = int(round(lkas_max_torque * (self.driver_steering_angle_above_timer / 150) * ego_weight))
@@ -1383,7 +1383,7 @@ class CarController(CarControllerBase):
           if (self.frame - self.last_button_frame) * DT_CTRL >= 0.15:
             self.last_button_frame = self.frame
     else:
-      if (self.frame - self.last_button_frame) * DT_CTRL > (randint(1, 3) * 0.1 * self.refresh_time) and CS.acc_active: # 0.25
+      if (self.frame - self.last_button_frame) * DT_CTRL > (0.25 * self.refresh_time) and CS.acc_active: # 0.25
         # cruise cancel
         resume = False
         speeds = self.sm['longitudinalPlan'].speeds
@@ -1409,7 +1409,7 @@ class CarController(CarControllerBase):
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter, Buttons.GAP_DIST, CS.cruise_btn_info))
             self.last_button_frame = self.frame
             self.cruise_gap_adjusting = True
-            self.refresh_time = interp(CS.cruiseGapSet, [2,3,4], [3,2,1])
+            self.refresh_time = interp(CS.cruiseGapSet, [2,3,4], [2,1,1])
           else:
             self.cruise_gap_adjusting = False
             self.cruise_gap_set_init = False
@@ -1436,7 +1436,7 @@ class CarController(CarControllerBase):
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter, Buttons.GAP_DIST, CS.cruise_btn_info))
             self.last_button_frame = self.frame
             self.cruise_gap_adjusting = True
-            self.refresh_time = interp(CS.cruiseGapSet, [1,2,4], [2,1,3])
+            self.refresh_time = interp(CS.cruiseGapSet, [1,2,4], [1,1,2])
         elif 0 < CS.lead_distance <= 149 and self.try_early_stop_retrieve and CS.cruiseGapSet != self.try_early_stop_org_gap and \
           (CS.clu_Vanz <= 20 or (CS.lead_objspd >= 0 and self.e2e_x > 50 and CS.clu_Vanz > 20)) and self.try_early_stop:
           for _ in range(self.btn_count):
@@ -1444,11 +1444,11 @@ class CarController(CarControllerBase):
           self.last_button_frame = self.frame
           self.cruise_gap_adjusting = True
           if self.try_early_stop_org_gap == 1:
-            self.refresh_time = interp(CS.cruiseGapSet, [2,3,4], [3,2,1])
+            self.refresh_time = interp(CS.cruiseGapSet, [2,3,4], [2,1,1])
           elif self.try_early_stop_org_gap == 2:
-            self.refresh_time = interp(CS.cruiseGapSet, [1,3,4], [1,3,2])
+            self.refresh_time = interp(CS.cruiseGapSet, [1,3,4], [1,2,1])
           elif self.try_early_stop_org_gap == 3:
-            self.refresh_time = interp(CS.cruiseGapSet, [1,2,4], [2,1,3])
+            self.refresh_time = interp(CS.cruiseGapSet, [1,2,4], [1,1,2])
         elif self.try_early_stop_retrieve and CS.cruiseGapSet == self.try_early_stop_org_gap and self.try_early_stop:
           self.try_early_stop_retrieve = False
           self.try_early_stop_org_gap = 0
@@ -1466,32 +1466,32 @@ class CarController(CarControllerBase):
           self.last_button_frame = self.frame
           self.cruise_gap_adjusting = True
           if self.gap_by_spd_gap[0] == 1:
-            self.refresh_time = interp(CS.cruiseGapSet, [2,3,4], [3,2,1])
+            self.refresh_time = interp(CS.cruiseGapSet, [2,3,4], [2,1,1])
           elif self.gap_by_spd_gap[0] == 2:
-            self.refresh_time = interp(CS.cruiseGapSet, [1,3,4], [1,3,2])
+            self.refresh_time = interp(CS.cruiseGapSet, [1,3,4], [1,2,1])
           elif self.gap_by_spd_gap[0] == 3:
-            self.refresh_time = interp(CS.cruiseGapSet, [1,2,4], [2,1,3])
+            self.refresh_time = interp(CS.cruiseGapSet, [1,2,4], [1,1,2])
           elif self.gap_by_spd_gap[0] == 4:
-            self.refresh_time = interp(CS.cruiseGapSet, [1,2,3], [3,2,1])
+            self.refresh_time = interp(CS.cruiseGapSet, [1,2,3], [2,1,1])
         elif self.gap_by_spd_on and self.gap_by_spd_on_sw_trg and CS.cruiseGapSet != self.gap_by_spd_gap[1] and ((self.gap_by_spd_spd[0] <= CS.clu_Vanz < self.gap_by_spd_spd[1]+self.gap_by_spd_on_buffer2) or self.gap_by_spd_gap2) and not self.try_early_stop_retrieve and not CS.lead_objspd < 0:
           self.gap_by_spd_gap1 = False
           self.gap_by_spd_gap2 = True
           self.gap_by_spd_gap3 = False
           self.gap_by_spd_gap4 = False
-          self.gap_by_spd_on_buffer1 = -5
+          self.gap_by_spd_on_buffer1 = -10
           self.gap_by_spd_on_buffer3 = 0
           for _ in range(self.btn_count):
             can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter, Buttons.GAP_DIST, CS.cruise_btn_info))
           self.last_button_frame = self.frame
           self.cruise_gap_adjusting = True
           if self.gap_by_spd_gap[1] == 1:
-            self.refresh_time = interp(CS.cruiseGapSet, [2,3,4], [3,2,1])
+            self.refresh_time = interp(CS.cruiseGapSet, [2,3,4], [2,1,1])
           elif self.gap_by_spd_gap[1] == 2:
-            self.refresh_time = interp(CS.cruiseGapSet, [1,3,4], [1,3,2])
+            self.refresh_time = interp(CS.cruiseGapSet, [1,3,4], [1,2,1])
           elif self.gap_by_spd_gap[1] == 3:
-            self.refresh_time = interp(CS.cruiseGapSet, [1,2,4], [2,1,3])
+            self.refresh_time = interp(CS.cruiseGapSet, [1,2,4], [1,1,2])
           elif self.gap_by_spd_gap[1] == 4:
-            self.refresh_time = interp(CS.cruiseGapSet, [1,2,3], [3,2,1])
+            self.refresh_time = interp(CS.cruiseGapSet, [1,2,3], [2,1,1])
         elif self.gap_by_spd_on and self.gap_by_spd_on_sw_trg and CS.cruiseGapSet != self.gap_by_spd_gap[2] and ((self.gap_by_spd_spd[1] <= CS.clu_Vanz < self.gap_by_spd_spd[2]+self.gap_by_spd_on_buffer3) or self.gap_by_spd_gap3) and not self.try_early_stop_retrieve and not CS.lead_objspd < 0:
           self.gap_by_spd_gap1 = False
           self.gap_by_spd_gap2 = False
@@ -1503,13 +1503,13 @@ class CarController(CarControllerBase):
           self.last_button_frame = self.frame
           self.cruise_gap_adjusting = True
           if self.gap_by_spd_gap[2] == 1:
-            self.refresh_time = interp(CS.cruiseGapSet, [2,3,4], [3,2,1])
+            self.refresh_time = interp(CS.cruiseGapSet, [2,3,4], [2,1,1])
           elif self.gap_by_spd_gap[2] == 2:
-            self.refresh_time = interp(CS.cruiseGapSet, [1,3,4], [1,3,2])
+            self.refresh_time = interp(CS.cruiseGapSet, [1,3,4], [1,2,1])
           elif self.gap_by_spd_gap[2] == 3:
-            self.refresh_time = interp(CS.cruiseGapSet, [1,2,4], [2,1,3])
+            self.refresh_time = interp(CS.cruiseGapSet, [1,2,4], [1,1,2])
           elif self.gap_by_spd_gap[2] == 4:
-            self.refresh_time = interp(CS.cruiseGapSet, [1,2,3], [3,2,1])
+            self.refresh_time = interp(CS.cruiseGapSet, [1,2,3], [2,1,1])
         elif self.gap_by_spd_on and self.gap_by_spd_on_sw_trg and CS.cruiseGapSet != self.gap_by_spd_gap[3] and ((self.gap_by_spd_spd[2] <= CS.clu_Vanz) or self.gap_by_spd_gap4) and not self.try_early_stop_retrieve and not CS.lead_objspd < 0:
           self.gap_by_spd_gap1 = False
           self.gap_by_spd_gap2 = False
@@ -1521,13 +1521,13 @@ class CarController(CarControllerBase):
           self.last_button_frame = self.frame
           self.cruise_gap_adjusting = True
           if self.gap_by_spd_gap[3] == 1:
-            self.refresh_time = interp(CS.cruiseGapSet, [2,3,4], [3,2,1])
+            self.refresh_time = interp(CS.cruiseGapSet, [2,3,4], [2,1,1])
           elif self.gap_by_spd_gap[3] == 2:
-            self.refresh_time = interp(CS.cruiseGapSet, [1,3,4], [1,3,2])
+            self.refresh_time = interp(CS.cruiseGapSet, [1,3,4], [1,2,1])
           elif self.gap_by_spd_gap[3] == 3:
-            self.refresh_time = interp(CS.cruiseGapSet, [1,2,4], [2,1,3])
+            self.refresh_time = interp(CS.cruiseGapSet, [1,2,4], [1,1,2])
           elif self.gap_by_spd_gap[3] == 4:
-            self.refresh_time = interp(CS.cruiseGapSet, [1,2,3], [3,2,1])
+            self.refresh_time = interp(CS.cruiseGapSet, [1,2,3], [2,1,1])
         elif self.kisa_variablecruise:
           self.gap_by_spd_gap1 = False
           self.gap_by_spd_gap2 = False
@@ -1546,7 +1546,7 @@ class CarController(CarControllerBase):
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter, btn_signal, CS.cruise_btn_info))
             self.last_button_frame = self.frame
           differ = round(abs(self.NC.ctrl_speed - round(CS.VSetDis)))
-          self.refresh_time = interp(differ, [1,2,3], [3,2,0])
+          self.refresh_time = interp(differ, [1,2,3], [2,1,0])
         else:
           self.gap_by_spd_gap1 = False
           self.gap_by_spd_gap2 = False
