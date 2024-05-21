@@ -366,10 +366,10 @@ class NaviControl():
 
     self.driverSccSetControl = False
 
-    if CS.driverAcc_time and CS.cruise_set_mode in (1,2,3,4):
+    if CS.driverAcc_time and CS.cruise_set_mode in (1,2,4):
       self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
       self.driverSccSetControl = True
-      return min(CS.clu_Vanz + (3 if CS.is_set_speed_in_mph else 5), navi_speed)
+      return min(max(CS.clu_Vanz + (3 if CS.is_set_speed_in_mph else 5), 30 if CS.is_set_speed_in_mph else 50), navi_speed)
     # elif self.gasPressed_old:
     #   clu_Vanz = CS.clu_Vanz
     #   ctrl_speed = max(min_control_speed, ctrl_speed, clu_Vanz)
