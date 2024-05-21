@@ -1327,10 +1327,10 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
   // rec_stat and toggle
   if (s->scene.driving_record) {
-    if (!s->scene.rec_stat && s->scene.car_state.getVEgo() > 0.3) {
+    if (!s->scene.rec_stat && s->scene.car_state.getVEgo() > 0.3 && s->scene.lateralPlan.standstillElapsedTime == 0) {
       s->scene.rec_stat = !s->scene.rec_stat;
       if (recorder) recorder->toggle();
-    } else if (s->scene.rec_stat && s->scene.standStill) {
+    } else if (s->scene.rec_stat && s->scene.standStill && s->scene.lateralPlan.standstillElapsedTime > 9) {
       if (recorder) recorder->toggle();
       s->scene.rec_stat = !s->scene.rec_stat;
     }
