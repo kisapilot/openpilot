@@ -16,7 +16,7 @@ from openpilot.selfdrive.car.hyundai.navicontrol  import NaviControl
 
 from openpilot.common.params import Params
 import openpilot.common.log as trace1
-import random
+from random import randint
 from decimal import Decimal
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
@@ -1383,7 +1383,7 @@ class CarController(CarControllerBase):
           if (self.frame - self.last_button_frame) * DT_CTRL >= 0.15:
             self.last_button_frame = self.frame
     else:
-      if (self.frame - self.last_button_frame) * DT_CTRL > (round(random.uniform(0.1,0.3),2) * self.refresh_time) and CS.acc_active: # 0.25
+      if (self.frame - self.last_button_frame) * DT_CTRL > (randint(1, 3) * 0.1 * self.refresh_time) and CS.acc_active: # 0.25
         # cruise cancel
         resume = False
         speeds = self.sm['longitudinalPlan'].speeds
