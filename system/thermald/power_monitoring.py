@@ -4,7 +4,7 @@ import threading
 from openpilot.common.params import Params
 from openpilot.system.hardware import HARDWARE
 from openpilot.common.swaglog import cloudlog
-from openpilot.selfdrive.statsd import statlog
+from openpilot.system.statsd import statlog
 from openpilot.common.numpy_fast import interp
 from openpilot.common.params import Params
 

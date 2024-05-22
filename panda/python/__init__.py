@@ -416,7 +416,6 @@ class Panda:
                 logging.warning(f"found device with panda descriptors but invalid serial: {serial}", RuntimeWarning)
             except Exception:
               logging.exception("error connecting to panda")
-              continue
     except Exception:
       logging.exception("exception while listing pandas")
     return ret

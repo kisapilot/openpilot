@@ -116,6 +116,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     locationdPermanentError @118;
     paramsdTemporaryError @50;
     paramsdPermanentError @119;
+    actuatorsApiUnavailable @120;
 
     radarCanErrorDEPRECATED @15;
     communityFeatureDisallowedDEPRECATED @62;
@@ -143,34 +144,34 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     brakeUnavailableDEPRECATED @2;
     gpsMalfunctionDEPRECATED @94;
 
-    laneChangeManual @120;
-    emgButtonManual @121;
-    driverSteering @122;
-    modeChangeOpenpilot @123;
-    modeChangeDistcurv @124;
-    modeChangeDistance @125;
-    modeChangeCurv @126;
-    modeChangeOneway @127;
-    modeChangeMaponly @128;
-    needBrake @129;
-    standStill @130;
-    e2eLongAlert @131;
-    isgActive @132;
-    camSpeedDown @133;
-    gapAdjusting @134;
-    resCruise @135;
-    curvSpeedDown @136;
-    standstillResButton @137;
-    routineDriveOn @138;
-    lkasEnabled @139;
-    cutinDetection @140;
-    gearNotD @141;
-    unSleepMode @142;
-    speedBump @143;
-    sccDriverOverride @144;
-    doNotDisturb @145;
-    chimeAtResume @146;
-    autoHold @147;
+    laneChangeManual @121;
+    emgButtonManual @122;
+    driverSteering @123;
+    modeChangeOpenpilot @124;
+    modeChangeDistcurv @125;
+    modeChangeDistance @126;
+    modeChangeCurv @127;
+    modeChangeOneway @128;
+    modeChangeMaponly @129;
+    needBrake @130;
+    standStill @131;
+    e2eLongAlert @132;
+    isgActive @133;
+    camSpeedDown @134;
+    gapAdjusting @135;
+    resCruise @136;
+    curvSpeedDown @137;
+    standstillResButton @138;
+    routineDriveOn @139;
+    lkasEnabled @140;
+    cutinDetection @141;
+    gearNotD @142;
+    unSleepMode @143;
+    speedBump @144;
+    sccDriverOverride @145;
+    doNotDisturb @146;
+    chimeAtResume @147;
+    autoHold @148;
   }
 }
 
@@ -183,6 +184,8 @@ struct CarState {
   # CAN health
   canValid @26 :Bool;       # invalid counter/checksums
   canTimeout @40 :Bool;     # CAN bus dropped out
+  canErrorCounter @48 :UInt32;
+  canRcvTimeout @49 :Bool;
 
   # car speed
   vEgo @1 :Float32;          # best estimate of speed
@@ -248,25 +251,28 @@ struct CarState {
   fuelGauge @41 :Float32; # battery or fuel tank level from 0.0 to 1.0
   charging @43 :Bool;
 
-  tpms @48 :TPMS;
+  # process meta
+  cumLagMs @50 :Float32;
 
-  radarDistance @49 :Float32;
-  standStill @50 :Bool;
-  vSetDis @51 :Float32;
-  cruiseButtons @52 :Float32;
-  cruiseAccStatus @53 :Bool;
-  driverAcc @54 :Bool;
-  autoHold @55 :Bool;    # AutoHold
-  cruiseGapSet @56 :UInt8;
+  tpms @51 :TPMS;
 
-  safetyDist @57 :Float32;
-  safetySign @58 :Float32;
-  vEgoOP @59 :Float32;  # openpilot speed
-  gearStep @60 :Int8;
-  isMph @61 :Bool;
-  aReqValue @62 :Float32;
-  chargeMeter @63 :Float32;
-  brakeLights @64 :Bool;
+  radarDistance @52 :Float32;
+  standStill @53 :Bool;
+  vSetDis @54 :Float32;
+  cruiseButtons @55 :Float32;
+  cruiseAccStatus @56 :Bool;
+  driverAcc @57 :Bool;
+  autoHold @58 :Bool;    # AutoHold
+  cruiseGapSet @59 :UInt8;
+
+  safetyDist @60 :Float32;
+  safetySign @61 :Float32;
+  vEgoOP @62 :Float32;  # openpilot speed
+  gearStep @63 :Int8;
+  isMph @64 :Bool;
+  aReqValue @65 :Float32;
+  chargeMeter @66 :Float32;
+  brakeLights @67 :Bool;
 
   struct TPMS {
     unit @0 :Int8;

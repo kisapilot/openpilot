@@ -1350,7 +1350,7 @@ class CarController(CarControllerBase):
 
     trace1.printf1('{}  {}'.format(str_log1, self.str_log2))
 
-    new_actuators = actuators.copy()
+    new_actuators = actuators.as_builder()
     new_actuators.steer = apply_steer / self.params.STEER_MAX
     new_actuators.steerOutputCan = apply_steer
     new_actuators.steeringAngleDeg = apply_angle
