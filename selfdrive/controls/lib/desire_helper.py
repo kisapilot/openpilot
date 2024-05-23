@@ -100,17 +100,20 @@ class DesireHelper:
     self.ready_to_change = False
 
   def update(self, carstate, lateral_active, lane_change_prob, controlsstate=None, md=None):
-    if controlsstate is not None:
-      if controlsstate.lateralControlMethod == 0:
-        self.output_scale = controlsstate.lateralControlState.pidState.output
-      elif controlsstate.lateralControlMethod == 1:
-        self.output_scale = controlsstate.lateralControlState.indiState.output
-      elif controlsstate.lateralControlMethod == 2:
-        self.output_scale = controlsstate.lateralControlState.lqrState.output
-      elif controlsstate.lateralControlMethod == 3:
-        self.output_scale = controlsstate.lateralControlState.torqueState.output
-      elif controlsstate.lateralControlMethod == 4:
-        self.output_scale = controlsstate.lateralControlState.atomState.output
+    try:
+      if controlsstate is not None:
+        if controlsstate.lateralControlMethod == 0:
+          self.output_scale = controlsstate.lateralControlState.pidState.output
+        elif controlsstate.lateralControlMethod == 1:
+          self.output_scale = controlsstate.lateralControlState.indiState.output
+        elif controlsstate.lateralControlMethod == 2:
+          self.output_scale = controlsstate.lateralControlState.lqrState.output
+        elif controlsstate.lateralControlMethod == 3:
+          self.output_scale = controlsstate.lateralControlState.torqueState.output
+        elif controlsstate.lateralControlMethod == 4:
+          self.output_scale = controlsstate.lateralControlState.atomState.output
+    except:
+      pass
     v_ego = carstate.vEgo
     one_blinker = carstate.leftBlinker != carstate.rightBlinker
     below_lane_change_speed = (v_ego < LANE_CHANGE_SPEED_MIN) or (LANE_CHANGE_SPEED_MIN == -1)
