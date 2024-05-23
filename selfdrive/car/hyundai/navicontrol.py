@@ -422,6 +422,11 @@ class NaviControl():
         var_speed = min(CS.CP.vFuture, navi_speed)
         self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
         self.cutInControl = False
+      elif CS.cruise_set_mode == 3:
+        self.faststart = False
+        var_speed = navi_speed
+        self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
+        self.cutInControl = False
       else:
         self.faststart = False
         var_speed = navi_speed
