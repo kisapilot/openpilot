@@ -117,6 +117,7 @@ FW_VERSIONS = {
       b'\xf1\x00AEhe SCC FHCUP      1.00 1.02 99110-G2100         ',
     ],
     (Ecu.eps, 0x7d4, None): [
+      b'\xf1\x00AE  MDPS C 1.00 1.01 56310/G2210 4APHC101',
       b'\xf1\x00AE  MDPS C 1.00 1.01 56310/G2310 4APHC101',
       b'\xf1\x00AE  MDPS C 1.00 1.01 56310/G2510 4APHC101',
       b'\xf1\x00AE  MDPS C 1.00 1.01 56310/G2560 4APHC101',
@@ -514,6 +515,7 @@ FW_VERSIONS = {
       b'\xf1\x00DH__ SCC F-CUP      1.00 1.01 96400-B1120         ',
       b'\xf1\x00DH__ SCC F-CUP      1.00 1.02 96400-B1120         ',
       b'\xf1\x00DH__ SCC FHCUP      1.00 1.01 96400-B1110         ',
+      b'\xf1\x00DH__ SCC FHCU-      1.00 1.01 96400-B1120         ',
     ],
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00DH  LKAS AT KOR LHD 1.01 1.01 95895-B1500 161014',
@@ -864,6 +866,7 @@ FW_VERSIONS = {
       b'\xf1\x00CN7_ SCC FNCUP      1.00 1.01 99110-AA000         ',
     ],
     (Ecu.eps, 0x7d4, None): [
+      b'\xf1\x00CN7 MDPS C 1.00 1.06 56310/AA050 4CNDC106',
       b'\xf1\x00CN7 MDPS C 1.00 1.06 56310/AA070 4CNDC106',
       b'\xf1\x00CN7 MDPS C 1.00 1.06 56310AA050\x00 4CNDC106',
       b'\xf1\x00CN7 MDPS C 1.00 1.07 56310AA050\x00 4CNDC107',
@@ -965,6 +968,7 @@ FW_VERSIONS = {
       b'\xf1\x00CV1 MFC  AT KOR LHD 1.00 1.05 99210-CV000 211027',
       b'\xf1\x00CV1 MFC  AT KOR LHD 1.00 1.06 99210-CV000 220328',
       b'\xf1\x00CV1 MFC  AT USA LHD 1.00 1.00 99210-CV100 220630',
+      b'\xf1\x00CV1 MFC  AT USA LHD 1.00 1.00 99210-CV200 230510',
       b'\xf1\x00CV1 MFC  AT USA LHD 1.00 1.05 99210-CV000 211027',
       b'\xf1\x00CV1 MFC  AT USA LHD 1.00 1.06 99210-CV000 220328',
     ],
@@ -974,6 +978,7 @@ FW_VERSIONS = {
       b'\xf1\x00NE1_ RDR -----      1.00 1.00 99110-GI000         ',
     ],
     (Ecu.fwdCamera, 0x7c4, None): [
+      b'\xf1\x00NE1 MFC  AT CAN LHD 1.00 1.01 99211-GI010 211007',
       b'\xf1\x00NE1 MFC  AT CAN LHD 1.00 1.05 99211-GI010 220614',
       b'\xf1\x00NE1 MFC  AT EUR LHD 1.00 1.01 99211-GI010 211007',
       b'\xf1\x00NE1 MFC  AT EUR LHD 1.00 1.06 99211-GI000 210813',

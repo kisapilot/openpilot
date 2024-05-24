@@ -293,6 +293,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"SteerThreshold", PERSISTENT},
     {"RecordingCount", PERSISTENT},
     {"RecordingQuality", PERSISTENT},
+    {"RecordingRunning", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
     {"CruiseGapAdjust", PERSISTENT},
     {"AutoEnable", PERSISTENT},
     {"AutoEnableSpeed", PERSISTENT},

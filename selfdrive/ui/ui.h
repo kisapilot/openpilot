@@ -125,7 +125,8 @@ typedef struct UIScene {
   float tpmsPressureRl;
   float tpmsPressureRr;
   int lateralControlMethod;
-  float radarDistance;
+  float radarDRel;
+  float radarVRel;
   bool standStill;
   int limitSpeedCamera = 0;
   float limitSpeedCameraDist = 0;
@@ -210,6 +211,8 @@ typedef struct UIScene {
 
   bool hotspot_on_boot;
   bool hotspot_trigger = false;
+
+  int user_specific_feature = 0;
 
   QString model_name;
 

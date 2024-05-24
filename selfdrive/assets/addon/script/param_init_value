@@ -23,7 +23,7 @@ LqrKi:16
 DcGain:265
 IgnoreZone:0
 PidKp:25
-PidKi:4
+PidKi:40
 PidKd:150
 PidKf:7
 TorqueKp:10

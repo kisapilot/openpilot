@@ -8,6 +8,9 @@
 
 #include <QTimer>
 #include "selfdrive/ui/qt/screenrecorder/screenrecorder.h"
+
+#include "common/params.h"
+
 class AnnotatedCameraWidget : public CameraWidget {
   Q_OBJECT
 
@@ -63,6 +66,8 @@ private:
   // neokii screen recorder. thx for sharing your source. 
   ScreenRecoder* recorder;
   std::shared_ptr<QTimer> record_timer;
+
+  Params params;
 
 protected:
   void paintGL() override;

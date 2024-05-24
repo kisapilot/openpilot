@@ -102,7 +102,7 @@ class CarState(CarStateBase):
     self.exp_long_alt = CP.sccBus <= 0 and CP.carFingerprint in LEGACY_SAFETY_MODE_CAR_ALT and self.CP.openpilotLongitudinalControl
     self.exp_long = (CP.sccBus <= 0 and self.CP.openpilotLongitudinalControl and self.long_alt not in (1, 2)) or self.exp_long_alt
     self.lead_distance = 0
-    self.distance_setting = 0
+    self.DistSet = 0
 
     self.sm = messaging.SubMaster(['controlsState'])
 
@@ -112,6 +112,7 @@ class CarState(CarStateBase):
     set_speed_kph = self.cruise_set_speed_kph
     if 1 < round(self.sm['controlsState'].vCruise) < 255:
       set_speed_kph = round(self.sm['controlsState'].vCruise)
+      self.cruise_set_speed_kph = set_speed_kph
 
     if self.cruise_buttons[-1]:
       self.cruise_buttons_time += 1
@@ -473,6 +474,7 @@ class CarState(CarStateBase):
       self.VSetDis = cp_scc.vl["SCC11"]["VSetDis"]
       ret.vSetDis = self.VSetDis
       lead_objspd = cp_scc.vl["SCC11"]["ACC_ObjRelSpd"]
+      ret.radarVRel = lead_objspd
       self.lead_objspd = lead_objspd * CV.MS_TO_KPH
 
       ret.accFaulted = cp.vl["TCS13"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
@@ -570,7 +572,7 @@ class CarState(CarStateBase):
       ret.aReqValue = cp_scc.vl["SCC12"]["aReqValue"]
       self.highway_cam = cp_scc.vl["SCC11"]["Navi_SCC_Camera_Act"]
       self.lead_distance = cp_scc.vl["SCC11"]["ACC_ObjDist"]
-      ret.radarDistance = self.lead_distance
+      ret.radarDRel = self.lead_distance
       self.scc11 = copy.copy(cp_scc.vl["SCC11"])
       self.scc12 = copy.copy(cp_scc.vl["SCC12"])
       if self.CP.scc13Available:
@@ -687,7 +689,6 @@ class CarState(CarStateBase):
       self.VSetDis = cp_cruise_info.vl["SCC_CONTROL"]["VSetDis"]
       ret.vSetDis = self.VSetDis
       self.cruiseState_standstill = ret.cruiseState.standstill
-      self.distance_setting = cp_cruise_info.vl["SCC_CONTROL"]["DISTANCE_SETTING"]
       self.cruise_info = copy.copy(cp_cruise_info.vl["SCC_CONTROL"])
 
       self.acc_active = cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"] in (1, 2)
@@ -716,13 +717,15 @@ class CarState(CarStateBase):
       ret.cruiseState.gapSet = cp.vl["ADRV_0x200"]["TauGapSet"]
       self.cruiseGapSet = ret.cruiseState.gapSet
       ret.cruiseGapSet = self.cruiseGapSet
+      self.DistSet = cp_cruise_info.vl["SCC_CONTROL"]["DISTANCE_SETTING"] - 5 if cp_cruise_info.vl["SCC_CONTROL"]["DISTANCE_SETTING"] > 5 else cp_cruise_info.vl["SCC_CONTROL"]["DISTANCE_SETTING"]
       ret.cruiseState.modeSel = self.cruise_set_mode
 
     if not self.exp_long:
       self.lead_distance = cp_cruise_info.vl["SCC_CONTROL"]["ACC_ObjDist"]
-      ret.radarDistance = self.lead_distance
+      ret.radarDRel = self.lead_distance
       ret.aReqValue = cp_cruise_info.vl["SCC_CONTROL"]["aReqValue"]
       lead_objspd = cp_cruise_info.vl["SCC_CONTROL"]["ACC_ObjRelSpd"]
+      ret.radarVRel = lead_objspd
       self.lead_objspd = lead_objspd * CV.MS_TO_KPH
       self.scc_control = copy.copy(cp_cruise_info.vl["SCC_CONTROL"])
       self.driverOverride = cp.vl["TCS"]["DriverOverride"]

@@ -117,8 +117,13 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   over_sl = s.scene.limitSpeedCamera > 19 && ((s.scene.car_state.getVEgo() * (s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH)) > s.scene.ctrl_speed+1.5);
 
   auto lead_one = sm["radarState"].getRadarState().getLeadOne();
-  dist_rel = lead_one.getDRel();
-  vel_rel = lead_one.getVRel();
+  if (s.scene.radarDRel < 149 && s.scene.user_specific_feature == 12) {
+    dist_rel = s.scene.radarDRel;
+    vel_rel = s.scene.radarVRel;
+  } else {
+    dist_rel = lead_one.getDRel();
+    vel_rel = lead_one.getVRel();
+  }
   lead_stat = lead_one.getStatus();
 }
 
@@ -490,6 +495,8 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       } else {
         debugText(p, sp_xl, sp_yl+60, QString::number(dist_rel, 'f', 0), 150, 57);
       }
+    } else {
+      debugText(p, sp_xl, sp_yl+60, "-", 150, 57);
     }
     p.translate(sp_xl + 90, sp_yl + 20);
     p.rotate(-90);
@@ -661,9 +668,9 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     sp_yr = sp_yr + j_num;
     p.setPen(whiteColor(200));
     debugText(p, sp_xr, sp_yr, QString("GPS PREC"), 150, 27);
-    if (s->scene.gpsAccuracy > 3) {
+    if (s->scene.gpsAccuracy > 5) {
       p.setPen(redColor(200));
-    } else if (s->scene.gpsAccuracy > 1.5) {
+    } else if (s->scene.gpsAccuracy > 2.5) {
       p.setPen(orangeColor(200));
     }
     if (s->scene.gpsAccuracy > 99 || s->scene.gpsAccuracy == 0) {
@@ -1327,27 +1334,31 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
   // rec_stat and toggle
   if (s->scene.driving_record) {
-    if (!s->scene.rec_stat && s->scene.car_state.getVEgo() > 0.3 && s->scene.lateralPlan.standstillElapsedTime == 0) {
+    if (!s->scene.rec_stat && s->scene.car_state.getVEgo() > 0.8 && s->scene.lateralPlan.standstillElapsedTime == 0 && int(s->scene.getGearShifter) == 2) {
       s->scene.rec_stat = !s->scene.rec_stat;
+      params.putBool("RecordingRunning", s->scene.rec_stat);
       if (recorder) recorder->toggle();
-    } else if (s->scene.rec_stat && s->scene.standStill && s->scene.lateralPlan.standstillElapsedTime > 9) {
-      if (recorder) recorder->toggle();
+    } else if (s->scene.rec_stat && ((s->scene.standStill && s->scene.lateralPlan.standstillElapsedTime > 5) || int(s->scene.getGearShifter) == 1)) {
       s->scene.rec_stat = !s->scene.rec_stat;
+      params.putBool("RecordingRunning", s->scene.rec_stat);
+      if (recorder) recorder->toggle();
     }
   } else {
     if (s->scene.rec_stat && !s->scene.rec_stat2) {
+      params.putBool("RecordingRunning", s->scene.rec_stat);
       if (recorder) recorder->toggle();
       s->scene.rec_stat2 = s->scene.rec_stat;
     } else if (!s->scene.rec_stat && s->scene.rec_stat2) {
+      params.putBool("RecordingRunning", s->scene.rec_stat);
       if (recorder) recorder->toggle();
       s->scene.rec_stat2 = s->scene.rec_stat;
     } else if (s->scene.rec_stat && s->scene.rec_stat3 && int(s->scene.getGearShifter) == 1) {
       if (recorder) recorder->toggle();
       s->scene.rec_stat = false;
       s->scene.rec_stat2 = false;
+      params.putBool("RecordingRunning", s->scene.rec_stat);
     }
   }
-
   p.restore();
 }
 
@@ -1602,7 +1613,7 @@ void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::RadarState
   UIState *s = uiState();
 
   // kisapilot
-  if (s->scene.radarDistance < 149) {
+  if (s->scene.radarDRel < 149) {
     QPointF glow[] = {{x + (sz * 1.35) + g_xo, y + sz + g_yo}, {x, y - g_xo}, {x - (sz * 1.35) - g_xo, y + sz + g_yo}};
     painter.setBrush(QColor(218, 202, 37, 255));
     painter.drawPolygon(glow, std::size(glow));
@@ -1752,7 +1763,7 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
   double cur_draw_t = millis_since_boot();
   double dt = cur_draw_t - prev_draw_t;
   double fps = fps_filter.update(1. / dt * 1000);
-  if (fps < 15) {
+  if (fps < 15 && !s->scene.rec_stat) {
     LOGW("slow frame rate: %.2f fps", fps);
   }
   prev_draw_t = cur_draw_t;

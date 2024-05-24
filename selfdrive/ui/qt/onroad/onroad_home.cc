@@ -106,6 +106,7 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   if (uiState()->scene.multi_btn_touched && rec_btn.contains(e->pos())) {
     uiState()->scene.rec_blinker = 0;
     uiState()->scene.rec_stat = !uiState()->scene.rec_stat;
+    params.putBool("RecordingRunning", uiState()->scene.rec_stat);
     return;
   }
 

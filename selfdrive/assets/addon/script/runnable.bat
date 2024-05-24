@@ -33,7 +33,7 @@ git update-index --chmod=+x local_osm_install.py
 cd ../car/hyundai
 git update-index --chmod=+x interface.py
 git update-index --chmod=+x radar_interface.py
-git update-index --chmod=+x navicontrol.py
+git update-index --chmod=+x cruise_spamming_control.py
 git update-index --chmod=+x tunes.py
 git update-index --chmod=+x cruise_helper.py
 cd ../../controls/lib

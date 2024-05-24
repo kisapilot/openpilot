@@ -256,23 +256,24 @@ struct CarState {
 
   tpms @51 :TPMS;
 
-  radarDistance @52 :Float32;
-  standStill @53 :Bool;
-  vSetDis @54 :Float32;
-  cruiseButtons @55 :Float32;
-  cruiseAccStatus @56 :Bool;
-  driverAcc @57 :Bool;
-  autoHold @58 :Bool;    # AutoHold
-  cruiseGapSet @59 :UInt8;
+  radarDRel @52 :Float32;
+  radarVRel @53 :Float32;
+  standStill @54 :Bool;
+  vSetDis @55 :Float32;
+  cruiseButtons @56 :Float32;
+  cruiseAccStatus @57 :Bool;
+  driverAcc @58 :Bool;
+  autoHold @59 :Bool;    # AutoHold
+  cruiseGapSet @60 :UInt8;
 
-  safetyDist @60 :Float32;
-  safetySign @61 :Float32;
-  vEgoOP @62 :Float32;  # openpilot speed
-  gearStep @63 :Int8;
-  isMph @64 :Bool;
-  aReqValue @65 :Float32;
-  chargeMeter @66 :Float32;
-  brakeLights @67 :Bool;
+  safetyDist @61 :Float32;
+  safetySign @62 :Float32;
+  vEgoOP @63 :Float32;  # openpilot speed
+  gearStep @64 :Int8;
+  isMph @65 :Bool;
+  aReqValue @66 :Float32;
+  chargeMeter @67 :Float32;
+  brakeLights @68 :Bool;
 
   struct TPMS {
     unit @0 :Int8;
@@ -431,6 +432,9 @@ struct CarControl {
     aqValueRaw @16: Float32;
     autoResvCruisekph @17: Float32;
     resSpeed @18: Float32;
+    kisaLog1 @19: Text;
+    kisaLog2 @20: Text;
+    kisaLog3 @21: Text;
 
     enum LongControlState @0xe40f3a917d908282{
       off @0;

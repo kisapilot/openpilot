@@ -128,6 +128,7 @@ def manager_init() -> None:
     ("SteerThreshold", "150"),
     ("RecordingCount", "200"),
     ("RecordingQuality", "1"),
+    ("RecordingRunning", "0"),
     ("CruiseGapAdjust", "0"),
     ("AutoEnable", "0"),
     ("CruiseAutoRes", "0"),
