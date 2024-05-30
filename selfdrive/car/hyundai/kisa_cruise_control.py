@@ -12,7 +12,7 @@ from openpilot.common.params import Params
 
 LaneChangeState = log.LateralPlan.LaneChangeState
 
-class CruiseSpammingControl():
+class KisaCruiseControl():
   def __init__(self):
 
     self.sm = messaging.SubMaster(['liveENaviData', 'lateralPlan', 'radarState', 'controlsState', 'longitudinalPlan', 'liveMapData'])
@@ -530,6 +530,7 @@ class CruiseSpammingControl():
   def get_live_gap(self, sm, CS):
     self.t_interval = randint(15, 25)
     gap_to_set = CS.DistSet if CS.DistSet > 0 else CS.cruiseGapSet
+    now_gap = gap_to_set
     if 0 < CS.lead_distance <= 149 and CS.lead_objspd < -4 and CS.clu_Vanz > 30 and 0 < self.e2e_x < 120 and self.try_early_stop:
       if not self.try_early_stop_retrieve:
         self.try_early_stop_org_gap = CS.DistSet if CS.DistSet > 0 else CS.cruiseGapSet
@@ -550,7 +551,7 @@ class CruiseSpammingControl():
       gap_to_set = CS.DistSet if CS.DistSet > 0 else CS.cruiseGapSet
       return gap_to_set
     elif self.gap_by_spd_on and self.gap_by_spd_on_sw_trg and ((CS.clu_Vanz < self.gap_by_spd_spd[0]+self.gap_by_spd_on_buffer1) or self.gap_by_spd_gap1) and \
-       not self.try_early_stop_retrieve and not CS.lead_objspd < 0 and self.gap_by_spd_gap[0] != CS.DistSet:
+       not self.try_early_stop_retrieve and (not CS.lead_objspd < 0 or not CS.obj_valid) and self.gap_by_spd_gap[0] != now_gap:
       self.gap_by_spd_gap1 = True
       self.gap_by_spd_gap2 = False
       self.gap_by_spd_gap3 = False
@@ -561,7 +562,7 @@ class CruiseSpammingControl():
       gap_to_set = self.gap_by_spd_gap[0]
       return gap_to_set
     elif self.gap_by_spd_on and self.gap_by_spd_on_sw_trg and ((self.gap_by_spd_spd[0] <= CS.clu_Vanz < self.gap_by_spd_spd[1]+self.gap_by_spd_on_buffer2) or self.gap_by_spd_gap2) and \
-       not self.try_early_stop_retrieve and not CS.lead_objspd < 0 and self.gap_by_spd_gap[1] != CS.DistSet:
+       not self.try_early_stop_retrieve and (not CS.lead_objspd < 0 or not CS.obj_valid) and self.gap_by_spd_gap[1] != now_gap:
       self.gap_by_spd_gap1 = False
       self.gap_by_spd_gap2 = True
       self.gap_by_spd_gap3 = False
@@ -572,7 +573,7 @@ class CruiseSpammingControl():
       gap_to_set = self.gap_by_spd_gap[1]
       return gap_to_set
     elif self.gap_by_spd_on and self.gap_by_spd_on_sw_trg and ((self.gap_by_spd_spd[1] <= CS.clu_Vanz < self.gap_by_spd_spd[2]+self.gap_by_spd_on_buffer3) or self.gap_by_spd_gap3) and \
-       not self.try_early_stop_retrieve and not CS.lead_objspd < 0 and self.gap_by_spd_gap[2] != CS.DistSet:
+       not self.try_early_stop_retrieve and (not CS.lead_objspd < 0 or not CS.obj_valid) and self.gap_by_spd_gap[2] != now_gap:
       self.gap_by_spd_gap1 = False
       self.gap_by_spd_gap2 = False
       self.gap_by_spd_gap3 = True
@@ -582,7 +583,7 @@ class CruiseSpammingControl():
       gap_to_set = self.gap_by_spd_gap[2]
       return gap_to_set
     elif self.gap_by_spd_on and self.gap_by_spd_on_sw_trg and ((self.gap_by_spd_spd[2] <= CS.clu_Vanz) or self.gap_by_spd_gap4) and \
-       not self.try_early_stop_retrieve and not CS.lead_objspd < 0 and self.gap_by_spd_gap[3] != CS.DistSet:
+       not self.try_early_stop_retrieve and (not CS.lead_objspd < 0 or not CS.obj_valid) and self.gap_by_spd_gap[3] != now_gap:
       self.gap_by_spd_gap1 = False
       self.gap_by_spd_gap2 = False
       self.gap_by_spd_gap3 = False

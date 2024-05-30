@@ -103,6 +103,7 @@ class CarState(CarStateBase):
     self.exp_long = (CP.sccBus <= 0 and self.CP.openpilotLongitudinalControl and self.long_alt not in (1, 2)) or self.exp_long_alt
     self.lead_distance = 0
     self.DistSet = 0
+    self.obj_valid = 0
 
     self.sm = messaging.SubMaster(['controlsState'])
 
@@ -727,6 +728,7 @@ class CarState(CarStateBase):
       lead_objspd = cp_cruise_info.vl["SCC_CONTROL"]["ACC_ObjRelSpd"]
       ret.radarVRel = lead_objspd
       self.lead_objspd = lead_objspd * CV.MS_TO_KPH
+      self.obj_valid = cp_cruise_info.vl["SCC_CONTROL"]["ObjValid"]
       self.scc_control = copy.copy(cp_cruise_info.vl["SCC_CONTROL"])
       self.driverOverride = cp.vl["TCS"]["DriverOverride"]
       if self.driverOverride:

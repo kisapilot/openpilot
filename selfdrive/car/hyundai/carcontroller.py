@@ -12,7 +12,7 @@ from openpilot.selfdrive.car.interfaces import CarControllerBase
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
 from openpilot.selfdrive.car.hyundai.carstate import GearShifter
 from openpilot.selfdrive.controls.lib.desire_helper import LANE_CHANGE_SPEED_MIN
-from openpilot.selfdrive.car.hyundai.cruise_spamming_control  import CruiseSpammingControl
+from openpilot.selfdrive.car.hyundai.kisa_cruise_control  import KisaCruiseControl
 
 from openpilot.common.params import Params
 from random import randint
@@ -122,7 +122,7 @@ class CarController(CarControllerBase):
     #self.scc_live is true because CP.radarUnavailable is False
     self.scc_live = not self.CP.radarUnavailable
 
-    self.CSC = CruiseSpammingControl()
+    self.KCC = KisaCruiseControl()
 
     self.dRel = 0
     self.vRel = 0
@@ -772,13 +772,13 @@ class CarController(CarControllerBase):
         self.last_lead_distance = 0
         self.standstill_res_button = False
       elif self.kisa_variablecruise and CS.acc_active:
-        btn_signal = self.CSC.update(CS)
+        btn_signal = self.KCC.update(CS)
         self.btnsignal = btn_signal
-        self.on_speed_control = self.CSC.onSpeedControl
-        self.on_speed_bump_control = self.CSC.onSpeedBumpControl
-        self.curv_speed_control = self.CSC.curvSpeedControl
-        self.cut_in_control = self.CSC.cutInControl
-        self.driver_scc_set_control = self.CSC.driverSccSetControl
+        self.on_speed_control = self.KCC.onSpeedControl
+        self.on_speed_bump_control = self.KCC.onSpeedBumpControl
+        self.curv_speed_control = self.KCC.curvSpeedControl
+        self.cut_in_control = self.KCC.cutInControl
+        self.driver_scc_set_control = self.KCC.driverSccSetControl
         if self.kisa_cruisegap_auto_adj and not self.gap_by_spd_on:
           # gap restore
           if self.switch_timer > 0:
@@ -818,7 +818,7 @@ class CarController(CarControllerBase):
                 self.switch_timer -= 1
               else:
                 btn_count = 1
-                btn_count = int(interp(self.CSC.t_interval, [self.nt_interval+3,70],[1,self.btn_count])) if CS.is_set_speed_in_mph else int(interp(self.CSC.t_interval, [self.nt_interval,40],[1,self.btn_count]))
+                btn_count = int(interp(self.KCC.t_interval, [self.nt_interval+3,70],[1,self.btn_count])) if CS.is_set_speed_in_mph else int(interp(self.KCC.t_interval, [self.nt_interval,40],[1,self.btn_count]))
                 can_sends.extend([hyundaican.create_clu11(self.packer, self.resume_cnt, CS.clu11, btn_signal)] * btn_count) if not self.longcontrol \
                 else can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_signal, clu11_speed, self.CP.sccBus)] * btn_count)
                 self.resume_cnt += 1
@@ -916,7 +916,7 @@ class CarController(CarControllerBase):
                 self.switch_timer -= 1
               else:
                 btn_count = 1
-                btn_count = int(interp(self.CSC.t_interval, [self.nt_interval+3,70],[1,self.btn_count])) if CS.is_set_speed_in_mph else int(interp(self.CSC.t_interval, [self.nt_interval,40],[1,self.btn_count]))
+                btn_count = int(interp(self.KCC.t_interval, [self.nt_interval+3,70],[1,self.btn_count])) if CS.is_set_speed_in_mph else int(interp(self.KCC.t_interval, [self.nt_interval,40],[1,self.btn_count]))
                 can_sends.extend([hyundaican.create_clu11(self.packer, self.resume_cnt, CS.clu11, btn_signal)] * btn_count) if not self.longcontrol \
                 else can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_signal, clu11_speed, self.CP.sccBus)] * btn_count)
                 self.resume_cnt += 1
@@ -1128,7 +1128,7 @@ class CarController(CarControllerBase):
                 self.ed_rd_diff_on_timer = 0
                 self.ed_rd_diff_on_timer2 = 0
                 dRel1 = self.dRel if self.dRel > 0 else CS.lead_distance
-                if ((CS.lead_distance - dRel1 > 3.0) or self.CSC.cutInControl) and accel < 0:
+                if ((CS.lead_distance - dRel1 > 3.0) or self.KCC.cutInControl) and accel < 0:
                   if aReqValue < accel:
                     accel = interp(lead_objspd, [-1, 0, 5], [aReqValue, aReqValue, accel])
                     self.l_stat = 17
@@ -1155,19 +1155,19 @@ class CarController(CarControllerBase):
                 dist_by_drel = interp(CS.lead_distance, [10, 50], [3.0, 9.0])
                 d_ratio = interp(CS.clu_Vanz, [40, 110], [0.3, 0.19])
                 d_ratio2 = interp(CS.clu_Vanz, [40, 110], [1.0, 2.0])
-                if ((CS.lead_distance - dRel2 > dist_by_drel) or self.CSC.cutInControl) and accel < 0 and not self.ed_rd_diff_on:
+                if ((CS.lead_distance - dRel2 > dist_by_drel) or self.KCC.cutInControl) and accel < 0 and not self.ed_rd_diff_on:
                   self.ed_rd_diff_on = True
                   self.ed_rd_diff_on_timer = min(400, int(self.dRel * 5 * d_ratio2))
                   self.ed_rd_diff_on_timer2 = min(400, int(self.dRel * 5 * d_ratio2))
                   stock_weight = 1.0
                   self.l_stat = 24
-                elif ((dRel2 - CS.lead_distance > dist_by_drel) or self.CSC.cutInControl) and not self.ed_rd_diff_on:
+                elif ((dRel2 - CS.lead_distance > dist_by_drel) or self.KCC.cutInControl) and not self.ed_rd_diff_on:
                   self.ed_rd_diff_on = True
                   self.ed_rd_diff_on_timer = min(400, int(self.dRel * 10 * d_ratio2))
                   self.ed_rd_diff_on_timer2 = min(400, int(self.dRel * 10 * d_ratio2))
                   stock_weight = 1.0
                   self.l_stat = 25
-                elif self.ed_rd_diff_on_timer or (self.CSC.cut_in_run_timer and dRel2 < CS.clu_Vanz * d_ratio): # damping btw ED and RD for few secs.
+                elif self.ed_rd_diff_on_timer or (self.KCC.cut_in_run_timer and dRel2 < CS.clu_Vanz * d_ratio): # damping btw ED and RD for few secs.
                   stock_weight = interp(self.ed_rd_diff_on_timer, [0, self.ed_rd_diff_on_timer2], [0.1, 1.0])
                   self.ed_rd_diff_on_timer -= 1
                   self.l_stat = 26
@@ -1176,7 +1176,7 @@ class CarController(CarControllerBase):
                     self.l_stat = 27
                 else:
                   accel = interp(CS.clu_Vanz, [4.0, 10.0, 30.0], [max(accel, faccel), ((min(accel, faccel)*0.6)+(max(accel, faccel)*0.4)), min(accel, faccel)])
-                  if not self.CSC.cutInControl:
+                  if not self.KCC.cutInControl:
                     self.ed_rd_diff_on = False
                     self.l_stat = 28
                   self.ed_rd_diff_on_timer = 0
@@ -1287,7 +1287,7 @@ class CarController(CarControllerBase):
           int(CC.enabled), int(CC.latActive), int(lat_active), int(CC.longActive), CS.out.cruiseState.modeSel, self.CP.sccBus, self.model_speed, abs(self.sm['controlsState'].curvature), abs(new_steer), abs(CS.out.steeringTorque), self.vFuture, self.params.STEER_MAX, self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN)
       if CS.out.cruiseState.accActive:
         str_log2 = 'AQ={:+04.2f}  SS={:03.0f}  VF={:03.0f}/{:03.0f}  TS/VS={:03.0f}/{:03.0f}  RD/ED/C/T={:04.1f}/{:04.1f}/{}/{}  C={:1.0f}/{:1.0f}/{}'.format(
-        self.aq_value if self.longcontrol else CS.scc_control["aReqValue"], set_speed_in_units, self.vFuture, self.vFutureA, self.CSC.ctrl_speed, round(CS.VSetDis), CS.lead_distance, self.dRel, int(self.CSC.cut_in), self.CSC.cut_in_run_timer, 0, CS.cruiseGapSet, self.btnsignal if self.btnsignal is not None else 0, self.CSC.t_interval)
+        self.aq_value if self.longcontrol else CS.scc_control["aReqValue"], set_speed_in_units, self.vFuture, self.vFutureA, self.KCC.ctrl_speed, round(CS.VSetDis), CS.lead_distance, self.dRel, int(self.KCC.cut_in), self.KCC.cut_in_run_timer, 0, CS.cruiseGapSet, self.btnsignal if self.btnsignal is not None else 0, self.KCC.t_interval)
       else:
         str_log2 = 'MDPS={}  LKAS={:1.0f}  LEAD={}  AQ={:+04.2f}  VF={:03.0f}/{:03.0f}  CG={:1.0f}'.format(
         int(not CS.out.steerFaultTemporary), 0, int(bool(0 < CS.lead_distance < 149)), self.aq_value if self.longcontrol else CS.scc_control["aReqValue"], self.vFuture, self.vFutureA, CS.cruiseGapSet)
@@ -1296,7 +1296,7 @@ class CarController(CarControllerBase):
         int(CC.enabled), int(CC.latActive), int(lat_active), int(CC.longActive), CS.out.cruiseState.modeSel, self.CP.sccBus, self.model_speed, abs(self.sm['controlsState'].curvature), abs(new_steer), abs(CS.out.steeringTorque), self.vFuture, self.params.STEER_MAX, self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN)
       if CS.out.cruiseState.accActive:
         str_log2 = 'AQ={:+04.2f}  SS={:03.0f}  VF={:03.0f}/{:03.0f}  TS/VS={:03.0f}/{:03.0f}  RD/ED/C/T={:04.1f}/{:04.1f}/{}/{}/{}  C={:1.0f}/{:1.0f}/{}/{:1.0f}'.format(
-        self.aq_value if self.longcontrol else CS.scc12["aReqValue"], set_speed_in_units, self.vFuture, self.vFutureA, self.CSC.ctrl_speed, round(CS.VSetDis), CS.lead_distance, self.dRel, int(self.CSC.cut_in), self.CSC.cut_in_run_timer, self.ed_rd_diff_on_timer, CS.cruiseGapSet, self.btnsignal if self.btnsignal is not None else 0, self.CSC.t_interval, self.l_stat)
+        self.aq_value if self.longcontrol else CS.scc12["aReqValue"], set_speed_in_units, self.vFuture, self.vFutureA, self.KCC.ctrl_speed, round(CS.VSetDis), CS.lead_distance, self.dRel, int(self.KCC.cut_in), self.KCC.cut_in_run_timer, self.ed_rd_diff_on_timer, CS.cruiseGapSet, self.btnsignal if self.btnsignal is not None else 0, self.KCC.t_interval, self.l_stat)
       else:
         str_log2 = 'MDPS={}  LKAS={:1.0f}  LEAD={}  AQ={:+04.2f}  VF={:03.0f}/{:03.0f}  CG={:1.0f}'.format(
         int(not CS.out.steerFaultTemporary), CS.lkas_button_on, int(bool(0 < CS.lead_distance < 149)), self.aq_value if self.longcontrol else CS.scc12["aReqValue"], self.vFuture, self.vFutureA, CS.cruiseGapSet)
@@ -1347,7 +1347,7 @@ class CarController(CarControllerBase):
 
     new_actuators.aqValue = self.aq_value
     new_actuators.aqValueRaw = self.aq_value_raw
-    new_actuators.safetySpeed = self.CSC.safetycam_speed
+    new_actuators.safetySpeed = self.KCC.safetycam_speed
     new_actuators.lkasTemporaryOff = self.lkas_temp_disabled
     new_actuators.gapBySpdOnTemp = (self.gap_by_spd_on_sw_trg and self.gap_by_spd_on)
     new_actuators.expModeTemp = self.experimental_mode_temp
@@ -1410,31 +1410,31 @@ class CarController(CarControllerBase):
           self.cruise_gap_adjusting = False
           self.cruise_gap_set_init = False
           self.standstill_res_button = False
-          btn_signal = self.CSC.update(CS)
+          btn_signal = self.KCC.update(CS)
           self.btnsignal = btn_signal
-          self.on_speed_control = self.CSC.onSpeedControl
-          self.on_speed_bump_control = self.CSC.onSpeedBumpControl
-          self.curv_speed_control = self.CSC.curvSpeedControl
-          self.cut_in_control = self.CSC.cutInControl
-          self.driver_scc_set_control = self.CSC.driverSccSetControl
+          self.on_speed_control = self.KCC.onSpeedControl
+          self.on_speed_bump_control = self.KCC.onSpeedBumpControl
+          self.curv_speed_control = self.KCC.curvSpeedControl
+          self.cut_in_control = self.KCC.cutInControl
+          self.driver_scc_set_control = self.KCC.driverSccSetControl
           if btn_signal is not None:
-            if btn_signal == 3 and self.CSC.ctrl_gap != (CS.DistSet if CS.DistSet > 0 else CS.cruiseGapSet):
+            if btn_signal == 3 and self.KCC.ctrl_gap != (CS.DistSet if CS.DistSet > 0 else CS.cruiseGapSet):
               for _ in range(self.btn_count):
                 can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter, btn_signal, CS.cruise_btn_info))
               self.last_button_frame = self.frame
               self.cruise_gap_adjusting = True
-            elif btn_signal in (1,2) and self.CSC.ctrl_speed != round(CS.VSetDis):
+            elif btn_signal in (1,2) and self.KCC.ctrl_speed != round(CS.VSetDis):
               for _ in range(self.btn_count):
                 can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter, btn_signal, CS.cruise_btn_info))
               self.last_button_frame = self.frame
               self.cruise_speed_adjusting = True
             self.refresh_time = 0
-          elif (self.CSC.ctrl_gap == (CS.DistSet if CS.DistSet > 0 else CS.cruiseGapSet)) or (self.CSC.ctrl_speed == round(CS.VSetDis)):
-            if self.CSC.ctrl_gap == (CS.DistSet if CS.DistSet > 0 else CS.cruiseGapSet) and self.cruise_gap_adjusting:
+          elif (self.KCC.ctrl_gap == (CS.DistSet if CS.DistSet > 0 else CS.cruiseGapSet)) or (self.KCC.ctrl_speed == round(CS.VSetDis)):
+            if self.KCC.ctrl_gap == (CS.DistSet if CS.DistSet > 0 else CS.cruiseGapSet) and self.cruise_gap_adjusting:
               self.cruise_gap_adjusting = False
               self.last_button_frame = self.frame
               self.refresh_time = 1
-            if self.CSC.ctrl_speed == round(CS.VSetDis) and self.cruise_speed_adjusting:
+            if self.KCC.ctrl_speed == round(CS.VSetDis) and self.cruise_speed_adjusting:
               self.cruise_speed_adjusting = False
               self.last_button_frame = self.frame
               self.refresh_time = 1
