@@ -618,6 +618,7 @@ struct CarParams {
   scc14Available @94 :Bool;
   lfaHdaAvailable @95 :Bool;
   navAvailable @96 :Bool;
+  isCanFD @97 :Bool;
 
   struct SmoothSteerData
   {

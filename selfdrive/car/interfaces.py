@@ -217,6 +217,7 @@ class CarInterfaceBase(ABC):
     ret.vFuture = 0
     ret.vFutureA = 0
     ret.standStill = False
+    ret.isCanFD = False
 
     return ret
 

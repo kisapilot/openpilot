@@ -342,6 +342,95 @@ def joystick_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster,
   vals = f"Gas: {round(gb * 100.)}%, Steer: {round(steer * 100.)}%"
   return NormalPermanentAlert("Joystick Mode", vals)
 
+# kisa
+def can_error_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int) -> Alert:
+  if CP.carName == "hyundai":
+    if os.path.isfile('/data/log/can_missing.txt'):
+      f = open('/data/log/can_missing.txt', 'r')
+      add = f.readline()
+      add_int = int(add, 0) if add else None
+      f.close()
+      canid_temp = "BO_ " + str(add_int)
+      canid_char = ""
+      if CP.isCanFD:
+        f = open('/data/openpilot/opendbc/hyundai_canfd.dbc', 'r')
+        lines = f.readlines()
+        for line in lines:
+          if canid_temp in line:
+            line = line.strip()
+            canid_char = line.split()[2]
+            canid_char = canid_char.replace(':', '')
+            break
+        f.close()
+      else:
+        f = open('/data/openpilot/opendbc/hyundai_kia_generic.dbc', 'r')
+        lines = f.readlines()
+        for line in lines:
+          if canid_temp in line:
+            line = line.strip()
+            canid_char = line.split()[2]
+            canid_char = canid_char.replace(':', '')
+            break
+        f.close()
+      if canid_char != "":
+        return Alert(
+          "CAN Error: %s is missing" % (canid_char),
+          "",
+          AlertStatus.normal, AlertSize.small,
+          Priority.LOW, VisualAlert.none, AudibleAlert.none, .2, creation_delay=1.)
+      else:
+        return Alert(
+          "CAN Error: %s is missing\n Decimal Value : %d" % (add, add_int),
+          "",
+          AlertStatus.normal, AlertSize.small,
+          Priority.LOW, VisualAlert.none, AudibleAlert.none, .2, creation_delay=1.)
+    elif os.path.isfile('/data/log/can_timeout.txt'):
+      f = open('/data/log/can_timeout.txt', 'r')
+      add = f.readline()
+      add_int = int(add, 0) if add else None
+      f.close()
+      canid_temp = "BO_ " + str(add_int)
+      canid_char = ""
+      if CP.isCanFD:
+        f = open('/data/openpilot/opendbc/hyundai_canfd.dbc', 'r')
+        lines = f.readlines()
+        for line in lines:
+          if canid_temp in line:
+            line = line.strip()
+            canid_char = line.split()[2]
+            canid_char = canid_char.replace(':', '')
+            break
+        f.close()
+      else:
+        f = open('/data/openpilot/opendbc/hyundai_kia_generic.dbc', 'r')
+        lines = f.readlines()
+        for line in lines:
+          if canid_temp in line:
+            line = line.strip()
+            canid_char = line.split()[2]
+            canid_char = canid_char.replace(':', '')
+            break
+        f.close()
+      if canid_char != "":
+        return Alert(
+          "CAN Error: %s is timeout" % (canid_char),
+          "",
+          AlertStatus.normal, AlertSize.small,
+          Priority.LOW, VisualAlert.none, AudibleAlert.none, .2, creation_delay=1.)
+      else:
+        return Alert(
+          "CAN Error: %s is timeout\n Decimal Value : %d" % (add, add_int),
+          "",
+          AlertStatus.normal, AlertSize.small,
+          Priority.LOW, VisualAlert.none, AudibleAlert.none, .2, creation_delay=1.)
+  else:
+    return Alert(
+      "CAN Error: Check Connections",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .2, creation_delay=1.)
+
+
 def navi_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int) -> Alert:
   return Alert(
     tr(193) if IS_WAZE else tr(95),
@@ -1041,12 +1130,13 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
   # - CAN data is received, but some message are not received at the right frequency
   # If you're not writing a new car port, this is usually cause by faulty wiring
   EventName.canError: {
+    ET.PERMANENT: can_error_alert,
     ET.IMMEDIATE_DISABLE: ImmediateDisableAlert(tr(156)),
-    ET.PERMANENT: Alert(
-      tr(157),
-      "",
-      AlertStatus.normal, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, 1., creation_delay=1.),
+    # ET.PERMANENT: Alert(
+    #   tr(157),
+    #   "",
+    #   AlertStatus.normal, AlertSize.small,
+    #   Priority.LOW, VisualAlert.none, AudibleAlert.none, 1., creation_delay=1.),
     ET.NO_ENTRY: NoEntryAlert(tr(157)),
   },
 
