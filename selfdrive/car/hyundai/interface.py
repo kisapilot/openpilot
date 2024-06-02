@@ -145,6 +145,7 @@ class CarInterface(CarInterfaceBase):
       ret.autoHoldAvailable = False
       ret.lfaHdaAvailable = False
       ret.navAvailable = False
+      ret.adrvAvailable = 0x200 in fingerprint[CAN.ECAN]
     else:
       ret.enableBsm = 0x58b in fingerprint[0]
       ret.sccBus = 2 if int(Params().get("KISALongAlt", encoding="utf8")) in (1, 2) and not Params().get_bool("ExperimentalLongitudinalEnabled") else 0
@@ -156,6 +157,7 @@ class CarInterface(CarInterfaceBase):
       ret.autoHoldAvailable = 1151 in fingerprint[0]
       ret.lfaHdaAvailable = 1157 in fingerprint[0]
       ret.navAvailable = 1348 in fingerprint[0]
+      ret.adrvAvailable = False
 
     # *** panda safety config ***
     if candidate in CANFD_CAR:

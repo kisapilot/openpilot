@@ -715,7 +715,8 @@ class CarState(CarStateBase):
       ret.brakeHoldActive = cp.vl["ESP_STATUS"]["AUTO_HOLD"] == 1 and cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"] not in (1, 2)
       ret.autoHold = ret.brakeHoldActive
 
-      ret.cruiseState.gapSet = cp.vl["ADRV_0x200"]["TauGapSet"]
+      if self.CP.adrvAvailable:
+        ret.cruiseState.gapSet = cp.vl["ADRV_0x200"]["TauGapSet"]
       self.cruiseGapSet = ret.cruiseState.gapSet
       ret.cruiseGapSet = self.cruiseGapSet
       self.DistSet = cp_cruise_info.vl["SCC_CONTROL"]["DISTANCE_SETTING"] - 5 if cp_cruise_info.vl["SCC_CONTROL"]["DISTANCE_SETTING"] > 5 else cp_cruise_info.vl["SCC_CONTROL"]["DISTANCE_SETTING"]
@@ -862,7 +863,6 @@ class CarState(CarStateBase):
       ("ESP_STATUS", 100),
       ("TCS", 50),
       ("CRUISE_BUTTONS_ALT", 50),
-      ("ADRV_0x200", 20),
       ("TPMS", 5),
       ("BLINKERS", 4),
       ("DOORS_SEATBELTS", 4),
@@ -886,6 +886,11 @@ class CarState(CarStateBase):
     if not (CP.flags & HyundaiFlags.CANFD_CAMERA_SCC.value) and not CP.openpilotLongitudinalControl:
       messages += [
         ("SCC_CONTROL", 50),
+      ]
+
+    if CP.adrvAvailable:
+      messages += [
+        ("ADRV_0x200", 20),
       ]
 
     return CANParser(DBC[CP.carFingerprint]["pt"], messages, CanBus(CP).ECAN)
