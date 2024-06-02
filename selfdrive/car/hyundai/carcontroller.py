@@ -1388,7 +1388,7 @@ class CarController(CarControllerBase):
             pass
           else:
             for _ in range(self.standstill_res_count):
-              can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter, Buttons.RES_ACCEL, CS.cruise_btn_info))
+              can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter+1, Buttons.RES_ACCEL, CS.cruise_btn_info))
             self.last_button_frame = self.frame
             self.standstill_res_button = True
             self.cruise_gap_adjusting = False
@@ -1396,8 +1396,8 @@ class CarController(CarControllerBase):
             self.last_lead_distance = 0
             self.standstill_status_canfd = False
         elif standstill and not self.gap_by_spd_on and self.kisa_cruisegap_auto_adj and 1.0 not in (CS.cruiseGapSet, CS.DistSet):
-          if self.cruise_gap_prev == 0 and CS.DistSet != 1.0 and not self.cruise_gap_set_init:
-            self.cruise_gap_prev = CS.DistSet
+          if self.cruise_gap_prev == 0 and (CS.DistSet if CS.DistSet > 0 else CS.cruiseGapSet) != 1.0 and not self.cruise_gap_set_init:
+            self.cruise_gap_prev = CS.DistSet if CS.DistSet > 0 else CS.cruiseGapSet
             self.cruise_gap_set_init = True
             self.refresh_time = 1
           elif 1.0 not in (CS.cruiseGapSet, CS.DistSet) and self.cruise_gap_set_init:
@@ -1405,7 +1405,7 @@ class CarController(CarControllerBase):
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter, Buttons.GAP_DIST, CS.cruise_btn_info))
             self.last_button_frame = self.frame
             self.cruise_gap_adjusting = True
-            self.refresh_time = interp(CS.DistSet, [2,3,4], [randint(7, 9) * 0.1, randint(4, 6) * 0.1, randint(1, 3) * 0.1])
+            self.refresh_time = interp((CS.DistSet if CS.DistSet > 0 else CS.cruiseGapSet), [2,3,4], [randint(7, 9) * 0.1, randint(4, 6) * 0.1, randint(1, 3) * 0.1])
         elif self.kisa_variablecruise or self.try_early_stop or self.gap_by_spd_on and not resume_on:
           self.cruise_gap_adjusting = False
           self.cruise_gap_set_init = False
