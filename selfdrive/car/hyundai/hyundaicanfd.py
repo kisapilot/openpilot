@@ -55,6 +55,12 @@ def create_steering_messages(packer, CP, CAN, enabled, lat_active, steering_pres
       # a torque scale value? ramps up when steering, highest seen is 234
       # "UNKNOWN": 50 if lat_active and not steering_pressed else 0,
       "UNKNOWN": max_torque if lat_active else 0,
+      "NEW_SIGNAL_1": 10,
+      "NEW_SIGNAL_3": 9,
+      "NEW_SIGNAL_4": 1,
+      "NEW_SIGNAL_5": 1,
+      "NEW_SIGNAL_6": 1,
+      "NEW_SIGNAL_7": 1,
     }
   else:
     values = {
@@ -79,7 +85,7 @@ def create_steering_messages(packer, CP, CAN, enabled, lat_active, steering_pres
 
   return ret
 
-def create_suppress_lfa(packer, CAN, hda2_lfa_block_msg, hda2_alt_steering, enabled):
+def create_suppress_lfa(packer, CAN, hda2_lfa_block_msg, hda2_alt_steering, enabled, lfa_cnt):
   suppress_msg = "CAM_0x362" if hda2_alt_steering else "CAM_0x2a4"
   msg_bytes = 32 if hda2_alt_steering else 24
 

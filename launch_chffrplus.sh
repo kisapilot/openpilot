@@ -127,7 +127,7 @@ function launch {
   else echo -en "WD40" > /data/params/d/DrivingModel; fi
 
   # start manager
-  cd selfdrive/manager
+  cd system/manager
   if [ -f "/data/params/d/OSMEnable" ]; then
     OSM_ENABLE=$(cat /data/params/d/OSMEnable)
   fi

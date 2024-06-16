@@ -268,6 +268,7 @@ class CarController(CarControllerBase):
     self.refresh_time = 1
 
     # self.usf = 0
+    self.stock_lfa_counter = 0
 
     self.str_log2 = ''
 
@@ -688,8 +689,12 @@ class CarController(CarControllerBase):
 
       # prevent LFA from activating on HDA2 by sending "no lane lines detected" to ADAS ECU
       if self.frame % 5 == 0 and hda2:
+        if not CC.enabled:
+          self.stock_lfa_counter += 1 if self.stock_lfa_counter < 100 else 0
+        elif self.stock_lfa_counter:
+          self.stock_lfa_counter -= 1
         can_sends.append(hyundaicanfd.create_suppress_lfa(self.packer, self.CAN, CS.hda2_lfa_block_msg,
-                                                          self.CP.flags & HyundaiFlags.CANFD_HDA2_ALT_STEERING, CC.enabled))
+                                                          self.CP.flags & HyundaiFlags.CANFD_HDA2_ALT_STEERING, CC.enabled, bool(self.stock_lfa_counter)))
 
       # LFA and HDA icons
       updateLfaHdaIcons = (not hda2) or angle_control

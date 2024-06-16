@@ -6,7 +6,7 @@ import time
 import subprocess
 
 from openpilot.common.params import Params
-from openpilot.common.realtime import DT_TRML
+from openpilot.common.realtime import DT_HW
 
 # KisaPilot SW Updater
 
@@ -19,7 +19,7 @@ def sw_update_thread(end_event, nv_queue):
 
   while not end_event.is_set():
     # Custom commands
-    if (scount % int(1. / DT_TRML)) == 0:
+    if (scount % int(1. / DT_HW)) == 0:
       if params.get("RunCustomCommand") is not None and params.get("RunCustomCommand") != "0":
         if len(params.get("RunCustomCommand")) > 2:
           if p_order == 0:
@@ -408,7 +408,7 @@ def sw_update_thread(end_event, nv_queue):
                 lcount = 0
                 result.kill()
     scount += 1
-    time.sleep(DT_TRML)
+    time.sleep(DT_HW)
 
 
 def main():

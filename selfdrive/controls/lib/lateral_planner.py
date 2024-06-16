@@ -34,7 +34,7 @@ LATERAL_JERK_COST = 0.04
 STEERING_RATE_COST = 700.0
 
 class LateralPlanner:
-  def __init__(self, CP, debug=False):
+  def __init__(self, CP):
     self.DH = DesireHelper()
 
     self.params = Params()
@@ -58,8 +58,6 @@ class LateralPlanner:
 
     self.l_lane_change_prob = 0.0
     self.r_lane_change_prob = 0.0
-
-    self.debug_mode = debug
 
     self.lat_mpc = LateralMpc()
     self.reset_mpc(np.zeros(4))
@@ -452,14 +450,6 @@ class LateralPlanner:
 
       lateralPlan.mpcSolutionValid = bool(plan_solution_valid)
       lateralPlan.solverExecutionTime = self.lat_mpc.solve_time
-
-    if self.debug_mode:
-      if self.legacy_lane_mode:
-        lateralPlan.solverCost = self.lat_mpc.cost
-      lateralPlan.solverState = log.LateralPlan.SolverState.new_message()
-      if self.legacy_lane_mode:
-        lateralPlan.solverState.x = self.lat_mpc.x_sol.tolist()
-        lateralPlan.solverState.u = self.lat_mpc.u_sol.flatten().tolist()
 
     lateralPlan.desire = self.DH.desire
     lateralPlan.useLaneLines = False

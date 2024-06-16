@@ -1,6 +1,6 @@
-global_alertTextMsg1 = 'T1'
-global_alertTextMsg2 = 'T2'
-global_alertTextMsg3 = 'T3'
+global_alertTextMsg1 = ''
+global_alertTextMsg2 = ''
+global_alertTextMsg3 = ''
 
 
 def printf1( txt ):
