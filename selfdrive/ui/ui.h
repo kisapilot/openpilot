@@ -170,8 +170,6 @@ typedef struct UIScene {
   bool steer_warning;
   bool show_error;
   int display_maxspeed_time = 0;
-  bool mapbox_running;
-  bool mapbox_enabled;
   int navi_select;
   bool tmux_error_check = false;
   bool speedlimit_signtype;

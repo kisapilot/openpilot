@@ -87,20 +87,6 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       tr("Display speed in km/h instead of mph."),
       "../assets/offroad/icon_metric.png",
     },
-#ifdef ENABLE_MAPS
-    {
-      "NavSettingTime24h",
-      tr("Show ETA in 24h Format"),
-      tr("Use 24h format instead of am/pm"),
-      "../assets/offroad/icon_metric.png",
-    },
-    {
-      "NavSettingLeftSide",
-      tr("Show Map on Left Side of UI"),
-      tr("Show map on left side when in split screen view."),
-      "../assets/offroad/icon_road.png",
-    },
-#endif
   };
 
 
@@ -495,7 +481,7 @@ UIPanel::UIPanel(QWidget *parent) : QFrame(parent) {
   layout->addWidget(new ExternalDeviceIP());
   //layout->addWidget(new KISAServerSelect());
   //layout->addWidget(new KISAServerAPI());
-  layout->addWidget(new KISAMapboxStyle());
+  //layout->addWidget(new KISAMapboxStyle());
   layout->addWidget(horizontal_line());
   layout->addWidget(new KISABottomTextView());
   layout->addWidget(new RPMAnimatedToggle());
@@ -553,7 +539,7 @@ DeveloperPanel::DeveloperPanel(QWidget *parent) : QFrame(parent) {
   layout->addWidget(horizontal_line());
   layout->addWidget(new JoystickModeToggle());
   layout->addWidget(new UserSpecificFeature());
-  layout->addWidget(new MapboxToken());
+  //layout->addWidget(new MapboxToken());
 
   layout->addWidget(horizontal_line());
   layout->addWidget(new CarSelectCombo());

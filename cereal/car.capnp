@@ -51,7 +51,6 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     parkBrake @29;
     manualRestart @30;
     lowSpeedLockout @31;
-    plannerError @32;
     joystickDebug @34;
     steerTempUnavailableSilent @35;
     resumeRequired @36;
@@ -117,6 +116,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     paramsdTemporaryError @50;
     paramsdPermanentError @119;
     actuatorsApiUnavailable @120;
+    espActive @121;
 
     radarCanErrorDEPRECATED @15;
     communityFeatureDisallowedDEPRECATED @62;
@@ -142,36 +142,37 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     startupFuzzyFingerprintDEPRECATED @97;
     noTargetDEPRECATED @25;
     brakeUnavailableDEPRECATED @2;
+    plannerError @32;
     gpsMalfunctionDEPRECATED @94;
 
-    laneChangeManual @121;
-    emgButtonManual @122;
-    driverSteering @123;
-    modeChangeOpenpilot @124;
-    modeChangeDistcurv @125;
-    modeChangeDistance @126;
-    modeChangeCurv @127;
-    modeChangeOneway @128;
-    modeChangeMaponly @129;
-    needBrake @130;
-    standStill @131;
-    e2eLongAlert @132;
-    isgActive @133;
-    camSpeedDown @134;
-    gapAdjusting @135;
-    resCruise @136;
-    curvSpeedDown @137;
-    standstillResButton @138;
-    routineDriveOn @139;
-    lkasEnabled @140;
-    cutinDetection @141;
-    gearNotD @142;
-    unSleepMode @143;
-    speedBump @144;
-    sccDriverOverride @145;
-    doNotDisturb @146;
-    chimeAtResume @147;
-    autoHold @148;
+    laneChangeManual @122;
+    emgButtonManual @123;
+    driverSteering @124;
+    modeChangeOpenpilot @125;
+    modeChangeDistcurv @126;
+    modeChangeDistance @127;
+    modeChangeCurv @128;
+    modeChangeOneway @129;
+    modeChangeMaponly @130;
+    needBrake @131;
+    standStill @132;
+    e2eLongAlert @133;
+    isgActive @134;
+    camSpeedDown @135;
+    gapAdjusting @136;
+    resCruise @137;
+    curvSpeedDown @138;
+    standstillResButton @139;
+    routineDriveOn @140;
+    lkasEnabled @141;
+    cutinDetection @142;
+    gearNotD @143;
+    unSleepMode @144;
+    speedBump @145;
+    sccDriverOverride @146;
+    doNotDisturb @147;
+    chimeAtResume @148;
+    autoHold @149;
   }
 }
 
@@ -223,6 +224,7 @@ struct CarState {
   espDisabled @32 :Bool;
   accFaulted @42 :Bool;
   carFaultedNonCritical @47 :Bool;  # some ECU is faulted, but car remains controllable
+  espActive @51 :Bool;
 
   # cruise state
   cruiseState @10 :CruiseState;
@@ -253,26 +255,24 @@ struct CarState {
   # process meta
   cumLagMs @50 :Float32;
 
-  tpms @51 :TPMS;
-
-  radarDRel @52 :Float32;
-  radarVRel @53 :Float32;
-  standStill @54 :Bool;
-  vSetDis @55 :Float32;
-  cruiseButtons @56 :Float32;
-  cruiseAccStatus @57 :Bool;
-  driverAcc @58 :Bool;
-  autoHold @59 :Bool;    # AutoHold
-  cruiseGapSet @60 :UInt8;
-
-  safetyDist @61 :Float32;
-  safetySign @62 :Float32;
-  vEgoOP @63 :Float32;  # openpilot speed
-  gearStep @64 :Int8;
-  isMph @65 :Bool;
-  aReqValue @66 :Float32;
-  chargeMeter @67 :Float32;
-  brakeLights @68 :Bool;
+  tpms @52 :TPMS;
+  radarDRel @53 :Float32;
+  radarVRel @54 :Float32;
+  standStill @55 :Bool;
+  vSetDis @56 :Float32;
+  cruiseButtons @57 :Float32;
+  cruiseAccStatus @58 :Bool;
+  driverAcc @59 :Bool;
+  autoHold @60 :Bool;    # AutoHold
+  cruiseGapSet @61 :UInt8;
+  safetyDist @62 :Float32;
+  safetySign @63 :Float32;
+  vEgoOP @64 :Float32;  # openpilot speed
+  gearStep @65 :Int8;
+  isMph @66 :Bool;
+  aReqValue @67 :Float32;
+  chargeMeter @68 :Float32;
+  brakeLights @69 :Bool;
 
   struct TPMS {
     unit @0 :Int8;
@@ -422,7 +422,6 @@ struct CarControl {
     longControlState @5: LongControlState;
 
     oaccel @9: Float32; # m/s^2
-
     safetySpeed @10: Float32; 
     lkasTemporaryOff @11: Bool;
     gapBySpdOnTemp @12: Bool;
@@ -527,12 +526,9 @@ struct CarParams {
   enableBsm @56 :Bool;       # blind spot monitoring
   flags @64 :UInt32;         # flags for car specific quirks
   experimentalLongitudinalAvailable @71 :Bool;
-  experimentalLong @74 :Bool;
-  experimentalLongAlt @75 :Bool;
 
   minEnableSpeed @7 :Float32;
   minSteerSpeed @8 :Float32;
-  smoothSteer @76 :SmoothSteerData;
   safetyConfigs @62 :List(SafetyConfig);
   alternativeExperience @65 :Int16;      # panda flag for features like no disengage on gas
 
@@ -560,7 +556,7 @@ struct CarParams {
     indi @27 :LateralINDITuning;
     lqr @40 :LateralLQRTuning;
     torque @67 :LateralTorqueTuning;
-    atom @77 :LateralATOMTuning;
+    atom @74 :LateralATOMTuning;
   }
 
   steerLimitAlert @28 :Bool;
@@ -598,6 +594,9 @@ struct CarParams {
     safetyParam2DEPRECATED @2 :UInt32;
   }
 
+  experimentalLong @75 :Bool;
+  experimentalLongAlt @76 :Bool;
+  smoothSteer @77 :SmoothSteerData;
   mdpsBus @78: Int8;
   sasBus @79: Int8;
   sccBus @80: Int8;

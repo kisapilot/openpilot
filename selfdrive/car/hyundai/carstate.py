@@ -479,6 +479,8 @@ class CarState(CarStateBase):
       self.lead_objspd = lead_objspd * CV.MS_TO_KPH
 
       ret.accFaulted = cp.vl["TCS13"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
+      ret.espDisabled = cp.vl["TCS11"]["TCS_PAS"] == 1
+      ret.espActive = cp.vl["TCS11"]["ABS_ACT"] == 1
 
     ret.cruiseState.accActive = self.acc_active
     ret.cruiseState.cruiseSwState = self.cruise_buttons[-1]
@@ -768,7 +770,7 @@ class CarState(CarStateBase):
     messages = [
       # address, frequency
       ("MDPS12", 50),
-      ("SAS11", 100),
+      ("TCS11", 100),
       ("TCS13", 50),
       ("TCS15", 10),
       ("CLU11", 50),
@@ -778,6 +780,7 @@ class CarState(CarStateBase):
       ("CGW2", 5),
       ("CGW4", 5),
       ("WHL_SPD11", 50),
+      ("SAS11", 100),
       ("TPMS11", 0),
     ]
 

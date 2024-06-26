@@ -284,11 +284,6 @@ class ENavi:
           if self.kisa_lat and self.kisa_lon and self.kisa_lat != self.kisa_lat_prev and self.kisa_lon != self.kisa_lon_prev:
             self.dest_changed = True
             self.dest_changed_count = 0
-            try:
-              self.params.remove("NavDestination")
-              self.params.remove("NavDestinationWaypoints")
-            except:
-              pass
             self.kisa_lat_prev = self.kisa_lat
             self.kisa_lon_prev = self.kisa_lon
             kisa_lat_ = float(self.kisa_lat)
@@ -299,8 +294,6 @@ class ENavi:
             self.dest_changed_count += 1
             if self.dest_changed_count > 2:
               self.dest_changed = False
-              self.params.put_nonblocking("NavDestination", json.dumps(self.dest))
-              self.params.put_nonblocking("NavDestinationWaypoints", json.dumps(self.waypoints))
         elif self.navi_selection == 2:
           if "kisawazereportid" in line:
             arr = line.split('kisawazereportid: ')
@@ -389,11 +382,6 @@ class ENavi:
           if self.waze_lat and self.waze_lon and self.waze_lat != self.waze_lat_prev and self.waze_lon != self.waze_lon_prev:
             self.dest_changed = True
             self.dest_changed_count = 0
-            try:
-              self.params.remove("NavDestination")
-              self.params.remove("NavDestinationWaypoints")
-            except:
-              pass
             self.waze_lat_prev = self.waze_lat
             self.waze_lon_prev = self.waze_lon
             waze_lat_ = float(self.waze_lat)
@@ -404,8 +392,6 @@ class ENavi:
             self.dest_changed_count += 1
             if self.dest_changed_count > 2:
               self.dest_changed = False
-              self.params.put_nonblocking("NavDestination", json.dumps(self.dest))
-              self.params.put_nonblocking("NavDestinationWaypoints", json.dumps(self.waypoints))
 
         if self.KISA_Debug:
           try:

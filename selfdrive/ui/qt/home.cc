@@ -9,10 +9,6 @@
 #include "selfdrive/ui/qt/util.h"
 #include "selfdrive/ui/qt/widgets/prime.h"
 
-#ifdef ENABLE_MAPS
-#include "selfdrive/ui/qt/maps/map_settings.h"
-#endif
-
 // HomeWindow: the container for the offroad and onroad UIs
 
 HomeWindow::HomeWindow(QWidget* parent) : QWidget(parent) {
@@ -326,28 +322,28 @@ void HomeWindow::mousePressEvent(QMouseEvent* e)
   QRect livetunepanel_right_btn = QRect(1360, 745, 210, 170);
 
   QRect stockui_btn = QRect(15, uiState()->scene.low_ui_profile?693:15, 184, 202);
-  QRect tuneui_btn = QRect(1420, uiState()->scene.low_ui_profile||uiState()->scene.mapbox_enabled?15:895, 160, 160);
+  QRect tuneui_btn = QRect(1420, uiState()->scene.low_ui_profile?15:895, 160, 160);
   QRect speedlimit_btn = QRect(220, uiState()->scene.low_ui_profile?700:15, 190, 190);
   QRect monitoring_btn = QRect(20, uiState()->scene.low_ui_profile?20:860, 190, 190);
-  QRect multi_btn = QRect(1960, uiState()->scene.low_ui_profile||uiState()->scene.mapbox_enabled?15:895, 160, 160);
-  QRect rec_btn = QRect(1780, uiState()->scene.low_ui_profile||uiState()->scene.mapbox_enabled?15:895, 160, 160);
-  QRect laneless_btn = QRect(1600, uiState()->scene.low_ui_profile||uiState()->scene.mapbox_enabled?15:895, 160, 160);
+  QRect multi_btn = QRect(1960, uiState()->scene.low_ui_profile?15:895, 160, 160);
+  QRect rec_btn = QRect(1780, uiState()->scene.low_ui_profile?15:895, 160, 160);
+  QRect laneless_btn = QRect(1600, uiState()->scene.low_ui_profile?15:895, 160, 160);
 
   printf( "mousePressEvent = (%d,%d)\n", e->x(), e->y() );
 
   // KISA Multi Button
-  if (uiState()->scene.started && !sidebar->isVisible() && uiState()->scene.comma_stock_ui != 1 && multi_btn.contains(e->pos()) && !uiState()->scene.mapbox_running) {
+  if (uiState()->scene.started && !sidebar->isVisible() && uiState()->scene.comma_stock_ui != 1 && multi_btn.contains(e->pos())) {
     uiState()->scene.multi_btn_touched = !uiState()->scene.multi_btn_touched;
     return;
   }
   // // KISA REC
-  // if (uiState()->scene.started && !sidebar->isVisible() && uiState()->scene.comma_stock_ui != 1 && rec_btn.contains(e->pos()) && !uiState()->scene.mapbox_running &&
+  // if (uiState()->scene.started && !sidebar->isVisible() && uiState()->scene.comma_stock_ui != 1 && rec_btn.contains(e->pos()) &&
   //     uiState()->scene.multi_btn_touched) {
   //   uiState()->scene.touched = true;
   //   return;
   // }
   // Laneless mode
-  if (uiState()->scene.started && !sidebar->isVisible() && uiState()->scene.comma_stock_ui != 1 && laneless_btn.contains(e->pos()) && !uiState()->scene.mapbox_running &&
+  if (uiState()->scene.started && !sidebar->isVisible() && uiState()->scene.comma_stock_ui != 1 && laneless_btn.contains(e->pos()) &&
       uiState()->scene.multi_btn_touched) {
     uiState()->scene.laneless_mode = uiState()->scene.laneless_mode + 1;
     if (uiState()->scene.laneless_mode > 2) {
@@ -363,7 +359,7 @@ void HomeWindow::mousePressEvent(QMouseEvent* e)
     return;
   }
   // Monitoring mode
-  if (uiState()->scene.started && !sidebar->isVisible() && monitoring_btn.contains(e->pos()) && !uiState()->scene.mapbox_running) {
+  if (uiState()->scene.started && !sidebar->isVisible() && monitoring_btn.contains(e->pos())) {
     uiState()->scene.monitoring_mode = !uiState()->scene.monitoring_mode;
     if (uiState()->scene.monitoring_mode) {
       Params().putBool("KisaMonitoringMode", true);
@@ -373,7 +369,7 @@ void HomeWindow::mousePressEvent(QMouseEvent* e)
     return;
   }
   // Stock UI Toggle
-  if (uiState()->scene.started && !sidebar->isVisible() && stockui_btn.contains(e->pos()) && !uiState()->scene.mapbox_running) {
+  if (uiState()->scene.started && !sidebar->isVisible() && stockui_btn.contains(e->pos())) {
     uiState()->scene.comma_stock_ui = uiState()->scene.comma_stock_ui + 1;
     if (uiState()->scene.do_not_disturb_mode > 0) {
       if (uiState()->scene.comma_stock_ui > 2) {
@@ -397,7 +393,7 @@ void HomeWindow::mousePressEvent(QMouseEvent* e)
     return;
   }
   // LiveTune UI Toggle
-  if (uiState()->scene.started && !sidebar->isVisible() && uiState()->scene.comma_stock_ui != 1 && tuneui_btn.contains(e->pos()) && !uiState()->scene.mapbox_running &&
+  if (uiState()->scene.started && !sidebar->isVisible() && uiState()->scene.comma_stock_ui != 1 && tuneui_btn.contains(e->pos()) &&
       uiState()->scene.multi_btn_touched) {
     uiState()->scene.kisa_livetune_ui = !uiState()->scene.kisa_livetune_ui;
     if (uiState()->scene.kisa_livetune_ui) {
@@ -411,7 +407,7 @@ void HomeWindow::mousePressEvent(QMouseEvent* e)
   }
 
   // SpeedLimit Decel on/off Toggle
-  if (uiState()->scene.started && !sidebar->isVisible() && speedlimit_btn.contains(e->pos()) && !uiState()->scene.mapbox_running) {
+  if (uiState()->scene.started && !sidebar->isVisible() && speedlimit_btn.contains(e->pos())) {
     uiState()->scene.sl_decel_off = !uiState()->scene.sl_decel_off;
     if (uiState()->scene.sl_decel_off) {
       Params().putBool("SpeedLimitDecelOff", true);
@@ -548,13 +544,17 @@ OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
     home_layout->setContentsMargins(0, 0, 0, 0);
     home_layout->setSpacing(30);
 
-    // left: MapSettings/PrimeAdWidget
+    // left: PrimeAdWidget
     QStackedWidget *left_widget = new QStackedWidget(this);
-#ifdef ENABLE_MAPS
-    left_widget->addWidget(new MapSettings);
-#else
-    left_widget->addWidget(new QWidget);
-#endif
+    QVBoxLayout *left_prime_layout = new QVBoxLayout();
+    QWidget *prime_user = new PrimeUserWidget();
+    prime_user->setStyleSheet(R"(
+    border-radius: 10px;
+    background-color: #333333;
+    )");
+    left_prime_layout->addWidget(prime_user);
+    left_prime_layout->addStretch();
+    left_widget->addWidget(new LayoutWidget(left_prime_layout));
     left_widget->addWidget(new PrimeAdWidget);
     left_widget->setStyleSheet("border-radius: 10px;");
 

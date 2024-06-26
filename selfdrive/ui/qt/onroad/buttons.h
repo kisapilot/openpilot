@@ -36,20 +36,4 @@ private:
   bool engageable;
 };
 
-
-class MapSettingsButton : public QPushButton {
-  Q_OBJECT
-
-public:
-  explicit MapSettingsButton(QWidget *parent = 0);
-  void updateState(const UIState &s);
-
-private:
-  void paintEvent(QPaintEvent *event) override;
-
-  QPixmap settings_img;
-  QPixmap settings_img_g;
-  bool navi_is_alive = false;
-};
-
 void drawIcon(QPainter &p, const QPoint &center, const QPixmap &img, const QBrush &bg, float opacity);

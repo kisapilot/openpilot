@@ -24,9 +24,6 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
   experimental_btn->hide();
   // main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
 
-  map_settings_btn = new MapSettingsButton(this);
-  main_layout->addWidget(map_settings_btn, 0, Qt::AlignBottom | Qt::AlignRight);
-
   dm_img = loadPixmap("../assets/img_driver_face.png", {img_size + 5, img_size + 5});
 
   engage_img = loadPixmap("../assets/img_chffr_wheel.png", {img_size, img_size});
@@ -91,27 +88,12 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   // update engageability/experimental mode button
   experimental_btn->updateState(s);
 
-  // enavi connection update
-  map_settings_btn->updateState(s);
-
   // update DM icon
   auto dm_state = sm["driverMonitoringState"].getDriverMonitoringState();
   dmActive = dm_state.getIsActiveMode();
   rightHandDM = dm_state.getIsRHD();
   // DM icon transition
   dm_fade_state = std::clamp(dm_fade_state+0.2*(0.5-dmActive), 0.0, 1.0);
-
-  // hide map settings button for alerts and flip for right hand DM
-  if (map_settings_btn->isEnabled()) {
-    map_settings_btn->setVisible(!hideBottomIcons);
-    main_layout->setAlignment(map_settings_btn, (rightHandDM ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignBottom);
-  }
-
-  if (s.scene.live_tune_panel_enable) {
-    map_settings_btn->setEnabled(false);
-  } else if (s.scene.mapbox_enabled) {
-    map_settings_btn->setEnabled(true);
-  }
 
   // kisapilot
   over_sl = s.scene.limitSpeedCamera > 19 && ((s.scene.car_state.getVEgo() * (s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH)) > s.scene.ctrl_speed+1.5);
@@ -297,18 +279,18 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   int ui_viz_rx_center = s->fb_w/2;
 
   // debug
-  int debug_y1 = 1015-UI_BORDER_SIZE+(s->scene.mapbox_running ? 18:0)-(s->scene.animated_rpm?60:0);
-  int debug_y2 = 1050-UI_BORDER_SIZE+(s->scene.mapbox_running ? 8:0)-(s->scene.animated_rpm?60:0);
-  int debug_y3 = 981-UI_BORDER_SIZE+(s->scene.mapbox_running ? 28:0)-(s->scene.animated_rpm?60:0);
+  int debug_y1 = 1015-UI_BORDER_SIZE-(s->scene.animated_rpm?60:0);
+  int debug_y2 = 1050-UI_BORDER_SIZE-(s->scene.animated_rpm?60:0);
+  int debug_y3 = 981-UI_BORDER_SIZE-(s->scene.animated_rpm?60:0);
   if (s->scene.nDebugUi1 && s->scene.comma_stock_ui != 1) {
-    p.setFont(InterFont(s->scene.mapbox_running?25:30, QFont::DemiBold));
-    uiText(p, s->scene.low_ui_profile?(s->scene.mapbox_running?275:320):205, debug_y1, s->scene.alertTextMsg1.c_str());
-    uiText(p, s->scene.low_ui_profile?(s->scene.mapbox_running?275:320):205, debug_y2, s->scene.alertTextMsg2.c_str());
-    uiText(p, s->scene.low_ui_profile?(s->scene.mapbox_running?275:320):205, debug_y3, s->scene.alertTextMsg3.c_str());
+    p.setFont(InterFont(30, QFont::DemiBold));
+    uiText(p, s->scene.low_ui_profile?320:205, debug_y1, s->scene.alertTextMsg1.c_str());
+    uiText(p, s->scene.low_ui_profile?320:205, debug_y2, s->scene.alertTextMsg2.c_str());
+    uiText(p, s->scene.low_ui_profile?320:205, debug_y3, s->scene.alertTextMsg3.c_str());
   }
   if (s->scene.nDebugUi3 && s->scene.comma_stock_ui != 1) {
-    p.setFont(InterFont(s->scene.mapbox_running?26:35, QFont::DemiBold));
-    uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), ui_viz_ry+560,
+    p.setFont(InterFont(35, QFont::DemiBold));
+    uiText(p, ui_viz_rx+400, ui_viz_ry+560,
     "0: " + QString::number(s->scene.longitudinalPlan.lead0[0], 'f', 2) +
     // " "   + QString::number(s->scene.longitudinalPlan.lead0[1], 'f', 2) +
     // " "   + QString::number(s->scene.longitudinalPlan.lead0[2], 'f', 2) +
@@ -322,7 +304,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     // " "   + QString::number(s->scene.longitudinalPlan.lead0[10], 'f', 2) +
     // " "   + QString::number(s->scene.longitudinalPlan.lead0[11], 'f', 2) +
     " "   + QString::number(s->scene.longitudinalPlan.lead0[12], 'f', 2));
-    uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), ui_viz_ry+600,
+    uiText(p, ui_viz_rx+400, ui_viz_ry+600,
     "1: " + QString::number(s->scene.longitudinalPlan.lead1[0], 'f', 2) +
     // " "   + QString::number(s->scene.longitudinalPlan.lead1[1], 'f', 2) +
     // " "   + QString::number(s->scene.longitudinalPlan.lead1[2], 'f', 2) +
@@ -336,7 +318,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     // " "   + QString::number(s->scene.longitudinalPlan.lead1[10], 'f', 2) +
     // " "   + QString::number(s->scene.longitudinalPlan.lead1[11], 'f', 2) +
     " "   + QString::number(s->scene.longitudinalPlan.lead1[12], 'f', 2));
-    uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), ui_viz_ry+640,
+    uiText(p, ui_viz_rx+400, ui_viz_ry+640,
     "C: " + QString::number(s->scene.longitudinalPlan.cruisetg[0], 'f', 2) +
     // " "   + QString::number(s->scene.longitudinalPlan.cruisetg[1], 'f', 2) +
     // " "   + QString::number(s->scene.longitudinalPlan.cruisetg[2], 'f', 2) +
@@ -350,7 +332,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     // " "   + QString::number(s->scene.longitudinalPlan.cruisetg[10], 'f', 2) +
     // " "   + QString::number(s->scene.longitudinalPlan.cruisetg[11], 'f', 2) +
     " "   + QString::number(s->scene.longitudinalPlan.cruisetg[12], 'f', 2));
-    uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), ui_viz_ry+680,
+    uiText(p, ui_viz_rx+400, ui_viz_ry+680,
     "X: " + QString::number(s->scene.longitudinalPlan.e2ex[0], 'f', 2) +
     // " "   + QString::number(s->scene.longitudinalPlan.e2ex[1], 'f', 2) +
     // " "   + QString::number(s->scene.longitudinalPlan.e2ex[2], 'f', 2) +
@@ -366,32 +348,32 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     " "   + QString::number(s->scene.longitudinalPlan.e2ex[12], 'f', 2));
   }
   if (s->scene.KISA_Debug && s->scene.comma_stock_ui != 1) {
-    p.setFont(InterFont(s->scene.mapbox_running?26:35, QFont::DemiBold));
-    uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), s->scene.low_ui_profile?ui_viz_ry+240:ui_viz_ry+280, "CAR:" + QString::fromStdString(s->scene.car_fingerprint));
-    uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), s->scene.low_ui_profile?ui_viz_ry+280:ui_viz_ry+320, "PSM:" + QString::fromStdString(s->scene.controls_state.getPandaSafetyModel()) +
+    p.setFont(InterFont(35, QFont::DemiBold));
+    uiText(p, ui_viz_rx+400, s->scene.low_ui_profile?ui_viz_ry+240:ui_viz_ry+280, "CAR:" + QString::fromStdString(s->scene.car_fingerprint));
+    uiText(p, ui_viz_rx+400, s->scene.low_ui_profile?ui_viz_ry+280:ui_viz_ry+320, "PSM:" + QString::fromStdString(s->scene.controls_state.getPandaSafetyModel()) +
      "/ISM:" + QString::fromStdString(s->scene.controls_state.getInterfaceSafetyModel()));
-    uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), s->scene.low_ui_profile?ui_viz_ry+320:ui_viz_ry+360, "RXC:" + QString::number(int(s->scene.controls_state.getRxChecks())) +
+    uiText(p, ui_viz_rx+400, s->scene.low_ui_profile?ui_viz_ry+320:ui_viz_ry+360, "RXC:" + QString::number(int(s->scene.controls_state.getRxChecks())) +
      "/MCT:" + QString::number(int(s->scene.controls_state.getMismatchCounter())));
-    uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), s->scene.low_ui_profile?ui_viz_ry+360:ui_viz_ry+400, "PTY:" + QString::number(int(s->scene.pandaType)) +
+    uiText(p, ui_viz_rx+400, s->scene.low_ui_profile?ui_viz_ry+360:ui_viz_ry+400, "PTY:" + QString::number(int(s->scene.pandaType)) +
      "/IGN:" + QString::number(int(s->scene.ignition)));
-    uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), s->scene.low_ui_profile?ui_viz_ry+400:ui_viz_ry+440, "CAW:" + QString::number(int(s->scene.controlAllowed)) +
+    uiText(p, ui_viz_rx+400, s->scene.low_ui_profile?ui_viz_ry+400:ui_viz_ry+440, "CAW:" + QString::number(int(s->scene.controlAllowed)) +
      "/ENA:" + QString::number(int(s->scene.enabled)));
-    uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), s->scene.low_ui_profile?ui_viz_ry+440:ui_viz_ry+480, "STK:" + QString::number(int(s->scene.stock_lkas_on_disengagement)) +
+    uiText(p, ui_viz_rx+400, s->scene.low_ui_profile?ui_viz_ry+440:ui_viz_ry+480, "STK:" + QString::number(int(s->scene.stock_lkas_on_disengagement)) +
      "/UFC:" + QString::number(int(s->scene.ufc_mode)));
-    uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), s->scene.low_ui_profile?ui_viz_ry+480:ui_viz_ry+520, "MDL:" + s->scene.model_name);
-    // uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), ui_viz_ry+400, "0: " + QString::fromStdString(s->scene.liveENaviData.ekisa0));
-    // uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), ui_viz_ry+440, "1: " + QString::fromStdString(s->scene.liveENaviData.ekisa1));
-    // uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), ui_viz_ry+480, "2: " + QString::fromStdString(s->scene.liveENaviData.ekisa2));
-    // uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), ui_viz_ry+520, "3: " + QString::fromStdString(s->scene.liveENaviData.ekisa3));
-    // uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), ui_viz_ry+560, "4: " + QString::fromStdString(s->scene.liveENaviData.ekisa4));
-    // uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), ui_viz_ry+600, "5: " + QString::fromStdString(s->scene.liveENaviData.ekisa5));
-    // uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), ui_viz_ry+640, "6: " + QString::fromStdString(s->scene.liveENaviData.ekisa6));
-    // uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), ui_viz_ry+680, "7: " + QString::fromStdString(s->scene.liveENaviData.ekisa7));
-    // uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), ui_viz_ry+720, "8: " + QString::fromStdString(s->scene.liveENaviData.ekisa8));
-    // uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 300:400), ui_viz_ry+760, "9: " + QString::fromStdString(s->scene.liveENaviData.ekisa9));
+    uiText(p, ui_viz_rx+400, s->scene.low_ui_profile?ui_viz_ry+480:ui_viz_ry+520, "MDL:" + s->scene.model_name);
+    // uiText(p, ui_viz_rx+400, ui_viz_ry+400, "0: " + QString::fromStdString(s->scene.liveENaviData.ekisa0));
+    // uiText(p, ui_viz_rx+400, ui_viz_ry+440, "1: " + QString::fromStdString(s->scene.liveENaviData.ekisa1));
+    // uiText(p, ui_viz_rx+400, ui_viz_ry+480, "2: " + QString::fromStdString(s->scene.liveENaviData.ekisa2));
+    // uiText(p, ui_viz_rx+400, ui_viz_ry+520, "3: " + QString::fromStdString(s->scene.liveENaviData.ekisa3));
+    // uiText(p, ui_viz_rx+400, ui_viz_ry+560, "4: " + QString::fromStdString(s->scene.liveENaviData.ekisa4));
+    // uiText(p, ui_viz_rx+400, ui_viz_ry+600, "5: " + QString::fromStdString(s->scene.liveENaviData.ekisa5));
+    // uiText(p, ui_viz_rx+400, ui_viz_ry+640, "6: " + QString::fromStdString(s->scene.liveENaviData.ekisa6));
+    // uiText(p, ui_viz_rx+400, ui_viz_ry+680, "7: " + QString::fromStdString(s->scene.liveENaviData.ekisa7));
+    // uiText(p, ui_viz_rx+400, ui_viz_ry+720, "8: " + QString::fromStdString(s->scene.liveENaviData.ekisa8));
+    // uiText(p, ui_viz_rx+400, ui_viz_ry+760, "9: " + QString::fromStdString(s->scene.liveENaviData.ekisa9));
   }
   if (s->scene.nDebugUi2 && s->scene.comma_stock_ui != 1) {
-    p.setFont(InterFont(s->scene.mapbox_running?26:35, QFont::DemiBold));
+    p.setFont(InterFont(35, QFont::DemiBold));
     if (!s->scene.low_ui_profile) {
       uiText(p, ui_viz_rx, ui_viz_ry+240, "SR:" + QString::number(s->scene.liveParams.steerRatio, 'f', 2));
     } else {
@@ -461,12 +443,12 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       if (s->scene.liveENaviData.ewazenavdistance) uiText(p, ui_viz_rx, ui_viz_ry+720, "ND:" + QString::number(s->scene.liveENaviData.ewazenavdistance, 'f', 0));
     }
     if (s->scene.osm_enabled && !s->scene.KISA_Debug) {
-      uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 150:200), ui_viz_ry+240, "SL:" + QString::number(s->scene.liveMapData.ospeedLimit, 'f', 0));
-      uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 150:200), ui_viz_ry+280, "SLA:" + QString::number(s->scene.liveMapData.ospeedLimitAhead, 'f', 0));
-      uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 150:200), ui_viz_ry+320, "SLAD:" + QString::number(s->scene.liveMapData.ospeedLimitAheadDistance, 'f', 0));
-      uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 150:200), ui_viz_ry+360, "TSL:" + QString::number(s->scene.liveMapData.oturnSpeedLimit, 'f', 0));
-      uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 150:200), ui_viz_ry+400, "TSLED:" + QString::number(s->scene.liveMapData.oturnSpeedLimitEndDistance, 'f', 0));
-      uiText(p, ui_viz_rx+(s->scene.mapbox_running ? 150:200), ui_viz_ry+440, "TSLS:" + QString::number(s->scene.liveMapData.oturnSpeedLimitSign, 'f', 0));
+      uiText(p, ui_viz_rx+200, ui_viz_ry+240, "SL:" + QString::number(s->scene.liveMapData.ospeedLimit, 'f', 0));
+      uiText(p, ui_viz_rx+200, ui_viz_ry+280, "SLA:" + QString::number(s->scene.liveMapData.ospeedLimitAhead, 'f', 0));
+      uiText(p, ui_viz_rx+200, ui_viz_ry+320, "SLAD:" + QString::number(s->scene.liveMapData.ospeedLimitAheadDistance, 'f', 0));
+      uiText(p, ui_viz_rx+200, ui_viz_ry+360, "TSL:" + QString::number(s->scene.liveMapData.oturnSpeedLimit, 'f', 0));
+      uiText(p, ui_viz_rx+200, ui_viz_ry+400, "TSLED:" + QString::number(s->scene.liveMapData.oturnSpeedLimitEndDistance, 'f', 0));
+      uiText(p, ui_viz_rx+200, ui_viz_ry+440, "TSLS:" + QString::number(s->scene.liveMapData.oturnSpeedLimitSign, 'f', 0));
     }
   }
 
@@ -793,7 +775,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
 
 
-  if (s->scene.comma_stock_ui != 1 && !s->scene.mapbox_running) {
+  if (s->scene.comma_stock_ui != 1) {
     // kisapilot rec
     // QRect recbtn_draw(rect().right() - UI_BORDER_SIZE - 140 - 20, 905, 140, 140);
     // p.setBrush(Qt::NoBrush);
@@ -809,7 +791,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     int m_btn_size = 160;
     int m_btn_offset = 10;
     int m_btn_center_x = rect().right() - UI_BORDER_SIZE - m_btn_size / 2 - m_btn_offset;
-    int m_btn_center_y = (s->scene.low_ui_profile || s->scene.mapbox_enabled)?(UI_BORDER_SIZE + m_btn_size / 2 + m_btn_offset):(height()-UI_BORDER_SIZE-m_btn_size/2-m_btn_offset);
+    int m_btn_center_y = s->scene.low_ui_profile?(UI_BORDER_SIZE + m_btn_size / 2 + m_btn_offset):(height()-UI_BORDER_SIZE-m_btn_size/2-m_btn_offset);
     int m_x = m_btn_center_x - m_btn_size/2;
     int m_y = m_btn_center_y - m_btn_size/2;
     QRect multi_btn_draw(m_x, m_y, m_btn_size, m_btn_size);
@@ -876,9 +858,9 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     minute = int(s->scene.lateralPlan.standstillElapsedTime / 60);
     second = int(s->scene.lateralPlan.standstillElapsedTime) - (minute * 60);
     p.setPen(ochreColor(220));
-    debugText(p, s->scene.mapbox_running?(rect().right()-UI_BORDER_SIZE-325):(rect().right()-UI_BORDER_SIZE-545), UI_BORDER_SIZE+420, "STOP", 220, s->scene.mapbox_running?90:135);
+    debugText(p, rect().right()-UI_BORDER_SIZE-545, UI_BORDER_SIZE+420, "STOP", 220, 135);
     p.setPen(whiteColor(220));
-    debugText(p, s->scene.mapbox_running?(rect().right()-UI_BORDER_SIZE-325):(rect().right()-UI_BORDER_SIZE-545), s->scene.mapbox_running?UI_BORDER_SIZE+500:UI_BORDER_SIZE+550, QString::number(minute).rightJustified(2,'0') + ":" + QString::number(second).rightJustified(2,'0'), 220, s->scene.mapbox_running?95:140);
+    debugText(p, rect().right()-UI_BORDER_SIZE-545, UI_BORDER_SIZE+550, QString::number(minute).rightJustified(2,'0') + ":" + QString::number(second).rightJustified(2,'0'), 220, 140);
   }
 
   // kisapilot autohold
@@ -907,7 +889,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     float bh = 0;
     if (s->scene.leftBlinker) {
       bw = 250;
-      bx = s->scene.mapbox_running?(s->fb_w/2 - 30):(s->fb_w/2 - bw/2 - 65);
+      bx = s->fb_w/2 - bw/2 - 65;
       bh = s->scene.low_ui_profile?height()/2:200;
       QPointF leftbsign1[] = {{bx, bh-100}, {bx-bw/4, bh-100}, {bx-bw/2, bh}, {bx-bw/4, bh+100}, {bx, bh+100}, {bx-bw/4, bh}};
       bx -= 125;
@@ -930,7 +912,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
     if (s->scene.rightBlinker) {
       bw = 250;
-      bx = s->scene.mapbox_running?(s->fb_w/2 + 30):(s->fb_w/2 - bw/2 + bw + 65);
+      bx = s->fb_w/2 - bw/2 + bw + 65;
       bh = s->scene.low_ui_profile?height()/2:200;
       QPointF rightbsign1[] = {{bx, bh-100}, {bx+bw/4, bh-100}, {bx+bw/2, bh}, {bx+bw/4, bh+100}, {bx, bh+100}, {bx+bw/4, bh}};
       bx += 125;
@@ -1316,16 +1298,12 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       tvalue = road_name + oref;
     }
     int tw = tvalue.length();
-    if (s->scene.mapbox_running) {
-      rect_w = (road_name.length() > 1)?tw*22:tw*19;
-    } else {
-      rect_w = (road_name.length() > 1)?tw*40:tw*33;
-    }
+    rect_w = (road_name.length() > 1)?tw*40:tw*33;
     rect_x = s->fb_w/2 - rect_w/2;
 
     QRect datetime_panel = QRect(rect_x, rect_y, rect_w, rect_h);
     p.setPen(whiteColor(200));
-    p.setFont(InterFont(s->scene.mapbox_running?35:57, QFont::DemiBold));
+    p.setFont(InterFont(57, QFont::DemiBold));
     p.drawText(datetime_panel, Qt::AlignCenter, tvalue);
     p.setBrush(blackColor(60));
     p.setPen(QPen(blackColor(0), 0));
@@ -1565,21 +1543,21 @@ void AnnotatedCameraWidget::drawWheelState(QPainter &painter, const UIState *s) 
   painter.save();
 
   if (scene.enabled) {
-    drawIcon(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile&&!scene.mapbox_running?(height() - btn_size/2 - 10):(btn_size/2 + 10),
+    drawIcon(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile?(height() - btn_size/2 - 10):(btn_size/2 + 10),
      scene.experimental_mode?experimental_img:engage_img, QColor(23, 134, 68, 150), 1.0, true, scene.angleSteers);
   } else if (!scene.comma_stock_ui) {
     QString gear_text = "0";
     switch(int(scene.getGearShifter)) {
-      case 1 : drawIcon(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile&&!scene.mapbox_running?(height() - btn_size / 2 - 10):(btn_size / 2 + 10), gear_img_p); break;
-      case 2 : drawIcon(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile&&!scene.mapbox_running?(height() - btn_size / 2 - 10):(btn_size / 2 + 10), gear_img_d); break;
-      case 3 : drawIcon(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile&&!scene.mapbox_running?(height() - btn_size / 2 - 10):(btn_size / 2 + 10), gear_img_n); break;
-      case 4 : drawIcon(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile&&!scene.mapbox_running?(height() - btn_size / 2 - 10):(btn_size / 2 + 10), gear_img_r); break;
-      case 5 : gear_text = "M"; painter.setPen(greenColor(255)); debugText(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile&&!scene.mapbox_running?(height() - btn_size/2 + 70):(btn_size / 2 + 70 + 10), gear_text, 255, 190, true); break;
-      case 7 : gear_text = "B"; painter.setPen(whiteColor(255)); debugText(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile&&!scene.mapbox_running?(height() - btn_size/2 + 70):(btn_size / 2 + 70 + 10), gear_text, 255, 190, true); break;
-      default: gear_text = QString::number(int(scene.getGearShifter), 'f', 0); painter.setPen(whiteColor(255)); debugText(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile&&!scene.mapbox_running?(height() - btn_size/2 + 70):(btn_size / 2 + 70 + 10), gear_text, 255, 190, true); break;
+      case 1 : drawIcon(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile?(height() - btn_size / 2 - 10):(btn_size / 2 + 10), gear_img_p); break;
+      case 2 : drawIcon(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile?(height() - btn_size / 2 - 10):(btn_size / 2 + 10), gear_img_d); break;
+      case 3 : drawIcon(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile?(height() - btn_size / 2 - 10):(btn_size / 2 + 10), gear_img_n); break;
+      case 4 : drawIcon(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile?(height() - btn_size / 2 - 10):(btn_size / 2 + 10), gear_img_r); break;
+      case 5 : gear_text = "M"; painter.setPen(greenColor(255)); debugText(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile?(height() - btn_size/2 + 70):(btn_size / 2 + 70 + 10), gear_text, 255, 190, true); break;
+      case 7 : gear_text = "B"; painter.setPen(whiteColor(255)); debugText(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile?(height() - btn_size/2 + 70):(btn_size / 2 + 70 + 10), gear_text, 255, 190, true); break;
+      default: gear_text = QString::number(int(scene.getGearShifter), 'f', 0); painter.setPen(whiteColor(255)); debugText(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile?(height() - btn_size/2 + 70):(btn_size / 2 + 70 + 10), gear_text, 255, 190, true); break;
     }
   } else {
-    drawIcon(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile&&!scene.mapbox_running?(height() - btn_size / 2 - 10):(btn_size / 2 + 10), engage_img, blackColor(100), 0.9);
+    drawIcon(painter, rect().right() - btn_size / 2 - 10, scene.low_ui_profile?(height() - btn_size / 2 - 10):(btn_size / 2 + 10), engage_img, blackColor(100), 0.9);
   }
 
   painter.restore();
@@ -1753,10 +1731,7 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
     drawDriverState(p, s);
   }
 
-  if (s->scene.mapbox_running || !s->scene.mapbox_enabled) {
-    drawWheelState(p, s);
-  }
-
+  drawWheelState(p, s);
   drawHud(p);
 
   double cur_draw_t = millis_since_boot();
