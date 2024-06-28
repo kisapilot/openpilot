@@ -46,12 +46,6 @@ void OnroadWindow::updateState(const UIState &s) {
     return;
   }
 
-  if (s.scene.map_on_left) {
-    split->setDirection(QBoxLayout::LeftToRight);
-  } else {
-    split->setDirection(QBoxLayout::RightToLeft);
-  }
-
   if (!s.is_OpenpilotViewEnabled) {
     // kisapilot
     if (s.scene.show_error) {

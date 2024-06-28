@@ -148,7 +148,7 @@ class LongitudinalPlanner:
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
-    self.mpc.update(sm['radarState'], sm['carState'], sm['modelV2'], v_cruise, x, v, a, j, personality=sm['controlsState'].personality)
+    self.mpc.update(sm['carState'], sm['radarState'], v_cruise, x, v, a, j, personality=sm['controlsState'].personality)
 
     self.v_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.a_solution)
@@ -169,14 +169,10 @@ class LongitudinalPlanner:
 
     plan_send.valid = sm.all_checks(service_list=['carState', 'controlsState'])
 
-
     longitudinalPlan = plan_send.longitudinalPlan
     longitudinalPlan.modelMonoTime = sm.logMonoTime['modelV2']
     longitudinalPlan.processingDelay = (plan_send.logMonoTime / 1e9) - sm.logMonoTime['modelV2']
     longitudinalPlan.solverExecutionTime = self.mpc.solve_time
-
-    longitudinalPlan.allowBrake = True
-    longitudinalPlan.allowThrottle = True
 
     longitudinalPlan.speeds = self.v_desired_trajectory.tolist()
     longitudinalPlan.accels = self.a_desired_trajectory.tolist()

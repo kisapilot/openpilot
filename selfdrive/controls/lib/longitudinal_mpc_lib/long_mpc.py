@@ -359,7 +359,7 @@ class LongitudinalMpc:
     self.cruise_min_a = min_a
     self.max_a = max_a
 
-  def update(self, radarstate, carstate, model, v_cruise, x, v, a, j, personality=log.LongitudinalPersonality.standard):
+  def update(self, carstate, radarstate, v_cruise, x, v, a, j, personality=log.LongitudinalPersonality.standard):
     self.v_ego = carstate.vEgo
     t_follow = get_T_FOLLOW(personality)
     v_ego = self.x0[1]

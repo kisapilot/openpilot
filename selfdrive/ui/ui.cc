@@ -385,7 +385,7 @@ static void update_state(UIState *s) {
   scene.world_objects_visible = scene.world_objects_visible ||
                                 (scene.started &&
                                  sm.rcv_frame("liveCalibration") > scene.started_frame &&
-                                   sm.rcv_frame("modelV2") > scene.started_frame);
+                                 sm.rcv_frame("modelV2") > scene.started_frame);
 
   if (sm.updated("lateralPlan")) {
     scene.lateral_plan = sm["lateralPlan"].getLateralPlan();
@@ -472,7 +472,6 @@ static void update_state(UIState *s) {
 void ui_update_params(UIState *s) {
   auto params = Params();
   s->scene.is_metric = params.getBool("IsMetric");
-  s->scene.map_on_left = params.getBool("NavSettingLeftSide");
 }
 
 void UIState::updateStatus() {

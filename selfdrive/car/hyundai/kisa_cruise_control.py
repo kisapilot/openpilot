@@ -528,7 +528,7 @@ class KisaCruiseControl():
     return round(min(var_speed, v_curv_speed, o_curv_speed))
 
   def get_live_gap(self, sm, CS):
-    self.t_interval = randint(15, 25)
+    self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
     gap_to_set = CS.DistSet if CS.DistSet > 0 else CS.cruiseGapSet
     now_gap = gap_to_set
     if 0 < CS.lead_distance <= 149 and CS.lead_objspd < -4 and CS.clu_Vanz > 30 and 0 < self.e2e_x < 120 and self.try_early_stop:

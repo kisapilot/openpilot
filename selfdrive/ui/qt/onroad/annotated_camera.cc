@@ -54,10 +54,8 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   const SubMaster &sm = *(s.sm);
 
   const bool cs_alive = sm.alive("controlsState");
-  const bool nav_alive = sm.alive("navInstruction") && sm["navInstruction"].getValid();
   const auto cs = sm["controlsState"].getControlsState();
   const auto car_state = sm["carState"].getCarState();
-  const auto nav_instruction = sm["navInstruction"].getNavInstruction();
 
   // Handle older routes where vCruiseCluster is not set
   float v_cruise = cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster();
@@ -74,12 +72,6 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   speed = cs_alive ? std::max<float>(0.0, v_ego) : 0.0;
   speed *= s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH;
 
-  auto speed_limit_sign = nav_instruction.getSpeedLimitSign();
-  speedLimit = nav_alive ? nav_instruction.getSpeedLimit() : 0.0;
-  speedLimit *= (s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH);
-
-  has_us_speed_limit = (nav_alive && speed_limit_sign == cereal::NavInstruction::SpeedLimitSign::MUTCD);
-  has_eu_speed_limit = (nav_alive && speed_limit_sign == cereal::NavInstruction::SpeedLimitSign::VIENNA);
   is_metric = s.scene.is_metric;
   speedUnit =  s.scene.is_metric ? tr("KPH") : tr("MPH");
   hideBottomIcons = (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE);
@@ -120,26 +112,16 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   bg.setColorAt(1, QColor::fromRgbF(0, 0, 0, 0));
   p.fillRect(0, 0, width(), UI_HEADER_HEIGHT, bg);
 
-  QString speedLimitStr = (speedLimit > 1) ? QString::number(std::nearbyint(speedLimit)) : "–";
   QString speedStr = QString::number(std::nearbyint(speed));
   QString setSpeedStr = is_cruise_set ? QString::number(std::nearbyint(setSpeed)) : "–";
 
-  // Draw outer box + border to contain set speed and speed limit
-  const int sign_margin = 12;
-  //const int us_sign_height = 186;
-  //const int eu_sign_size = 176;
-
+  // Draw outer box + border to contain set speed
+  //const QSize default_size = {172, 204};
   const QSize default_size = {184, 202};
   QSize set_speed_size = default_size;
-  //if (is_metric || has_eu_speed_limit) set_speed_size.rwidth() = 200;
-  //if (has_us_speed_limit && speedLimitStr.size() >= 3) set_speed_size.rwidth() = 223;
+  //if (is_metric) set_speed_size.rwidth() = 200;
 
-  //if (has_us_speed_limit) set_speed_size.rheight() += us_sign_height + sign_margin;
-  //else if (has_eu_speed_limit) set_speed_size.rheight() += eu_sign_size + sign_margin;
 
-  int top_radius = 32;
-  //int bottom_radius = has_eu_speed_limit ? 100 : 32;
-  int bottom_radius = 32;
 
   QRect set_speed_rect(QPoint(15 + (default_size.width() - set_speed_size.width()) / 2, s->scene.low_ui_profile?(height()-default_size.height()-35-150):15), set_speed_size);
   if (s->scene.exp_mode_temp) {
@@ -156,7 +138,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   } else {
     p.setBrush(blackColor(166));
   }
-  drawRoundedRect(p, set_speed_rect, top_radius, top_radius, bottom_radius, bottom_radius);
+  p.drawRoundedRect(set_speed_rect, 32, 32);
 
   // Draw MAX
   QColor max_color = QColor(0x80, 0xd8, 0xa6, 0xff);
@@ -166,12 +148,6 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       max_color = whiteColor();
     } else if (status == STATUS_OVERRIDE) {
       max_color = QColor(0x91, 0x9b, 0x95, 0xff);
-    } else if (speedLimit > 0) {
-      auto interp_color = [=](QColor c1, QColor c2, QColor c3) {
-        return speedLimit > 0 ? interpColor(setSpeed, {speedLimit + 5, speedLimit + 15, speedLimit + 25}, {c1, c2, c3}) : c1;
-      };
-      max_color = interp_color(max_color, QColor(0xff, 0xe4, 0xbf), QColor(0xff, 0xbf, 0xbf));
-      set_speed_color = interp_color(set_speed_color, QColor(0xff, 0x95, 0x00), QColor(0xff, 0x00, 0x00));
     }
   } else {
     max_color = QColor(0xa6, 0xa6, 0xa6, 0xff);
@@ -196,42 +172,12 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.drawPoint(set_speed_rect.left()+22, set_speed_rect.y()+set_speed_size.height()/2+17);
   }
 
-  const QRect sign_rect = set_speed_rect.adjusted(sign_margin, default_size.height(), -sign_margin, -sign_margin);
-  // US/Canada (MUTCD style) sign
-  if (has_us_speed_limit && false) {
-    p.setPen(Qt::NoPen);
-    p.setBrush(whiteColor());
-    p.drawRoundedRect(sign_rect, 24, 24);
-    p.setPen(QPen(blackColor(), 6));
-    p.drawRoundedRect(sign_rect.adjusted(9, 9, -9, -9), 16, 16);
-
-    p.setFont(InterFont(28, QFont::DemiBold));
-    p.drawText(sign_rect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("SPEED"));
-    p.drawText(sign_rect.adjusted(0, 51, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
-    p.setFont(InterFont(70, QFont::Bold));
-    p.drawText(sign_rect.adjusted(0, 85, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitStr);
-  }
-
-  // EU (Vienna style) sign
-  if (has_eu_speed_limit && false) {
-    p.setPen(Qt::NoPen);
-    p.setBrush(whiteColor());
-    p.drawEllipse(sign_rect);
-    p.setPen(QPen(Qt::red, 20));
-    p.drawEllipse(sign_rect.adjusted(16, 16, -16, -16));
-
-    p.setFont(InterFont((speedLimitStr.size() >= 3) ? 60 : 70, QFont::Bold));
-    p.setPen(blackColor());
-    p.drawText(sign_rect, Qt::AlignCenter, speedLimitStr);
-  }
-
   // current speed
   //p.setFont(InterFont(176, QFont::Bold));
   //drawText(p, rect().center().x(), 210, speedStr);
   //p.setFont(InterFont(66));
   //drawText(p, rect().center().x(), 290, speedUnit, 200);
 
-  // current speed
   float act_accel = (!s->scene.longitudinal_control)?s->scene.a_req_value:s->scene.accel;
   float gas_opacity = act_accel*255>255?255:act_accel*255;
   float brake_opacity = abs(act_accel*175)>255?255:abs(act_accel*175);
@@ -1021,28 +967,6 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
             p.drawText(rect_d, Qt::AlignCenter, QString::number(round(s->scene.limitSpeedCameraDist*0.000621*100)/100, 'f', 2) + "mi");
           }
         }
-      }
-    } else if (s->scene.navi_select == 0 && speedLimit > 1 && (has_us_speed_limit || has_eu_speed_limit)) {
-      if (s->scene.speedlimit_signtype || has_us_speed_limit) {
-        p.setBrush(whiteColor(255/sl_opacity));
-        p.drawRoundedRect(rect_si, 8, 8);
-        p.setBrush(Qt::NoBrush);
-        p.setPen(QPen(QColor(0, 0, 0, 255/sl_opacity), 12));
-        p.drawRoundedRect(rect_s, 8, 8);
-        p.setPen(QPen(QColor(255, 255, 255, 255/sl_opacity), 10));
-        p.drawRoundedRect(rect_so, 8, 8);
-        p.setPen(blackColor(255/sl_opacity));
-        debugText(p, rect_so.center().x(), rect_so.center().y()-45, "SPEED", 255/sl_opacity, 36, true);
-        debugText(p, rect_so.center().x(), rect_so.center().y()-12, "LIMIT", 255/sl_opacity, 36, true);
-        debugText(p, rect_so.center().x(), rect_so.center().y()+UI_BORDER_SIZE+(speedLimit<100?60:50), QString::number(std::nearbyint(speedLimit)), 255/sl_opacity, speedLimit<100?110:90, true);
-      } else {
-        p.setBrush(whiteColor(255/sl_opacity));
-        p.drawEllipse(rect_si);
-        p.setBrush(Qt::NoBrush);
-        p.setPen(QPen(redColor(255/sl_opacity), 20));
-        p.drawEllipse(rect_s);
-        p.setPen(blackColor(255/sl_opacity));
-        debugText(p, rect_si.center().x(), rect_si.center().y()+UI_BORDER_SIZE+(speedLimit<100?25:15), QString::number(std::nearbyint(speedLimit)), 255/sl_opacity, speedLimit<100?110:90, true);
       }
     }
   }

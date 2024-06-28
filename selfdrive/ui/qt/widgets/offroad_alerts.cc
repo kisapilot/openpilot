@@ -8,7 +8,6 @@
 #include <QHBoxLayout>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QTimer>
 
 #include "common/util.h"
 #include "system/hardware/hw.h"
@@ -48,16 +47,6 @@ AbstractAlert::AbstractAlert(bool hasRebootBtn, QWidget *parent) : QFrame(parent
     rebootBtn->setFixedSize(600, 125);
     footer_layout->addWidget(rebootBtn, 0, Qt::AlignBottom | Qt::AlignRight);
     QObject::connect(rebootBtn, &QPushButton::clicked, [=]() { Hardware::reboot(); });
-  } else {
-    QPushButton *recheckBtn = new QPushButton("Retry to Register");
-    recheckBtn->setFixedSize(600, 125);
-    footer_layout->addWidget(recheckBtn, 0, Qt::AlignBottom | Qt::AlignRight);
-    QObject::connect(recheckBtn, &QPushButton::clicked, [=]() {
-      Params().remove("DongleId");
-      QTimer::singleShot(1000, []() {
-        Hardware::reboot();
-      });
-    });
   }
 
   setStyleSheet(R"(

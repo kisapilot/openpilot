@@ -402,7 +402,7 @@ class Controls:
         #print('safety_mismatch2')
         safety_mismatch = pandaState.safetyModel not in IGNORED_SAFETY_MODES
 
-      # safety mismatch allows some time for boardd to set the safety mode and publish it back from panda
+      # safety mismatch allows some time for pandad to set the safety mode and publish it back from panda
       self.rx_checks_ok = not pandaState.safetyRxChecksInvalid
       self.mismatch_counter_ok = self.mismatch_counter < 200
       if (safety_mismatch and self.sm.frame*DT_CTRL > 10.) or pandaState.safetyRxChecksInvalid or self.mismatch_counter >= 200:
