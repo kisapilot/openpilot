@@ -82,9 +82,6 @@ def get_torque_params():
       out = override[sub_candidate]
     elif sub_candidate in params:
       out = params[sub_candidate]
-    else:
-      return None
-      #raise NotImplementedError(f"Did not find torque params for {sub_candidate}")
 
     torque_params[sub_candidate] = {key: out[i] for i, key in enumerate(params['legend'])}
     if candidate in sub:
