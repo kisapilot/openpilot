@@ -150,47 +150,6 @@ void update_model(UIState *s,
   update_line_data(s, model_position, 0.9, 1.22, &scene.track_vertices, max_idx, false);
 }
 
-void update_dmonitoring(UIState *s, const cereal::DriverStateV2::Reader &driverstate, float dm_fade_state, bool is_rhd) {
-  UIScene &scene = s->scene;
-  const auto driver_orient = is_rhd ? driverstate.getRightDriverData().getFaceOrientation() : driverstate.getLeftDriverData().getFaceOrientation();
-  const auto driver_data = is_rhd ? driverstate.getRightDriverData() : driverstate.getLeftDriverData();
-  scene.dm_prob[0] = driver_data.getLeftBlinkProb();
-  scene.dm_prob[1] = driver_data.getLeftEyeProb();
-  scene.dm_prob[2] = driver_data.getFaceProb();
-  scene.dm_prob[3] = driver_data.getRightEyeProb();
-  scene.dm_prob[4] = driver_data.getRightBlinkProb();
-  for (int i = 0; i < std::size(scene.driver_pose_vals); i++) {
-    float v_this = (i == 0 ? (driver_orient[i] < 0 ? 0.7 : 0.9) : 0.4) * driver_orient[i];
-    scene.driver_pose_diff[i] = fabs(scene.driver_pose_vals[i] - v_this);
-    scene.driver_pose_vals[i] = 0.8 * v_this + (1 - 0.8) * scene.driver_pose_vals[i];
-    scene.driver_pose_sins[i] = sinf(scene.driver_pose_vals[i]*(1.0-dm_fade_state));
-    scene.driver_pose_coss[i] = cosf(scene.driver_pose_vals[i]*(1.0-dm_fade_state));
-  }
-
-  auto [sin_y, sin_x, sin_z] = scene.driver_pose_sins;
-  auto [cos_y, cos_x, cos_z] = scene.driver_pose_coss;
-
-  const mat3 r_xyz = (mat3){{
-    cos_x * cos_z,
-    cos_x * sin_z,
-    -sin_x,
-
-    -sin_y * sin_x * cos_z - cos_y * sin_z,
-    -sin_y * sin_x * sin_z + cos_y * cos_z,
-    -sin_y * cos_x,
-
-    cos_y * sin_x * cos_z - sin_y * sin_z,
-    cos_y * sin_x * sin_z + sin_y * cos_z,
-    cos_y * cos_x,
-  }};
-
-  // transform vertices
-  for (int kpi = 0; kpi < std::size(default_face_kpts_3d); kpi++) {
-    vec3 kpt_this = matvecmul3(r_xyz, default_face_kpts_3d[kpi]);
-    scene.face_kpts_draw[kpi] = (vec3){{kpt_this.v[0], kpt_this.v[1], (float)(kpt_this.v[2] * (1.0-dm_fade_state) + 8 * dm_fade_state)}};
-  }
-}
-
 static void update_sockets(UIState *s) {
   s->sm->update(0);
 }
@@ -201,40 +160,41 @@ static void update_state(UIState *s) {
 
   if (sm.updated("controlsState")) {
     scene.controls_state = sm["controlsState"].getControlsState();
+    auto cons_data = sm["controlsState"].getControlsState();
     scene.lateralControlMethod = scene.controls_state.getLateralControlMethod();
     if (scene.lateralControlMethod == 0) {
-      scene.output_scale = scene.controls_state.getLateralControlState().getPidState().getOutput();
+      scene.output_scale = cons_data.getLateralControlState().getPidState().getOutput();
     } else if (scene.lateralControlMethod == 1) {
-      scene.output_scale = scene.controls_state.getLateralControlState().getIndiState().getOutput();
+      scene.output_scale = cons_data.getLateralControlState().getIndiState().getOutput();
     } else if (scene.lateralControlMethod == 2) {
-      scene.output_scale = scene.controls_state.getLateralControlState().getLqrState().getOutput();
+      scene.output_scale = cons_data.getLateralControlState().getLqrState().getOutput();
     } else if (scene.lateralControlMethod == 3) {
-      scene.output_scale = scene.controls_state.getLateralControlState().getTorqueState().getOutput();
+      scene.output_scale = cons_data.getLateralControlState().getTorqueState().getOutput();
     } else if (scene.lateralControlMethod == 4) {
-      scene.output_scale = scene.controls_state.getLateralControlState().getAtomState().getOutput();
-      scene.multi_lat_selected = scene.controls_state.getLateralControlState().getAtomState().getSelected();
+      scene.output_scale = cons_data.getLateralControlState().getAtomState().getOutput();
+      scene.multi_lat_selected = cons_data.getLateralControlState().getAtomState().getSelected();
     }
 
-    scene.alertTextMsg1 = scene.controls_state.getAlertTextMsg1(); //debug1
-    scene.alertTextMsg2 = scene.controls_state.getAlertTextMsg2(); //debug2
-    scene.alertTextMsg3 = scene.controls_state.getAlertTextMsg3(); //debug3
+    scene.alertTextMsg1 = cons_data.getAlertTextMsg1(); //debug1
+    scene.alertTextMsg2 = cons_data.getAlertTextMsg2(); //debug2
+    scene.alertTextMsg3 = cons_data.getAlertTextMsg3(); //debug3
 
-    scene.limitSpeedCamera = scene.controls_state.getLimitSpeedCamera();
-    scene.limitSpeedCameraDist = scene.controls_state.getLimitSpeedCameraDist();
-    scene.mapSign = scene.controls_state.getMapSign();
-    scene.mapSignCam = scene.controls_state.getMapSignCam();
-    scene.steerRatio = scene.controls_state.getSteerRatio();
-    scene.dynamic_tr_mode = scene.controls_state.getDynamicTRMode();
-    scene.dynamic_tr_value = scene.controls_state.getDynamicTRValue();
-    scene.pause_spdlimit = scene.controls_state.getPauseSpdLimit();
-    scene.accel = scene.controls_state.getAccel();
-    scene.ctrl_speed = scene.controls_state.getSafetySpeed();
-    scene.desired_angle_steers = scene.controls_state.getSteeringAngleDesiredDeg();
-    scene.gap_by_speed_on = scene.controls_state.getGapBySpeedOn();
-    scene.enabled = scene.controls_state.getEnabled();
-    scene.experimental_mode = scene.controls_state.getExperimentalMode();
-    scene.exp_mode_temp = scene.controls_state.getExpModeTemp();
-    scene.btn_pressing = scene.controls_state.getBtnPressing();
+    scene.limitSpeedCamera = cons_data.getLimitSpeedCamera();
+    scene.limitSpeedCameraDist = cons_data.getLimitSpeedCameraDist();
+    scene.mapSign = cons_data.getMapSign();
+    scene.mapSignCam = cons_data.getMapSignCam();
+    scene.steerRatio = cons_data.getSteerRatio();
+    scene.dynamic_tr_mode = cons_data.getDynamicTRMode();
+    scene.dynamic_tr_value = cons_data.getDynamicTRValue();
+    scene.pause_spdlimit = cons_data.getPauseSpdLimit();
+    scene.accel = cons_data.getAccel();
+    scene.ctrl_speed = cons_data.getSafetySpeed();
+    scene.desired_angle_steers = cons_data.getSteeringAngleDesiredDeg();
+    scene.gap_by_speed_on = cons_data.getGapBySpeedOn();
+    scene.enabled = cons_data.getEnabled();
+    scene.experimental_mode = cons_data.getExperimentalMode();
+    scene.exp_mode_temp = cons_data.getExpModeTemp();
+    scene.btn_pressing = cons_data.getBtnPressing();
   }
   if (sm.updated("carState")) {
     scene.car_state = sm["carState"].getCarState();
@@ -476,16 +436,16 @@ void ui_update_params(UIState *s) {
 }
 
 void UIState::updateStatus() {
-  if (scene.started && sm->updated("controlsState")) {
-    auto controls_state = (*sm)["controlsState"].getControlsState();
-    auto state = controls_state.getState();
-    if (state == cereal::ControlsState::OpenpilotState::PRE_ENABLED || state == cereal::ControlsState::OpenpilotState::OVERRIDING) {
+  if (scene.started && sm->updated("selfdriveState")) {
+    auto ss = (*sm)["selfdriveState"].getSelfdriveState();
+    auto state = ss.getState();
+    if (state == cereal::SelfdriveState::OpenpilotState::PRE_ENABLED || state == cereal::SelfdriveState::OpenpilotState::OVERRIDING) {
       status = STATUS_OVERRIDE;
     } else {
       if (scene.comma_stock_ui == 2) {
-        status = controls_state.getEnabled() ? STATUS_DND : STATUS_DISENGAGED;
+        status = ss.getEnabled() ? STATUS_DND : STATUS_DISENGAGED;
       } else {
-        status = controls_state.getEnabled() ? STATUS_ENGAGED : STATUS_DISENGAGED;
+        status = ss.getEnabled() ? STATUS_ENGAGED : STATUS_DISENGAGED;
       }
     }
   }
@@ -596,10 +556,10 @@ void UIState::updateStatus() {
 }
 
 UIState::UIState(QObject *parent) : QObject(parent) {
-  sm = std::make_unique<SubMaster, const std::initializer_list<const char *>>({
+  sm = std::make_unique<SubMaster>(std::vector<const char*>{
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState",
     "pandaStates", "carParams", "driverMonitoringState", "carState", "driverStateV2",
-    "wideRoadCameraState", "managerState", "clocks",
+    "wideRoadCameraState", "managerState", "selfdriveState",
     "peripheralState", "liveParameters", "ubloxGnss", "qcomGnss", "gpsLocationExternal", "gpsLocation",
     "lateralPlan", "longitudinalPlan", "liveENaviData", "liveMapData",
   });
@@ -701,7 +661,7 @@ void Device::updateBrightness(const UIState &s) {
     }
   } else if (s.scene.autoScreenOff != -3 && s.scene.touched2) {
     sleep_time = s.scene.nTime;
-  } else if (s.scene.controls_state.getAlertSize() != cereal::ControlsState::AlertSize::NONE && s.scene.autoScreenOff != -3) {
+  } else if (s.scene.controls_state.getAlertSize() != cereal::SelfdriveState::AlertSize::NONE && s.scene.autoScreenOff != -3) {
     sleep_time = s.scene.nTime;
   } else if (sleep_time > 0 && s.scene.autoScreenOff != -3) {
     sleep_time--;

@@ -14,7 +14,7 @@
 
 // Window that shows camera view and variety of info drawn on top
 AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* parent) : fps_filter(UI_FREQ, 3, 1. / UI_FREQ), CameraWidget("camerad", type, true, parent) {
-  pm = std::make_unique<PubMaster, const std::initializer_list<const char *>>({"uiDebug"});
+  pm = std::make_unique<PubMaster>(std::vector<const char*>{"uiDebug"});
 
   main_layout = new QVBoxLayout(this);
   main_layout->setMargin(UI_BORDER_SIZE);
@@ -57,11 +57,13 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   const auto cs = sm["controlsState"].getControlsState();
   const auto car_state = sm["carState"].getCarState();
 
+  is_metric = s.scene.is_metric;
+
   // Handle older routes where vCruiseCluster is not set
   float v_cruise = cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster();
   setSpeed = cs_alive ? v_cruise : SET_SPEED_NA;
   is_cruise_set = setSpeed > 0 && (int)setSpeed != SET_SPEED_NA;
-  // if (is_cruise_set && !s.scene.is_metric) {
+  // if (is_cruise_set && !is_metric) {
   //   setSpeed *= KM_TO_MILE;
   // }
 
@@ -70,22 +72,16 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   // float v_ego = v_ego_cluster_seen ? car_state.getVEgoCluster() : car_state.getVEgo();
   float v_ego = car_state.getVEgo();
   speed = cs_alive ? std::max<float>(0.0, v_ego) : 0.0;
-  speed *= s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH;
+  speed *= is_metric ? MS_TO_KPH : MS_TO_MPH;
 
-  is_metric = s.scene.is_metric;
-  speedUnit =  s.scene.is_metric ? tr("KPH") : tr("MPH");
-  hideBottomIcons = (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE);
+  speedUnit = is_metric ? tr("KPH") : tr("MPH");
   status = s.status;
 
   // update engageability/experimental mode button
   experimental_btn->updateState(s);
 
   // update DM icon
-  auto dm_state = sm["driverMonitoringState"].getDriverMonitoringState();
-  dmActive = dm_state.getIsActiveMode();
-  rightHandDM = dm_state.getIsRHD();
-  // DM icon transition
-  dm_fade_state = std::clamp(dm_fade_state+0.2*(0.5-dmActive), 0.0, 1.0);
+  dmon.updateState(s);
 
   // kisapilot
   over_sl = s.scene.limitSpeedCamera > 19 && ((s.scene.car_state.getVEgo() * (s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH)) > s.scene.ctrl_speed+1.5);
@@ -338,13 +334,6 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
                                 + "/" + QString::number(s->scene.lane_line_probs[2], 'f', 1)
                                 + "/" + QString::number(s->scene.lane_line_probs[3], 'f', 1)
                                 + "/" + QString::number(std::clamp<float>(1.0 - s->scene.road_edge_stds[1], 0.0, 1.0), 'f', 1));
-    // if (s->scene.nDebugUi3) {
-    //   uiText(p, ui_viz_rx, ui_viz_ry+520, QString::number(s->scene.dm_prob[0], 'f', 2)
-    //                               + "|" + QString::number(s->scene.dm_prob[1], 'f', 2)
-    //                               + " (" + QString::number(s->scene.dm_prob[2], 'f', 2)
-    //                               + ") " + QString::number(s->scene.dm_prob[3], 'f', 2)
-    //                               + "|" + QString::number(s->scene.dm_prob[4], 'f', 2));
-    // }
 
     if (!s->scene.low_ui_profile) {
       QString szLaCMethod = "";
@@ -1368,7 +1357,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
 
   // paint path
   QLinearGradient bg(0, height(), 0, 0);
-  if (sm["controlsState"].getControlsState().getExperimentalMode()) {
+  if (sm["selfdriveState"].getSelfdriveState().getExperimentalMode()) {
     // The first half of track_vertices are the points for the right side of the path
     const auto &acceleration = sm["modelV2"].getModelV2().getAcceleration().getX();
     const int max_len = std::min<int>(scene.track_vertices.length() / 2, acceleration.size());
@@ -1413,51 +1402,6 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
 
   painter.setBrush(bg);
   painter.drawPolygon(scene.track_vertices);
-
-  painter.restore();
-}
-
-void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s) {
-  const UIScene &scene = s->scene;
-
-  painter.save();
-
-  // base icon
-  int offset = UI_BORDER_SIZE + btn_size / 2 - 5;
-  int x = rightHandDM ? width() - offset : offset;
-  int y = scene.low_ui_profile?offset:(height() - offset);
-  float opacity = dmActive ? 0.65 : 0.2;
-  if (scene.monitoring_mode) {
-    drawIcon(painter, x, y, dm_img, orangeColor(150), opacity);
-  } else {
-    drawIcon(painter, x, y, dm_img, blackColor(70), opacity);
-  }
-
-  // face
-  QPointF face_kpts_draw[std::size(default_face_kpts_3d)];
-  float kp;
-  for (int i = 0; i < std::size(default_face_kpts_3d); ++i) {
-    kp = (scene.face_kpts_draw[i].v[2] - 8) / 120 + 1.0;
-    face_kpts_draw[i] = QPointF(scene.face_kpts_draw[i].v[0] * kp + x, scene.face_kpts_draw[i].v[1] * kp + y);
-  }
-
-  painter.setPen(QPen(QColor::fromRgbF(1.0, 1.0, 1.0, opacity), 5.2, Qt::SolidLine, Qt::RoundCap));
-  painter.drawPolyline(face_kpts_draw, std::size(default_face_kpts_3d));
-
-  // tracking arcs
-  const int arc_l = 133;
-  const float arc_t_default = 6.7;
-  const float arc_t_extend = 12.0;
-  QColor arc_color = QColor::fromRgbF(0.545 - 0.445 * s->engaged(),
-                                      0.545 + 0.4 * s->engaged(),
-                                      0.545 - 0.285 * s->engaged(),
-                                      0.4 * (1.0 - dm_fade_state));
-  float delta_x = -scene.driver_pose_sins[1] * arc_l / 2;
-  float delta_y = -scene.driver_pose_sins[0] * arc_l / 2;
-  painter.setPen(QPen(arc_color, arc_t_default+arc_t_extend*fmin(1.0, scene.driver_pose_diff[1] * 5.0), Qt::SolidLine, Qt::RoundCap));
-  painter.drawArc(QRectF(std::fmin(x + delta_x, x), y - arc_l / 2, fabs(delta_x), arc_l), (scene.driver_pose_sins[1]>0 ? 90 : -90) * 16, 180 * 16);
-  painter.setPen(QPen(arc_color, arc_t_default+arc_t_extend*fmin(1.0, scene.driver_pose_diff[0] * 5.0), Qt::SolidLine, Qt::RoundCap));
-  painter.drawArc(QRectF(x - arc_l / 2, std::fmin(y + delta_y, y), arc_l, fabs(delta_y)), (scene.driver_pose_sins[0]>0 ? 0 : 180) * 16, 180 * 16);
 
   painter.restore();
 }
@@ -1610,7 +1554,7 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
       } else if (v_ego > 15) {
         wide_cam_requested = false;
       }
-      wide_cam_requested = wide_cam_requested && sm["controlsState"].getControlsState().getExperimentalMode();
+      wide_cam_requested = wide_cam_requested && sm["selfdriveState"].getSelfdriveState().getExperimentalMode();
       // for replay of old routes, never go to widecam
       wide_cam_requested = wide_cam_requested && s->scene.calibration_wide_valid;
     }
@@ -1650,11 +1594,7 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
     }
   }
 
-  // DMoji
-  if (!hideBottomIcons && (sm.rcv_frame("driverStateV2") > s->scene.started_frame)) {
-    update_dmonitoring(s, sm["driverStateV2"].getDriverStateV2(), dm_fade_state, rightHandDM);
-    drawDriverState(p, s);
-  }
+  dmon.draw(p, rect());
 
   drawWheelState(p, s);
   drawHud(p);

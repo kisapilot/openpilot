@@ -11,7 +11,7 @@ from openpilot.common.params import Params
 
 ButtonType = structs.CarState.ButtonEvent.Type
 GearShifter = structs.CarState.GearShifter
-EventName = car.CarEvent.EventName
+EventName = car.OnroadEvent.EventName
 NetworkLocation = structs.CarParams.NetworkLocation
 
 

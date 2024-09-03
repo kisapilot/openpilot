@@ -5,7 +5,9 @@ $Cxx.namespace("cereal");
 
 # ******* events causing controls state machine transition *******
 
-struct CarEvent @0x9b1657f34caf3ad3 {
+# FIXME: OnroadEvent shouldn't be in car.capnp, but can't immediately
+#        move due to being referenced by structs in this file
+struct OnroadEvent @0x9b1657f34caf3ad3 {
   name @0 :EventName;
 
   # event types
@@ -117,6 +119,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     paramsdPermanentError @119;
     actuatorsApiUnavailable @120;
     espActive @121;
+    personalityChanged @122;
 
     radarCanErrorDEPRECATED @15;
     communityFeatureDisallowedDEPRECATED @62;
@@ -145,34 +148,34 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     plannerError @32;
     gpsMalfunctionDEPRECATED @94;
 
-    laneChangeManual @122;
-    emgButtonManual @123;
-    driverSteering @124;
-    modeChangeOpenpilot @125;
-    modeChangeDistcurv @126;
-    modeChangeDistance @127;
-    modeChangeCurv @128;
-    modeChangeOneway @129;
-    modeChangeMaponly @130;
-    needBrake @131;
-    standStill @132;
-    e2eLongAlert @133;
-    isgActive @134;
-    camSpeedDown @135;
-    gapAdjusting @136;
-    resCruise @137;
-    curvSpeedDown @138;
-    standstillResButton @139;
-    routineDriveOn @140;
-    lkasEnabled @141;
-    cutinDetection @142;
-    gearNotD @143;
-    unSleepMode @144;
-    speedBump @145;
-    sccDriverOverride @146;
-    doNotDisturb @147;
-    chimeAtResume @148;
-    autoHold @149;
+    laneChangeManual @123;
+    emgButtonManual @124;
+    driverSteering @125;
+    modeChangeOpenpilot @126;
+    modeChangeDistcurv @127;
+    modeChangeDistance @128;
+    modeChangeCurv @129;
+    modeChangeOneway @130;
+    modeChangeMaponly @131;
+    needBrake @132;
+    standStill @133;
+    e2eLongAlert @134;
+    isgActive @135;
+    camSpeedDown @136;
+    gapAdjusting @137;
+    resCruise @138;
+    curvSpeedDown @139;
+    standstillResButton @140;
+    routineDriveOn @141;
+    lkasEnabled @142;
+    cutinDetection @143;
+    gearNotD @144;
+    unSleepMode @145;
+    speedBump @146;
+    sccDriverOverride @147;
+    doNotDisturb @148;
+    chimeAtResume @149;
+    autoHold @150;
   }
 }
 
@@ -180,7 +183,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
 # all speeds in m/s
 
 struct CarState {
-  events @13 :List(CarEvent);
+  events @13 :List(OnroadEvent);
 
   # CAN health
   canValid @26 :Bool;       # invalid counter/checksums
@@ -342,7 +345,7 @@ struct CarState {
   }
 
   # deprecated
-  errorsDEPRECATED @0 :List(CarEvent.EventName);
+  errorsDEPRECATED @0 :List(OnroadEvent.EventName);
   brakeLightsDEPRECATED @19 :Bool;
   steeringRateLimitedDEPRECATED @29 :Bool;
   canMonoTimesDEPRECATED @12: List(UInt64);

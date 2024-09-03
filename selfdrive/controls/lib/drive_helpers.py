@@ -7,7 +7,7 @@ from openpilot.common.numpy_fast import clip, interp
 from openpilot.common.realtime import DT_CTRL, DT_MDL
 from openpilot.system.version import get_build_metadata
 
-EventName = car.CarEvent.EventName
+EventName = car.OnroadEvent.EventName
 
 from openpilot.selfdrive.modeld.constants import ModelConstants
 from opendbc.car.hyundai.values import Buttons
@@ -250,8 +250,8 @@ class VCruiseHelper:
         button_type = b.type.raw
         break
     else:
-      for k in self.button_timers.keys():
-        if self.button_timers[k] and self.button_timers[k] % CRUISE_LONG_PRESS == 0:
+      for k, timer in self.button_timers.items():
+        if timer and timer % CRUISE_LONG_PRESS == 0:
           button_type = k
           long_press = True
           break

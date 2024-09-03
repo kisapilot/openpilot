@@ -11,7 +11,7 @@ from decimal import Decimal
 from openpilot.common.conversions import Conversions as CV
 
 from openpilot.selfdrive.controls.lib.latcontrol import LatControl
-from openpilot.selfdrive.controls.lib.pid import PIDController
+from openpilot.common.pid import PIDController
 
 from openpilot.selfdrive.controls.lib.latcontrol_torque import LatControlTorque
 from openpilot.selfdrive.controls.lib.latcontrol_lqr import LatControlLQR
