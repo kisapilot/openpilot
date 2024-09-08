@@ -260,6 +260,15 @@ def manager_init() -> None:
     if params.get(k) is None:
       params.put(k, v)
 
+  # kisapilot
+  if os.path.isfile('/data/User_Params.txt'):
+    f = open("/data/User_Params.txt", "r")
+    for t in f.readlines():
+      tt = t.strip("\n").split(':')
+      params.put(tt[0], tt[-1])
+    f.close()
+    os.remove('/data/User_Params.txt')
+
   # Create folders needed for msgq
   try:
     os.mkdir("/dev/shm")

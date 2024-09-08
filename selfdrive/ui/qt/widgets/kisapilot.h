@@ -169,6 +169,32 @@ private:
   void getBranchID(const QString &branchid);
 };
 
+class OpenpilotUserEnv : public ButtonControl {
+  Q_OBJECT
+
+public:
+  OpenpilotUserEnv();
+
+private slots:
+  void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
+private:
+  Params params;
+
+  QString githubid;
+  QString githubrepo;
+  QString githubbranch;
+  QString githubfile;
+
+  QProcess textMsgProcess;
+
+  void refresh();
+  void getUserID(const QString &userid);
+  void getRepoID(const QString &repoid);
+  void getBranchID(const QString &branchid);
+  void getFileID(const QString &fileid);
+};
+
 class AutoResumeToggle : public ToggleControl {
   Q_OBJECT
 

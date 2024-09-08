@@ -1588,6 +1588,81 @@ This may take up to a minute.</source>
     </message>
 </context>
 <context>
+    <name>OpenpilotUserEnv</name>
+    <message>
+        <source>Get Your Params</source>
+        <translation>사용자 파라미터 적용</translation>
+    </message>
+    <message>
+        <source>Get parameters from github. This is useful to apply your own file.</source>
+        <translation>github에서 파라미터 값을 가져옵니다. 이는 자신의 환경을 쉽게 가져올 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>GET</source>
+        <translation>가져오기</translation>
+    </message>
+    <message>
+        <source>Input your Git ID</source>
+        <translation>Git ID를 입력하세요</translation>
+    </message>
+    <message>
+        <source>Input your repository</source>
+        <translation>리포지토리를 입력하세요</translation>
+    </message>
+    <message>
+        <source>Input your branch</source>
+        <translation>브랜치 이름을 입력하세요</translation>
+    </message>
+    <message>
+        <source>Input your file</source>
+        <translation>해당 파일을 입력하세요</translation>
+    </message>
+    <message>
+        <source>Check Inputs. Do you want to Run?</source>
+        <translation>입력내용을 확인하세요. 실행하시겠습니까?</translation>
+    </message>
+    <message>
+        <source>DONE</source>
+        <translation>완료</translation>
+    </message>
+    <message>
+        <source> The ID does not exist. Return to the input window, press the cancel button, and try again from the beginning.</source>
+        <translation> ID가 존재하지 않습니다. 입력 창으로 돌아가서 취소 버튼을 누른 다음 처음부터 다시 시도하십시오.</translation>
+    </message>
+    <message>
+        <source>The requested time has exceeded.</source>
+        <translation>요청한 시간이 초과되었습니다.</translation>
+    </message>
+    <message>
+        <source>The ID does not exist. Return to the input window, press the cancel button, and try again from the beginning.</source>
+        <translation>ID가 존재하지 않습니다. 입력 창으로 돌아가서 취소 버튼을 누른 다음 처음부터 다시 시도하십시오.</translation>
+    </message>
+    <message>
+        <source> The repository does not exist. Return to the input window, press the cancel button, and try again from the beginning.</source>
+        <translation> 리포지토리가 없습니다. 입력 창으로 돌아가서 취소 버튼을 누른 다음 처음부터 다시 시도하십시오.</translation>
+    </message>
+    <message>
+        <source>The Repository does not exist. Return to the input window, press the cancel button, and try again from the beginning.</source>
+        <translation>리포지토리가 없습니다. 입력 창으로 돌아가서 취소 버튼을 누른 다음 처음부터 다시 시도하십시오.</translation>
+    </message>
+    <message>
+        <source> The branch does not exist. Press the cancel button and try again from the beginning.</source>
+        <translation> 브랜치가 존재하지 않습니다. 취소 버튼을 누르고 처음부터 다시 시도하십시오.</translation>
+    </message>
+    <message>
+        <source>The Branch does not exist. Return to the input window, press the cancel button, and try again from the beginning.</source>
+        <translation>브랜치가 존재하지 않습니다. 입력 창으로 돌아가서 취소 버튼을 누른 다음 처음부터 다시 시도하십시오.</translation>
+    </message>
+    <message>
+        <source> The file does not exist. Press the cancel button and try again from the beginning.</source>
+        <translation> 해당 파일이 존재하지 않습니다. 취소 버튼을 누르고 처음부터 다시 시도하십시오.</translation>
+    </message>
+    <message>
+        <source>The file does not exist. Return to the input window, press the cancel button, and try again from the beginning.</source>
+        <translation>해당 파일이 존재하지 않습니다. 입력 창으로 돌아가서 취소 버튼을 누른 다음 처음부터 다시 시도하십시오.</translation>
+    </message>
+</context>
+<context>
     <name>GitHash</name>
     <message>
         <source>Commit (Local/Remote)</source>

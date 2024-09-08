@@ -406,6 +406,7 @@ CPresetWidget::CPresetWidget() : CGroupWidget( tr("Parameter Preset") )
   pBoxLayout->addLayout( presettwo_layout );
   pBoxLayout->addWidget( paraminit_btn );
 
+  pBoxLayout->addWidget( new OpenpilotUserEnv() ); // kisa
 
   main_layout->addStretch();
   refresh();
@@ -535,6 +536,147 @@ void SwitchOpenpilot::getBranchID(const QString &branchid) {
     request->deleteLater();
   });
   request->sendRequest("https://github.com/" + githubid + "/" + githubrepo + "/tree/" + branchid);
+}
+
+OpenpilotUserEnv::OpenpilotUserEnv() : ButtonControl(tr("Get Your Params"), "", tr("Get parameters from github. This is useful to apply your own file.")) {
+  QObject::connect(this, &ButtonControl::clicked, [=]() {
+    if (text() == tr("GET")) {
+      QString userid = InputDialog::getText(tr("Input your Git ID"), this, "github.com/<your id>/openpilot_user/main/user_params.txt", false, 1, "multikyd");
+      if (userid.length() > 0) {
+        getUserID(userid);
+        QString repoid = InputDialog::getText(tr("Input your repository"), this, "github.com/"+userid, false, 1, "openpilot_user");
+        if (repoid.length() > 0) {
+          getRepoID(repoid);
+          QString branchid = InputDialog::getText(tr("Input your branch"), this, "github.com/"+userid+"/"+repoid, false, 1, "main");
+          if (branchid.length() > 0) {
+            getBranchID(branchid);
+            QString fileid = InputDialog::getText(tr("Input your file"), this, "github.com/"+userid+"/"+repoid+"/"+branchid, false, 1, "user_params.txt");
+            if (fileid.length() > 0) {
+              getFileID(fileid);
+              githubbranch = branchid;
+              QString cmd0 = tr("Check Inputs. Do you want to Run?") + "\n" + QString::fromStdString("https://github.com/") + userid + QString::fromStdString("/") + repoid + QString::fromStdString("/") + branchid + QString::fromStdString("/") + fileid;
+              if (ConfirmationDialog::confirm2(cmd0, this)) {
+                setText(tr("DONE"));
+                setEnabled(true);
+                QString tcmd = "wget https://raw.githubusercontent.com/" + githubid + "/" + githubrepo + "/" + githubbranch + "/" + githubfile + " -O /data/User_Params.txt";
+                QString cmd4 = "touch /data/kisa_compiling";
+                QProcess::execute(cmd4);
+                QObject::connect(&textMsgProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
+                textMsgProcess.start(tcmd);
+              }
+            }
+          }
+        }
+      }
+    } else {
+      refresh();
+    }
+  });
+  refresh();
+}
+
+void OpenpilotUserEnv::processFinished(int exitCode, QProcess::ExitStatus exitStatus) {
+  if(exitStatus == QProcess::NormalExit) {
+    QProcess::execute("rm -f /data/openpilot/prebuilt");
+    QProcess::execute("sudo reboot");
+  }
+}
+
+void OpenpilotUserEnv::refresh() {
+  setText(tr("GET"));
+  setEnabled(true);
+}
+
+void OpenpilotUserEnv::getUserID(const QString &userid) {
+  HttpRequest *request = new HttpRequest(this, false);
+  QObject::connect(request, &HttpRequest::requestDone, [=](const QString &resp, bool success) {
+    if (success) {
+      if (!resp.isEmpty()) {
+        githubid = userid;
+      } else {
+        ConfirmationDialog::alert(userid + tr(" The ID does not exist. Return to the input window, press the cancel button, and try again from the beginning."), this);
+      }
+    } else {
+      if (request->timeout()) {
+        ConfirmationDialog::alert(tr("The requested time has exceeded."), this);
+      } else {
+        ConfirmationDialog::alert(tr("The ID does not exist. Return to the input window, press the cancel button, and try again from the beginning."), this);
+      }
+    }
+
+    refresh();
+    request->deleteLater();
+  });
+  request->sendRequest("https://github.com/" + userid);
+}
+
+void OpenpilotUserEnv::getRepoID(const QString &repoid) {
+  HttpRequest *request = new HttpRequest(this, false);
+  QObject::connect(request, &HttpRequest::requestDone, [=](const QString &resp, bool success) {
+    if (success) {
+      if (!resp.isEmpty()) {
+        githubrepo = repoid;
+      } else {
+        ConfirmationDialog::alert(repoid + tr(" The repository does not exist. Return to the input window, press the cancel button, and try again from the beginning."), this);
+      }
+    } else {
+      if (request->timeout()) {
+        ConfirmationDialog::alert(tr("The requested time has exceeded."), this);
+      } else {
+        ConfirmationDialog::alert(tr("The Repository does not exist. Return to the input window, press the cancel button, and try again from the beginning."), this);
+      }
+    }
+
+    refresh();
+    request->deleteLater();
+  });
+  request->sendRequest("https://github.com/" + githubid + "/" + repoid);
+}
+
+void OpenpilotUserEnv::getBranchID(const QString &branchid) {
+  HttpRequest *request = new HttpRequest(this, false);
+  QObject::connect(request, &HttpRequest::requestDone, [=](const QString &resp, bool success) {
+    if (success) {
+      if (!resp.isEmpty()) {
+        githubbranch = branchid;
+      } else {
+        ConfirmationDialog::alert(branchid + tr(" The branch does not exist. Press the cancel button and try again from the beginning."), this);
+      }
+    } else {
+      if (request->timeout()) {
+        ConfirmationDialog::alert(tr("The requested time has exceeded."), this);
+      } else {
+        ConfirmationDialog::alert(tr("The Branch does not exist. Return to the input window, press the cancel button, and try again from the beginning."), this);
+      }
+    }
+
+    refresh();
+    request->deleteLater();
+  });
+  request->sendRequest("https://github.com/" + githubid + "/" + githubrepo + "/tree/" + branchid);
+}
+
+void OpenpilotUserEnv::getFileID(const QString &fileid) {
+  HttpRequest *request = new HttpRequest(this, false);
+  QObject::connect(request, &HttpRequest::requestDone, [=](const QString &resp, bool success) {
+    if (success) {
+      if (!resp.isEmpty()) {
+        githubfile = fileid;
+      } else {
+        ConfirmationDialog::alert(fileid + tr(" The file does not exist. Press the cancel button and try again from the beginning."), this);
+      }
+    } else {
+      if (request->timeout()) {
+        ConfirmationDialog::alert(tr("The requested time has exceeded."), this);
+      } else {
+        ConfirmationDialog::alert(tr("The file does not exist. Return to the input window, press the cancel button, and try again from the beginning."), this);
+      }
+    }
+
+    refresh();
+    request->deleteLater();
+  });
+  request->sendRequest("https://github.com/" + githubid + "/" + githubrepo + "/blob/" + githubbranch + "/" + fileid);
 }
 
 GitHash::GitHash() : AbstractControl(tr("Commit (Local/Remote)"), "", "") {
