@@ -207,8 +207,8 @@ DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent) {
   });
   addItem(translateBtn);
 
-  QObject::connect(uiState(), &UIState::primeTypeChanged, [this] (PrimeType type) {
-    pair_device->setVisible(type == PrimeType::PRIME_TYPE_UNPAIRED);
+  QObject::connect(uiState()->prime_state, &PrimeState::changed, [this] (PrimeState::Type type) {
+    pair_device->setVisible(type == PrimeState::PRIME_TYPE_UNPAIRED);
   });
   QObject::connect(uiState(), &UIState::offroadTransition, [=](bool offroad) {
     for (auto btn : findChildren<ButtonControl *>()) {
@@ -321,11 +321,6 @@ void DevicePanel::poweroff() {
   } else {
     ConfirmationDialog::alert(tr("Disengage to Power Off"), this);
   }
-}
-
-void DevicePanel::showEvent(QShowEvent *event) {
-  pair_device->setVisible(uiState()->primeType() == PrimeType::PRIME_TYPE_UNPAIRED);
-  ListWidget::showEvent(event);
 }
 
 SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
@@ -442,17 +437,14 @@ UIPanel::UIPanel(QWidget *parent) : QFrame(parent) {
 
   // kisapilot
   layout->addWidget(new AutoShutdown());
-  //layout->addWidget(new ForceShutdown());
   layout->addWidget(new VolumeControl());
   layout->addWidget(new BrightnessControl());
   layout->addWidget(new AutoScreenOff());
   layout->addWidget(new BrightnessOffControl());
   layout->addWidget(new DoNotDisturbMode());  
-  //layout->addWidget(new GetOffAlert());
   layout->addWidget(horizontal_line());
   layout->addWidget(new DrivingRecordToggle());
   layout->addWidget(new RecordCount());
-  //layout->addWidget(new RecordQuality());
   const char* record_del = "rm -f /data/media/*.mp4";
   auto recorddelbtn = new ButtonControl(tr("Delete All Recorded Files"), tr("RUN"));
   QObject::connect(recorddelbtn, &ButtonControl::clicked, [=]() {
@@ -479,15 +471,12 @@ UIPanel::UIPanel(QWidget *parent) : QFrame(parent) {
   layout->addWidget(horizontal_line());
   layout->addWidget(new KISANaviSelect());
   layout->addWidget(new ExternalDeviceIP());
-  //layout->addWidget(new KISAServerSelect());
-  //layout->addWidget(new KISAServerAPI());
   //layout->addWidget(new KISAMapboxStyle());
   layout->addWidget(horizontal_line());
   layout->addWidget(new KISABottomTextView());
   layout->addWidget(new RPMAnimatedToggle());
   layout->addWidget(new RPMAnimatedMaxValue());
   layout->addWidget(new LowUIProfile());
-  //layout->addWidget(new OSMOfflineUseToggle());
 }
 DrivingPanel::DrivingPanel(QWidget *parent) : QFrame(parent) {
   QVBoxLayout *layout = new QVBoxLayout(this);
@@ -537,14 +526,11 @@ DeveloperPanel::DeveloperPanel(QWidget *parent) : QFrame(parent) {
   layout->addWidget(new UFCModeEnabledToggle());
   layout->addWidget(new StockLKASEnabledatDisenagedStatusToggle());
   layout->addWidget(horizontal_line());
-  layout->addWidget(new JoystickModeToggle());
   layout->addWidget(new UserSpecificFeature());
   //layout->addWidget(new MapboxToken());
 
   layout->addWidget(horizontal_line());
   layout->addWidget(new CarSelectCombo());
-  layout->addWidget(horizontal_line());
-  layout->addWidget(new CPandaGroup());
   layout->addWidget(horizontal_line());
   layout->addWidget(new ModelSelectCombo());
 }
@@ -571,20 +557,7 @@ TuningPanel::TuningPanel(QWidget *parent) : QFrame(parent) {
   layout->addWidget(new LiveSteerRatioToggle());
   layout->addWidget(new LiveSRPercent());
   layout->addWidget(new SRBaseControl());
-  //layout->addWidget(new SRMaxControl());
-
   layout->addWidget(horizontal_line());
-  //layout->addWidget(new VariableSteerMaxToggle());
-  layout->addWidget(new SteerMax());
-  //layout->addWidget(new VariableSteerDeltaToggle());
-  layout->addWidget(new SteerDeltaUp());
-  layout->addWidget(new SteerDeltaDown());
-
-  layout->addWidget(horizontal_line());
-
-  //layout->addWidget(new LabelControl("〓〓〓〓〓〓〓〓【 CONTROL 】〓〓〓〓〓〓〓〓", ""));
-  //layout->addWidget(new LateralControl());
-  //layout->addWidget(new LiveTunePanelToggle());
 
   layout->addWidget(new CLateralControlGroup());
   layout->addWidget(horizontal_line());
@@ -647,9 +620,12 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
   TogglesPanel *toggles = new TogglesPanel(this);
   QObject::connect(this, &SettingsWindow::expandToggleDescription, toggles, &TogglesPanel::expandToggleDescription);
 
+  auto networking = new Networking(this);
+  QObject::connect(uiState()->prime_state, &PrimeState::changed, networking, &Networking::setPrimeType);
+
   QList<QPair<QString, QWidget *>> panels = {
     {tr("Device"), device},
-    {tr("Network"), new Networking(this)},
+    {tr("Network"), networking},
     {tr("Toggles"), toggles},
     {tr("Software"), software},
     {tr("UIMenu"), new UIPanel(this)},

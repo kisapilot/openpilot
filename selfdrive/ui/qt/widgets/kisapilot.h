@@ -56,15 +56,6 @@ public:
 
 };
 
-class CPandaGroup : public CGroupWidget 
-{
-  Q_OBJECT
-
-public:
-  explicit CPandaGroup();
-
-};
-
 class CGitGroup : public CGroupWidget 
 {
   Q_OBJECT
@@ -332,30 +323,6 @@ public:
   }
 };
 
-class VariableSteerMaxToggle : public ToggleControl {
-  Q_OBJECT
-
-public:
-  VariableSteerMaxToggle() : ToggleControl(tr("SteerMax/Variable SteerMax Toggle"), tr("Use the variable SteerMax by curvature. If this is off, runs only with base value below. STBase: SteerMax Default value. STMax: SteerMax Maximum value."), "../assets/offroad/icon_shell.png", Params().getBool("KisaVariableSteerMax")) {
-    QObject::connect(this, &VariableSteerMaxToggle::toggleFlipped, [=](int state) {
-      bool status = state ? true : false;
-      Params().putBool("KisaVariableSteerMax", status);
-    });
-  }
-};
-
-class VariableSteerDeltaToggle : public ToggleControl {
-  Q_OBJECT
-
-public:
-  VariableSteerDeltaToggle() : ToggleControl(tr("DeltaUpDown/Variable Delta Toggle"), tr("Use variable SteerDelta by curvature. If this is off, runs only with base value below. DUBase: Steer DeltaUp Default value. DUMax: Steer DeltaUp Maximum value. DDBase: Steer DeltaDown Default value. DDMax: Steer DeltaDown Maximum value."), "../assets/offroad/icon_shell.png", Params().getBool("KisaVariableSteerDelta")) {
-    QObject::connect(this, &VariableSteerDeltaToggle::toggleFlipped, [=](int state) {
-      bool status = state ? true : false;
-      Params().putBool("KisaVariableSteerDelta", status);
-    });
-  }
-};
-
 class DrivingRecordToggle : public ToggleControl {
   Q_OBJECT
 
@@ -499,18 +466,6 @@ public:
   }
 };
 
-class FPTwoToggle : public ToggleControl {
-  Q_OBJECT
-
-public:
-  FPTwoToggle() : ToggleControl(tr("Use FingerPrint 2.0"), tr("Activate Fingerprint 2.0. Activate the vehicle with ECU recognition."), "../assets/offroad/icon_shell.png", Params().getBool("FingerprintTwoSet")) {
-    QObject::connect(this, &FPTwoToggle::toggleFlipped, [=](int state) {
-      bool status = state ? true : false;
-      Params().putBool("FingerprintTwoSet", status);
-    });
-  }
-};
-
 class GearDToggle : public ToggleControl {
   Q_OBJECT
 
@@ -519,18 +474,6 @@ public:
     QObject::connect(this, &GearDToggle::toggleFlipped, [=](int state) {
       bool status = state ? true : false;
       Params().putBool("JustDoGearD", status);
-    });
-  }
-};
-
-class ComIssueToggle : public ToggleControl {
-  Q_OBJECT
-
-public:
-  ComIssueToggle() : ToggleControl(tr("Turn Off Communication Issue Alarm"), tr("Turn this option on to disable the communication issue alarm."), "../assets/offroad/icon_shell.png", Params().getBool("ComIssueGone")) {
-    QObject::connect(this, &ComIssueToggle::toggleFlipped, [=](int state) {
-      bool status = state ? true : false;
-      Params().putBool("ComIssueGone", status);
     });
   }
 };
@@ -715,18 +658,6 @@ public:
   }
 };
 
-class FCA11MessageToggle : public ToggleControl {
-  Q_OBJECT
-
-public:
-  FCA11MessageToggle() : ToggleControl(tr("Enable FCA11 Message"), tr("Turn this on, if you get an error with forward collision warning.(reboot required)"), "../assets/offroad/icon_shell.png", Params().getBool("FCA11Message")) {
-    QObject::connect(this, &FCA11MessageToggle::toggleFlipped, [=](int state) {
-      bool status = state ? true : false;
-      Params().putBool("FCA11Message", status);
-    });
-  }
-};
-
 class StandstillResumeAltToggle : public ToggleControl {
   Q_OBJECT
 
@@ -871,18 +802,6 @@ public:
   }
 };
 
-class JoystickModeToggle : public ToggleControl {
-  Q_OBJECT
-
-public:
-  JoystickModeToggle() : ToggleControl(tr("JoyStick Debug Mode"), tr("How to use: https://github.com/commaai/openpilot/tree/master/tools/joystick"), "../assets/offroad/icon_shell.png", Params().getBool("JoystickDebugMode")) {
-    QObject::connect(this, &JoystickModeToggle::toggleFlipped, [=](int state) {
-      bool status = state ? true : false;
-      Params().putBool("JoystickDebugMode", status);
-    });
-  }
-};
-
 class RPMAnimatedToggle : public ToggleControl {
   Q_OBJECT
 
@@ -915,42 +834,6 @@ public:
     QObject::connect(this, &SpeedCameraOffsetToggle::toggleFlipped, [=](int state) {
       bool status = state ? true : false;
       Params().putBool("SpeedCameraOffset", status);
-    });
-  }
-};
-
-class HoldForSettingToggle : public ToggleControl {
-  Q_OBJECT
-
-public:
-  HoldForSettingToggle() : ToggleControl(tr("Hold Button for Setting Menu"), tr("Use 0.3 sec delay to enter setting menu. This is to prevent being touched in setting menu when you use external program(Mixplorer, etc)"), "../assets/offroad/icon_shell.png", Params().getBool("HoldForSetting")) {
-    QObject::connect(this, &HoldForSettingToggle::toggleFlipped, [=](int state) {
-      bool status = state ? true : false;
-      Params().putBool("HoldForSetting", status);
-    });
-  }
-};
-
-class RTShieldToggle : public ToggleControl {
-  Q_OBJECT
-
-public:
-  RTShieldToggle() : ToggleControl(tr("Enable RTShield Process"), tr("Seems regarding process stability. This uses resource."), "../assets/offroad/icon_shell.png", Params().getBool("RTShield")) {
-    QObject::connect(this, &RTShieldToggle::toggleFlipped, [=](int state) {
-      bool status = state ? true : false;
-      Params().putBool("RTShield", status);
-    });
-  }
-};
-
-class OSMOfflineUseToggle : public ToggleControl {
-  Q_OBJECT
-
-public:
-  OSMOfflineUseToggle() : ToggleControl(tr("Offline OSM(64G storage only)"), tr("Local only OSM. This will download DBs from online. Much storage is required. If your storage is not enough, Compiling occurs every boot time."), "../assets/offroad/icon_shell.png", Params().getBool("OSMOfflineUse")) {
-    QObject::connect(this, &OSMOfflineUseToggle::toggleFlipped, [=](int state) {
-      bool status = state ? true : false;
-      Params().putBool("OSMOfflineUse", status);
     });
   }
 };
@@ -1052,18 +935,6 @@ public:
       } else {
         uiState()->scene.KISA_Debug = false;
       }
-    });
-  }
-};
-
-class SetSpeedByFive : public ToggleControl {
-  Q_OBJECT
-
-public:
-  SetSpeedByFive() : ToggleControl(tr("SetSpeed Changed by 5"), tr("MAX Speed can be adjusted by 5. Cruise Set Speed will be set as same with MAX quickly."), "../assets/offroad/icon_shell.png", Params().getBool("SetSpeedFive")) {
-    QObject::connect(this, &SetSpeedByFive::toggleFlipped, [=](int state) {
-      bool status = state ? true : false;
-      Params().putBool("SetSpeedFive", status);
     });
   }
 };
@@ -1206,21 +1077,6 @@ class AutoShutdown : public AbstractControl {
 
 public:
   AutoShutdown();
-
-private:
-  QPushButton btnplus;
-  QPushButton btnminus;
-  QLabel label;
-  Params params;
-  
-  void refresh();
-};
-
-class ForceShutdown : public AbstractControl {
-  Q_OBJECT
-
-public:
-  ForceShutdown();
 
 private:
   QPushButton btnplus;
@@ -1478,23 +1334,6 @@ private:
   void refresh();
 };
 
-class SRMaxControl : public AbstractControl {
-  Q_OBJECT
-
-public:
-  SRMaxControl();
-
-private:
-  QPushButton btndigit;
-  QPushButton btnminus;
-  QPushButton btnplus;
-  QLabel label;
-  Params params;
-  float digit = 0.01;
-  
-  void refresh();
-};
-
 class SteerActuatorDelay : public AbstractControl {
   Q_OBJECT
 
@@ -1553,69 +1392,6 @@ private:
   Params params;
   
   void refresh();
-};
-
-class SteerMax : public AbstractControl {
-  Q_OBJECT
-
-public:
-  SteerMax();
-
-private:
-  QPushButton btnplusl;
-  QPushButton btnminusl;
-  QPushButton btnplusr;
-  QPushButton btnminusr;
-  QLabel labell1;
-  QLabel labelr1;
-  QLabel labell;
-  QLabel labelr;
-  Params params;
-  
-  void refreshl();
-  void refreshr();
-};
-
-class SteerDeltaUp : public AbstractControl {
-  Q_OBJECT
-
-public:
-  SteerDeltaUp();
-
-private:
-  QPushButton btnplusl;
-  QPushButton btnminusl;
-  QPushButton btnplusr;
-  QPushButton btnminusr;
-  QLabel labell1;
-  QLabel labelr1;
-  QLabel labell;
-  QLabel labelr;
-  Params params;
-  
-  void refreshl();
-  void refreshr();
-};
-
-class SteerDeltaDown : public AbstractControl {
-  Q_OBJECT
-
-public:
-  SteerDeltaDown();
-
-private:
-  QPushButton btnplusl;
-  QPushButton btnminusl;
-  QPushButton btnplusr;
-  QPushButton btnminusr;
-  QLabel labell1;
-  QLabel labelr1;
-  QLabel labell;
-  QLabel labelr;
-  Params params;
-  
-  void refreshl();
-  void refreshr();
 };
 
 // control
@@ -1922,66 +1698,6 @@ private:
   void refresh();
 };
 
-class MaxSteer : public AbstractControl {
-  Q_OBJECT
-
-public:
-  MaxSteer();
-
-private:
-  QPushButton btnplus;
-  QPushButton btnminus;
-  QLabel label;
-  Params params;
-  
-  void refresh();
-};
-
-class MaxRTDelta : public AbstractControl {
-  Q_OBJECT
-
-public:
-  MaxRTDelta();
-
-private:
-  QPushButton btnplus;
-  QPushButton btnminus;
-  QLabel label;
-  Params params;
-  
-  void refresh();
-};
-
-class MaxRateUp : public AbstractControl {
-  Q_OBJECT
-
-public:
-  MaxRateUp();
-
-private:
-  QPushButton btnplus;
-  QPushButton btnminus;
-  QLabel label;
-  Params params;
-  
-  void refresh();
-};
-
-class MaxRateDown : public AbstractControl {
-  Q_OBJECT
-
-public:
-  MaxRateDown();
-
-private:
-  QPushButton btnplus;
-  QPushButton btnminus;
-  QLabel label;
-  Params params;
-  
-  void refresh();
-};
-
 class SteerThreshold : public AbstractControl {
   Q_OBJECT
 
@@ -2002,21 +1718,6 @@ class RecordCount : public AbstractControl {
 
 public:
   RecordCount();
-
-private:
-  QPushButton btnplus;
-  QPushButton btnminus;
-  QLabel label;
-  Params params;
-  
-  void refresh();
-};
-
-class RecordQuality : public AbstractControl {
-  Q_OBJECT
-
-public:
-  RecordQuality();
 
 private:
   QPushButton btnplus;
@@ -2373,21 +2074,6 @@ private:
   void refresh();
 };
 
-class GetOffAlert : public AbstractControl {
-  Q_OBJECT
-
-public:
-  GetOffAlert();
-
-private:
-  QPushButton btnplus;
-  QPushButton btnminus;
-  QLabel label;
-  Params params;
-  
-  void refresh();
-};
-
 class KISANaviSelect : public AbstractControl {
   Q_OBJECT
 
@@ -2400,35 +2086,6 @@ private:
   QLabel label;
   Params params;
   
-  void refresh();
-};
-
-class KISAServerSelect : public AbstractControl {
-  Q_OBJECT
-
-public:
-  KISAServerSelect();
-
-private:
-  QPushButton btn1;
-  QPushButton btn2;
-  QPushButton btn3;
-  Params params;
-  
-  void refresh();
-};
-
-class KISAServerAPI : public AbstractControl {
-  Q_OBJECT
-
-public:
-  KISAServerAPI();
-
-private:
-  QLabel label;
-  QPushButton btn;
-  Params params;
-
   void refresh();
 };
 
@@ -3028,6 +2685,21 @@ private:
   QPushButton btn1;
   QPushButton btn2;
   QPushButton btn3;
+  Params params;
+  
+  void refresh();
+};
+
+class SetSpeedPlus : public AbstractControl {
+  Q_OBJECT
+
+public:
+  SetSpeedPlus();
+
+private:
+  QPushButton btnplus;
+  QPushButton btnminus;
+  QLabel label;
   Params params;
   
   void refresh();

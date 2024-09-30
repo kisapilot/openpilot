@@ -22,7 +22,7 @@ __version__ = '0.0.10'
 CANPACKET_HEAD_SIZE = 0x6
 DLC_TO_LEN = [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64]
 LEN_TO_DLC = {length: dlc for (dlc, length) in enumerate(DLC_TO_LEN)}
-PANDA_BUS_CNT = 4
+PANDA_BUS_CNT = 3
 
 
 def calculate_checksum(data):
@@ -257,7 +257,7 @@ class Panda:
     self._handle = None
     while self._handle is None:
       # try USB first, then SPI
-      self._context, self._handle, serial, self.bootstub, bcd = self.usb_connect(self._connect_serial, claim=claim)
+      self._context, self._handle, serial, self.bootstub, bcd = self.usb_connect(self._connect_serial, claim=claim, no_error=wait)
       if self._handle is None:
         self._context, self._handle, serial, self.bootstub, bcd = self.spi_connect(self._connect_serial)
       if not wait:
@@ -349,7 +349,7 @@ class Panda:
     return None, handle, spi_serial, bootstub, None
 
   @classmethod
-  def usb_connect(cls, serial, claim=True):
+  def usb_connect(cls, serial, claim=True, no_error=False):
     handle, usb_serial, bootstub, bcd = None, None, None, None
     context = usb1.USBContext()
     context.open()
@@ -359,7 +359,9 @@ class Panda:
           try:
             this_serial = device.getSerialNumber()
           except Exception:
-            logger.exception("failed to get serial number of panda")
+            # Allow to ignore errors on reconnect. USB hubs need some time to initialize after panda reset
+            if not no_error:
+              logger.exception("failed to get serial number of panda")
             continue
 
           if serial is None or this_serial == serial:
@@ -453,7 +455,7 @@ class Panda:
     # wait up to 15 seconds
     for _ in range(15*10):
       try:
-        self.connect()
+        self.connect(claim=False, wait=True)
         success = True
         break
       except Exception:

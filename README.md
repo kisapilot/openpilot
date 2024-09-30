@@ -249,11 +249,6 @@ Setting Menu ⚙️📌
    - **SoftKey RUN/SET:** softkey application
    - **RUN Mixplorer:** file manager application
    - **CAR Force Recognition:** If your car is not recognized, choose your car at this. (reboot required)
-   - **Panda Value Edit:** not recommended. enough at current status. (reboot required)
-      - MaxSteer
-      - RTDelta
-      - MaxRateUp
-      - MaxRateDown
 
  - `Tuning Menu` (**Function Name:** Description)
    - **CameraOffset:** set your camera offset

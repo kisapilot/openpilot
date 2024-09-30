@@ -12,7 +12,7 @@ LaneChangeState = log.LateralPlan.LaneChangeState
 class KisaCruiseControl():
   def __init__(self):
 
-    self.sm = messaging.SubMaster(['liveENaviData', 'lateralPlan', 'radarState', 'controlsState', 'longitudinalPlan', 'liveMapData'])
+    self.sm = messaging.SubMaster(['liveENaviData', 'lateralPlan', 'radarState', 'controlsState', 'carState', 'longitudinalPlan', 'liveMapData', 'selfdriveState'])
 
     self.btn_cnt = 0
     self.seq_command = 0
@@ -212,7 +212,7 @@ class KisaCruiseControl():
     #if not mapValid or trafficType == 0:
     #  return  cruise_set_speed_kph
 
-    if not self.speedlimit_decel_off and not self.sm['controlsState'].pauseSpdLimit:
+    if not self.speedlimit_decel_off and not self.sm['carState'].pauseSpdLimit:
       if self.navi_sel == 2:
         if self.sm['liveENaviData'].wazeRoadSpeedLimit > 9:
           self.map_speed = self.sm['liveENaviData'].wazeRoadSpeedLimit
@@ -369,7 +369,7 @@ class KisaCruiseControl():
       self.map_speed = 0
       self.map_speed_dist = 0
       self.map_speed_dist_extend = False
-      if not self.speedlimit_decel_off and not self.sm['controlsState'].pauseSpdLimit:
+      if not self.speedlimit_decel_off and not self.sm['carState'].pauseSpdLimit:
         self.map_speed_block = False
       self.onSpeedBumpControl = False
       self.onSpeedBumpControl2 = False
@@ -425,7 +425,10 @@ class KisaCruiseControl():
       res_speed = max(min_control_speed, self.sm['controlsState'].resSpeed)
       return min(res_speed, navi_speed)
     elif CS.cruise_set_mode in (1,2,3,4):
-      if CS.out.brakeLights and CS.out.vEgo == 0 and CS.cruise_set_mode in (1,2,4):
+      if self.sm['selfdriveState'].experimentalMode and CS.CP.sccBus == 0:
+        self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
+        var_speed = min(CS.CP.vFuture, navi_speed)
+      elif CS.out.brakeLights and CS.out.vEgo == 0 and CS.cruise_set_mode in (1,2,4):
         self.faststart = True
         self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
         var_speed = min(navi_speed, 30 if CS.is_set_speed_in_mph else 50)
@@ -606,7 +609,7 @@ class KisaCruiseControl():
     if not self.button_status(CS):  # 사용자가 버튼클릭하면 일정시간 기다린다.
       pass
     elif CS.cruise_active:
-      cruiseState_speed = round(self.sm['controlsState'].vCruise)
+      cruiseState_speed = round(self.sm['carState'].vCruise)
       if CS.CP.carFingerprint in CANFD_CAR:
         self.ctrl_gap = self.get_live_gap(CS, spd_gap_on) # gap
       kph_set_vEgo = self.get_navi_speed(self.sm, CS, cruiseState_speed) # camspeed

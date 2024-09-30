@@ -1,7 +1,6 @@
 #include "selfdrive/ui/ui.h"
 
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 
 #include <QtConcurrent>
@@ -19,20 +18,10 @@
 // Projects a point in car to space to the corresponding point in full frame
 // image space.
 static bool calib_frame_to_full_frame(const UIState *s, float in_x, float in_y, float in_z, QPointF *out) {
-  const float margin = 500.0f;
-  const QRectF clip_region{-margin, -margin, s->fb_w + 2 * margin, s->fb_h + 2 * margin};
-
-  const vec3 pt = (vec3){{in_x, in_y, in_z}};
-  const vec3 Ep = matvecmul3(s->scene.wide_cam ? s->scene.view_from_wide_calib : s->scene.view_from_calib, pt);
-  const vec3 KEp = matvecmul3(s->scene.wide_cam ? ECAM_INTRINSIC_MATRIX : FCAM_INTRINSIC_MATRIX, Ep);
-
-  // Project.
-  QPointF point = s->car_space_transform.map(QPointF{KEp.v[0] / KEp.v[2], KEp.v[1] / KEp.v[2]});
-  if (clip_region.contains(point)) {
-    *out = point;
-    return true;
-  }
-  return false;
+  Eigen::Vector3f input(in_x, in_y, in_z);
+  auto transformed = s->car_space_transform * input;
+  *out = QPointF(transformed.x() / transformed.z(), transformed.y() / transformed.z());
+  return s->clip_region.contains(*out);
 }
 
 int get_path_length_idx(const cereal::XYZTData::Reader &line, const float path_height) {
@@ -186,14 +175,10 @@ static void update_state(UIState *s) {
     scene.steerRatio = cons_data.getSteerRatio();
     scene.dynamic_tr_mode = cons_data.getDynamicTRMode();
     scene.dynamic_tr_value = cons_data.getDynamicTRValue();
-    scene.pause_spdlimit = cons_data.getPauseSpdLimit();
     scene.accel = cons_data.getAccel();
     scene.ctrl_speed = cons_data.getSafetySpeed();
     scene.desired_angle_steers = cons_data.getSteeringAngleDesiredDeg();
     scene.gap_by_speed_on = cons_data.getGapBySpeedOn();
-    scene.enabled = cons_data.getEnabled();
-    scene.experimental_mode = cons_data.getExperimentalMode();
-    scene.exp_mode_temp = cons_data.getExpModeTemp();
     scene.btn_pressing = cons_data.getBtnPressing();
   }
   if (sm.updated("carState")) {
@@ -232,6 +217,7 @@ static void update_state(UIState *s) {
     scene.engine_rpm = cs_data.getEngineRpm();
     scene.gear_step = cs_data.getGearStep();
     scene.charge_meter = cs_data.getChargeMeter();
+    scene.pause_spdlimit = cs_data.getPauseSpdLimit();
   }
 
   if (sm.updated("liveParameters")) {
@@ -244,30 +230,21 @@ static void update_state(UIState *s) {
   }
 
   if (sm.updated("liveCalibration")) {
+    auto list2rot = [](const capnp::List<float>::Reader &rpy_list) ->Eigen::Matrix3f {
+      return euler2rot({rpy_list[0], rpy_list[1], rpy_list[2]}).cast<float>();
+    };
+
     auto live_calib = sm["liveCalibration"].getLiveCalibration();
-    auto rpy_list = live_calib.getRpyCalib();
-    auto wfde_list = live_calib.getWideFromDeviceEuler();
-    Eigen::Vector3d rpy;
-    Eigen::Vector3d wfde;
-    if (rpy_list.size() == 3) rpy << rpy_list[0], rpy_list[1], rpy_list[2];
-    if (wfde_list.size() == 3) wfde << wfde_list[0], wfde_list[1], wfde_list[2];
-    Eigen::Matrix3d device_from_calib = euler2rot(rpy);
-    Eigen::Matrix3d wide_from_device = euler2rot(wfde);
-    Eigen::Matrix3d view_from_device;
-    view_from_device << 0, 1, 0,
-                        0, 0, 1,
-                        1, 0, 0;
-    Eigen::Matrix3d view_from_calib = view_from_device * device_from_calib;
-    Eigen::Matrix3d view_from_wide_calib = view_from_device * wide_from_device * device_from_calib;
-    for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < 3; j++) {
-        scene.view_from_calib.v[i*3 + j] = view_from_calib(i, j);
-        scene.view_from_wide_calib.v[i*3 + j] = view_from_wide_calib(i, j);
-      }
+    if (live_calib.getCalStatus() == cereal::LiveCalibrationData::Status::CALIBRATED) {
+      auto device_from_calib = list2rot(live_calib.getRpyCalib());
+      auto wide_from_device = list2rot(live_calib.getWideFromDeviceEuler());
+      s->scene.view_from_calib = VIEW_FROM_DEVICE * device_from_calib;
+      s->scene.view_from_wide_calib = VIEW_FROM_DEVICE * wide_from_device * device_from_calib;
+    } else {
+      s->scene.view_from_calib = s->scene.view_from_wide_calib = VIEW_FROM_DEVICE;
     }
-    scene.calibration_valid = live_calib.getCalStatus() == cereal::LiveCalibrationData::Status::CALIBRATED;
-    scene.calibration_wide_valid = wfde_list.size() == 3;
   }
+
   if (sm.updated("deviceState")) {
     scene.deviceState = sm["deviceState"].getDeviceState();
     scene.cpuPerc = scene.deviceState.getCpuUsagePercent()[0];
@@ -448,6 +425,10 @@ void UIState::updateStatus() {
         status = ss.getEnabled() ? STATUS_ENGAGED : STATUS_DISENGAGED;
       }
     }
+
+    scene.selfdrive_state = ss;
+    scene.enabled = ss.getEnabled();
+    scene.experimental_mode = ss.getExperimentalMode();
   }
 
   // Handle onroad/offroad transition
@@ -490,7 +471,6 @@ void UIState::updateStatus() {
     scene.nKisaBlindSpotDetect = params.getBool("KisaBlindSpotDetect");
     scene.laneless_mode = std::stoi(params.get("LanelessMode"));
     scene.recording_count = std::stoi(params.get("RecordingCount"));
-    scene.recording_quality = std::stoi(params.get("RecordingQuality"));
     scene.monitoring_mode = params.getBool("KisaMonitoringMode");
     scene.brightness = std::stoi(params.get("KisaUIBrightness"));
     scene.nVolumeBoost = std::stoi(params.get("KisaUIVolumeBoost"));
@@ -563,13 +543,8 @@ UIState::UIState(QObject *parent) : QObject(parent) {
     "peripheralState", "liveParameters", "ubloxGnss", "qcomGnss", "gpsLocationExternal", "gpsLocation",
     "lateralPlan", "longitudinalPlan", "liveENaviData", "liveMapData",
   });
-
-  Params params;
-  language = QString::fromStdString(params.get("LanguageSetting"));
-  auto prime_value = params.get("PrimeType");
-  if (!prime_value.empty()) {
-    prime_type = static_cast<PrimeType>(std::atoi(prime_value.c_str()));
-  }
+  prime_state = new PrimeState(this);
+  language = QString::fromStdString(Params().get("LanguageSetting"));
 
   // update timer
   timer = new QTimer(this);
@@ -582,29 +557,10 @@ void UIState::update() {
   update_state(this);
   updateStatus();
 
-  if (std::getenv("PRIME_TYPE")) {
-      setPrimeType((PrimeType)atoi(std::getenv("PRIME_TYPE")));
-  }
-
   if (sm->frame % UI_FREQ == 0) {
     watchdog_kick(nanos_since_boot());
   }
   emit uiUpdate(*this);
-}
-
-void UIState::setPrimeType(PrimeType type) {
-  if (type != prime_type) {
-    bool prev_prime = hasPrime();
-
-    prime_type = type;
-    Params().put("PrimeType", std::to_string(prime_type));
-    emit primeTypeChanged(prime_type);
-
-    bool prime = hasPrime();
-    if (prev_prime != prime) {
-      emit primeChanged(prime);
-    }
-  }
 }
 
 Device::Device(QObject *parent) : brightness_filter(BACKLIGHT_OFFROAD, BACKLIGHT_TS, BACKLIGHT_DT), QObject(parent) {
@@ -661,7 +617,7 @@ void Device::updateBrightness(const UIState &s) {
     }
   } else if (s.scene.autoScreenOff != -3 && s.scene.touched2) {
     sleep_time = s.scene.nTime;
-  } else if (s.scene.controls_state.getAlertSize() != cereal::SelfdriveState::AlertSize::NONE && s.scene.autoScreenOff != -3) {
+  } else if (s.scene.selfdrive_state.getAlertSize() != cereal::SelfdriveState::AlertSize::NONE && s.scene.autoScreenOff != -3) {
     sleep_time = s.scene.nTime;
   } else if (sleep_time > 0 && s.scene.autoScreenOff != -3) {
     sleep_time--;

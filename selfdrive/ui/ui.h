@@ -1,20 +1,20 @@
 #pragma once
 
+#include <eigen3/Eigen/Dense>
 #include <memory>
 #include <string>
 
-#include <QObject>
 #include <QTimer>
 #include <QColor>
 #include <QFuture>
 #include <QPolygonF>
-#include <QTransform>
 
 #include "cereal/messaging/messaging.h"
 #include "common/mat.h"
 #include "common/params.h"
-#include "common/timing.h"
+#include "common/util.h"
 #include "system/hardware/hw.h"
+#include "selfdrive/ui/qt/prime_state.h"
 
 const int UI_BORDER_SIZE = 15;
 const int UI_HEADER_HEIGHT = 420;
@@ -24,15 +24,22 @@ const int BACKLIGHT_OFFROAD = 50;
 
 const float MIN_DRAW_DISTANCE = 10.0;
 const float MAX_DRAW_DISTANCE = 100.0;
-constexpr mat3 DEFAULT_CALIBRATION = {{ 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0 }};
-constexpr mat3 FCAM_INTRINSIC_MATRIX = (mat3){{2648.0, 0.0, 1928.0 / 2,
-                                           0.0, 2648.0, 1208.0 / 2,
-                                           0.0, 0.0, 1.0}};
+const Eigen::Matrix3f VIEW_FROM_DEVICE = (Eigen::Matrix3f() <<
+  0.0, 1.0, 0.0,
+  0.0, 0.0, 1.0,
+  1.0, 0.0, 0.0).finished();
+
+const Eigen::Matrix3f FCAM_INTRINSIC_MATRIX = (Eigen::Matrix3f() <<
+  2648.0, 0.0, 1928.0 / 2,
+  0.0, 2648.0, 1208.0 / 2,
+  0.0, 0.0, 1.0).finished();
+
 // tici ecam focal probably wrong? magnification is not consistent across frame
 // Need to retrain model before this can be changed
-constexpr mat3 ECAM_INTRINSIC_MATRIX = (mat3){{567.0, 0.0, 1928.0 / 2,
-                                           0.0, 567.0, 1208.0 / 2,
-                                           0.0, 0.0, 1.0}};
+const Eigen::Matrix3f ECAM_INTRINSIC_MATRIX = (Eigen::Matrix3f() <<
+  567.0, 0.0, 1928.0 / 2,
+  0.0, 567.0, 1208.0 / 2,
+  0.0, 0.0, 1.0).finished();
 
 typedef enum UIStatus {
   STATUS_DISENGAGED,
@@ -40,17 +47,6 @@ typedef enum UIStatus {
   STATUS_ENGAGED,
   STATUS_DND,
 } UIStatus;
-
-enum PrimeType {
-  PRIME_TYPE_UNKNOWN = -2,
-  PRIME_TYPE_UNPAIRED = -1,
-  PRIME_TYPE_NONE = 0,
-  PRIME_TYPE_MAGENTA = 1,
-  PRIME_TYPE_LITE = 2,
-  PRIME_TYPE_BLUE = 3,
-  PRIME_TYPE_MAGENTA_NEW = 4,
-  PRIME_TYPE_PURPLE = 5,
-};
 
 const QColor bg_colors [] = {
   [STATUS_DISENGAGED] = QColor(0x17, 0x33, 0x49, 0xc8),
@@ -61,11 +57,8 @@ const QColor bg_colors [] = {
 
 
 typedef struct UIScene {
-  bool calibration_valid = false;
-  bool calibration_wide_valid  = false;
-  bool wide_cam = true;
-  mat3 view_from_calib = DEFAULT_CALIBRATION;
-  mat3 view_from_wide_calib = DEFAULT_CALIBRATION;
+  Eigen::Matrix3f view_from_calib = VIEW_FROM_DEVICE;
+  Eigen::Matrix3f view_from_wide_calib = VIEW_FROM_DEVICE;
   cereal::PandaState::PandaType pandaType;
 
   std::string alertTextMsg1;
@@ -125,7 +118,6 @@ typedef struct UIScene {
   bool driverAcc;
   int laneless_mode;
   int recording_count;
-  int recording_quality;
   bool monitoring_mode;
   bool forceGearD;
   bool kisa_livetune_ui;
@@ -208,6 +200,7 @@ typedef struct UIScene {
   cereal::PeripheralState::Reader peripheralState;
   cereal::CarState::Reader car_state;
   cereal::ControlsState::Reader controls_state;
+  cereal::SelfdriveState::Reader selfdrive_state;
   cereal::CarState::GearShifter getGearShifter;
   cereal::LateralPlan::Reader lateral_plan;
   cereal::LiveENaviData::Reader live_enavi_data;
@@ -327,28 +320,23 @@ public:
     return scene.started && (*sm)["selfdriveState"].getSelfdriveState().getEnabled();
   }
 
-  void setPrimeType(PrimeType type);
-  inline PrimeType primeType() const { return prime_type; }
-  inline bool hasPrime() const { return prime_type > PrimeType::PRIME_TYPE_NONE; }
-
   int fb_w = 0, fb_h = 0;
 
   std::unique_ptr<SubMaster> sm;
-
   UIStatus status;
   UIScene scene = {};
 
   QString language;
+  PrimeState *prime_state;
 
   bool is_OpenpilotViewEnabled = false;
 
-  QTransform car_space_transform;
+  Eigen::Matrix3f car_space_transform = Eigen::Matrix3f::Zero();
+  QRectF clip_region;
 
 signals:
   void uiUpdate(const UIState &s);
   void offroadTransition(bool offroad);
-  void primeChanged(bool prime);
-  void primeTypeChanged(PrimeType prime_type);
   void hotspotSignal();
 
 private slots:
@@ -357,7 +345,6 @@ private slots:
 private:
   QTimer *timer;
   bool started_prev = false;
-  PrimeType prime_type = PrimeType::PRIME_TYPE_UNKNOWN;
 };
 
 UIState *uiState();
@@ -404,7 +391,6 @@ void ui_update_params(UIState *s);
 int get_path_length_idx(const cereal::XYZTData::Reader &line, const float path_height);
 void update_model(UIState *s,
                   const cereal::ModelDataV2::Reader &model);
-void update_dmonitoring(UIState *s, const cereal::DriverStateV2::Reader &driverstate, float dm_fade_state, bool is_rhd);
 void update_leads(UIState *s, const cereal::RadarState::Reader &radar_state, const cereal::XYZTData::Reader &line);
 void update_line_data(const UIState *s, const cereal::XYZTData::Reader &line,
                       float y_off, float z_off, QPolygonF *pvd, int max_idx, bool allow_invert);

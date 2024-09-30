@@ -19,7 +19,7 @@ from cereal.services import SERVICE_LIST
 from openpilot.common.basedir import BASEDIR
 from openpilot.common.timeout import Timeout
 from openpilot.common.params import Params
-from openpilot.selfdrive.controls.lib.events import EVENTS, ET
+from openpilot.selfdrive.selfdrived.events import EVENTS, ET
 from openpilot.selfdrive.test.helpers import set_params_enabled, release_only
 from openpilot.system.hardware import HARDWARE
 from openpilot.system.hardware.hw import Paths
@@ -32,25 +32,27 @@ CPU usage budget
 * total CPU usage of openpilot (sum(PROCS.values())
   should not exceed MAX_TOTAL_CPU
 """
-MAX_TOTAL_CPU = 250.  # total for all 8 cores
+
+MAX_TOTAL_CPU = 265.  # total for all 8 cores
 PROCS = {
   # Baseline CPU usage by process
-  "selfdrive.controls.controlsd": 32.0,
-  "selfdrive.car.card": 26.0,
+  "selfdrive.controls.controlsd": 18.0,
+  "selfdrive.selfdrived.selfdrived": 21.0,
+  "selfdrive.car.card": 30.0,
   "./loggerd": 14.0,
   "./encoderd": 17.0,
   "./camerad": 14.5,
-  "./locationd": 11.0,
   "selfdrive.controls.plannerd": 11.0,
   "./ui": 18.0,
   "selfdrive.locationd.paramsd": 9.0,
   "./sensord": 7.0,
-  "selfdrive.controls.radard": 7.0,
-  "selfdrive.modeld.modeld": 13.0,
+  "selfdrive.controls.radard": 2.0,
+  "selfdrive.modeld.modeld": 17.0,
   "selfdrive.modeld.dmonitoringmodeld": 8.0,
   "system.hardware.hardwared": 3.87,
   "selfdrive.locationd.calibrationd": 2.0,
   "selfdrive.locationd.torqued": 5.0,
+  "selfdrive.locationd.locationd": 25.0,
   "selfdrive.ui.soundd": 3.5,
   "selfdrive.monitoring.dmonitoringd": 4.0,
   "./proclogd": 1.54,
@@ -87,6 +89,7 @@ TIMINGS = {
   "carControl": [2.5, 0.35],
   "controlsState": [2.5, 0.35],
   "longitudinalPlan": [2.5, 0.5],
+  "driverAssistance": [2.5, 0.5],
   "roadCameraState": [2.5, 0.35],
   "driverCameraState": [2.5, 0.35],
   "modelV2": [2.5, 0.35],
@@ -310,7 +313,7 @@ class TestOnroad:
     assert max(mems) - min(mems) <= 3.0
 
   def test_gpu_usage(self):
-    assert self.gpu_procs == {"weston", "ui", "camerad", "selfdrive.modeld.modeld"}
+    assert self.gpu_procs == {"weston", "ui", "camerad", "selfdrive.modeld.modeld", "selfdrive.modeld.dmonitoringmodeld"}
 
   def test_camera_processing_time(self):
     result = "\n"
@@ -429,6 +432,6 @@ class TestOnroad:
         if evt.noEntry:
           no_entries[evt.name] += 1
 
-    eng = [m.controlsState.engageable for m in self.service_msgs['controlsState']]
+    eng = [m.selfdriveState.engageable for m in self.service_msgs['selfdriveState']]
     assert all(eng), \
-           f"Not engageable for whole segment:\n- controlsState.engageable: {Counter(eng)}\n- No entry events: {no_entries}"
+           f"Not engageable for whole segment:\n- selfdriveState.engageable: {Counter(eng)}\n- No entry events: {no_entries}"

@@ -130,6 +130,7 @@ class CarState:
   aReqValue: float = auto_field()
   chargeMeter: float = auto_field()
   brakeLights: bool = auto_field()
+  pauseSpdLimit: bool = auto_field()
 
   @auto_dataclass
   class TPMS:
@@ -266,6 +267,7 @@ class CarControl:
     aqValueRaw: float = auto_field()
     autoResvCruisekph: float = auto_field()
     resSpeed: float = auto_field()
+    roadLimitSpeedOnTemp: bool = auto_field()
     kisaLog1: str = auto_field()
     kisaLog2: str = auto_field()
     kisaLog3: str = auto_field()
@@ -482,6 +484,7 @@ class CarParams:
   carFw: list['CarParams.CarFw'] = auto_field()
 
   radarTimeStep: float = 0.05  # time delta between radar updates, 20Hz is very standard
+  radarDelay: float = auto_field()
   fingerprintSource: 'CarParams.FingerprintSource' = field(default_factory=lambda: CarParams.FingerprintSource.can)
   # Where Panda/C2 is integrated into the car's CAN network
   networkLocation: 'CarParams.NetworkLocation' = field(default_factory=lambda: CarParams.NetworkLocation.fwdCamera)
@@ -553,6 +556,7 @@ class CarParams:
     volkswagenMqbEvo = auto()
     chryslerCusw = auto()
     psa = auto()
+    fcaGiorgio = auto()
 
   class SteerControlType(StrEnum):
     torque = auto()

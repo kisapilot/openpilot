@@ -74,7 +74,7 @@ class CarState(CarStateBase):
     
     self.steer_anglecorrection = float(int(Params().get("KisaSteerAngleCorrection", encoding="utf8")) * 0.1)
     self.gear_correction = Params().get_bool("JustDoGearD")
-    self.set_spd_five = Params().get_bool("SetSpeedFive")
+    self.set_spd_plus = int(Params().get("SetSpeedPlus", encoding="utf8"))
     self.brake_check = False
     self.cancel_check = False
     
@@ -117,13 +117,13 @@ class CarState(CarStateBase):
     self.i_pedal_max = False
     self.i_pedel_stop = False
 
-    self.sm = messaging.SubMaster(['controlsState'])
+    self.sm = messaging.SubMaster(['carState'])
 
   def cruise_speed_button_alt(self):
     self.sm.update(0)
     set_speed_kph = self.cruise_set_speed_kph
-    if 1 < round(self.sm['controlsState'].vCruise) < 255:
-      set_speed_kph = round(self.sm['controlsState'].vCruise)
+    if 1 < round(self.sm['carState'].vCruise) < 255:
+      set_speed_kph = round(self.sm['carState'].vCruise)
       self.cruise_set_speed_kph = set_speed_kph
 
     if self.cruise_buttons[-1]:
@@ -162,17 +162,17 @@ class CarState(CarStateBase):
             self.cruise_set_speed_kph = max(set_speed_kph, int(round(self.clu_Vanz)), (30 if self.is_metric else 20))
           return self.cruise_set_speed_kph
       elif self.cruise_buttons[-1] == Buttons.RES_ACCEL and not self.cruiseState_standstill:   # up 
-        if self.set_spd_five:
-          set_speed_kph += 5
-          if set_speed_kph % 5 != 0:
-            set_speed_kph = int(round(set_speed_kph/5)*5)
+        if self.set_spd_plus:
+          set_speed_kph += self.set_spd_plus
+          if set_speed_kph % self.set_spd_plus != 0:
+            set_speed_kph = int(round(set_speed_kph/self.set_spd_plus)*self.set_spd_plus)
         else:
           set_speed_kph += 1
       elif self.cruise_buttons[-1] == Buttons.SET_DECEL and not self.cruiseState_standstill:  # dn
-        if self.set_spd_five:
-          set_speed_kph -= 5
-          if set_speed_kph % 5 != 0:
-            set_speed_kph = int(round(set_speed_kph/5)*5)
+        if self.set_spd_plus:
+          set_speed_kph -= self.set_spd_plus
+          if set_speed_kph % self.set_spd_plus != 0:
+            set_speed_kph = int(round(set_speed_kph/self.set_spd_plus)*self.set_spd_plus)
         else:
           set_speed_kph -= 1
       elif self.cruise_buttons[-1] == Buttons.CANCEL and not self.cruiseState_standstill:  # dn
@@ -191,8 +191,8 @@ class CarState(CarStateBase):
   def cruise_speed_button_long(self):
     self.sm.update(0)
     set_speed_kph = self.cruise_set_speed_kph
-    if 0 < round(self.sm['controlsState'].vCruise) < 255:
-      set_speed_kph = round(self.sm['controlsState'].vCruise)
+    if 0 < round(self.sm['carState'].vCruise) < 255:
+      set_speed_kph = round(self.sm['carState'].vCruise)
 
     if self.cruise_buttons[-1]:
       self.cruise_buttons_time += 1
@@ -234,10 +234,10 @@ class CarState(CarStateBase):
         return self.cruise_set_speed_kph
 
       if self.cruise_buttons[-1] == Buttons.RES_ACCEL:   # up 
-        if self.set_spd_five:
-          set_speed_kph += 5
-          if set_speed_kph % 5 != 0:
-            set_speed_kph = int(round(set_speed_kph/5)*5)
+        if self.set_spd_plus:
+          set_speed_kph += self.set_spd_plus
+          if set_speed_kph % self.set_spd_plus != 0:
+            set_speed_kph = int(round(set_speed_kph/self.set_spd_plus)*self.set_spd_plus)
         else:
           set_speed_kph += 1
         if set_speed_kph <= 10 and not self.is_set_speed_in_mph:
@@ -246,10 +246,10 @@ class CarState(CarStateBase):
           set_speed_kph = 5
 
       elif self.cruise_buttons[-1] == Buttons.SET_DECEL:  # dn
-        if self.set_spd_five:
-          set_speed_kph -= 5
-          if set_speed_kph % 5 != 0:
-            set_speed_kph = int(round(set_speed_kph/5)*5)
+        if self.set_spd_plus:
+          set_speed_kph -= self.set_spd_plus
+          if set_speed_kph % self.set_spd_plus != 0:
+            set_speed_kph = int(round(set_speed_kph/self.set_spd_plus)*self.set_spd_plus)
         else:
           set_speed_kph -= 1
         if set_speed_kph <= 10 and not self.is_set_speed_in_mph:
@@ -266,8 +266,8 @@ class CarState(CarStateBase):
   def cruise_speed_button(self):
     self.sm.update(0)
     set_speed_kph = self.cruise_set_speed_kph
-    if 1 < round(self.sm['controlsState'].vCruise) < 255:
-      set_speed_kph = round(self.sm['controlsState'].vCruise)
+    if 1 < round(self.sm['carState'].vCruise) < 255:
+      set_speed_kph = round(self.sm['carState'].vCruise)
 
     if self.cruise_buttons[-1]:
       self.cruise_buttons_time += 1
@@ -298,17 +298,17 @@ class CarState(CarStateBase):
           return self.cruise_set_speed_kph
 
       elif self.cruise_buttons[-1] == Buttons.RES_ACCEL and not self.cruiseState_standstill:   # up 
-        if self.set_spd_five:
-          set_speed_kph += 5
-          if set_speed_kph % 5 != 0:
-            set_speed_kph = int(round(set_speed_kph/5)*5)
+        if self.set_spd_plus:
+          set_speed_kph += self.set_spd_plus
+          if set_speed_kph % self.set_spd_plus != 0:
+            set_speed_kph = int(round(set_speed_kph/self.set_spd_plus)*self.set_spd_plus)
         else:
           set_speed_kph += 1
       elif self.cruise_buttons[-1] == Buttons.SET_DECEL and not self.cruiseState_standstill:  # dn
-        if self.set_spd_five:
-          set_speed_kph -= 5
-          if set_speed_kph % 5 != 0:
-            set_speed_kph = int(round(set_speed_kph/5)*5)
+        if self.set_spd_plus:
+          set_speed_kph -= self.set_spd_plus
+          if set_speed_kph % self.set_spd_plus != 0:
+            set_speed_kph = int(round(set_speed_kph/self.set_spd_plus)*self.set_spd_plus)
         else:
           set_speed_kph -= 1
 

@@ -322,7 +322,7 @@ class LateralPlanner:
       self.laneless_mode = int(Params().get("LanelessMode", encoding="utf8"))
       self.second = 0.0
 
-    self.v_cruise_kph = sm['controlsState'].vCruise
+    self.v_cruise_kph = sm['carState'].vCruise
     self.stand_still = sm['carState'].standStill
 
     v_ego = sm['carState'].vEgo

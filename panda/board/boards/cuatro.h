@@ -1,26 +1,28 @@
+#pragma once
+
+#include "board_declarations.h"
+
 // ////////////////////////// //
 // Cuatro (STM32H7) + Harness //
 // ////////////////////////// //
 
-void cuatro_set_led(uint8_t color, bool enabled) {
-  // try no LED
-  UNUSED(enabled);
+static void cuatro_set_led(uint8_t color, bool enabled) {
   switch (color) {
     case LED_RED:
-      set_gpio_output(GPIOD, 15, 1);
+      set_gpio_output(GPIOD, 15, !enabled);
       break;
-     case LED_GREEN:
-      set_gpio_output(GPIOD, 14, 1);
+    case LED_GREEN:
+      set_gpio_output(GPIOD, 14, !enabled);
       break;
     case LED_BLUE:
-      set_gpio_output(GPIOE, 2, 1);
+      set_gpio_output(GPIOE, 2, !enabled);
       break;
     default:
       break;
   }
 }
 
-void cuatro_enable_can_transceiver(uint8_t transceiver, bool enabled) {
+static void cuatro_enable_can_transceiver(uint8_t transceiver, bool enabled) {
   switch (transceiver) {
     case 1U:
       set_gpio_output(GPIOB, 7, !enabled);
@@ -39,7 +41,7 @@ void cuatro_enable_can_transceiver(uint8_t transceiver, bool enabled) {
   }
 }
 
-void cuatro_enable_can_transceivers(bool enabled) {
+static void cuatro_enable_can_transceivers(bool enabled) {
   uint8_t main_bus = (harness.status == HARNESS_STATUS_FLIPPED) ? 3U : 1U;
   for (uint8_t i=1U; i<=4U; i++) {
     // Leave main CAN always on for CAN-based ignition detection
@@ -51,39 +53,31 @@ void cuatro_enable_can_transceivers(bool enabled) {
   }
 }
 
-uint32_t cuatro_read_voltage_mV(void) {
+static uint32_t cuatro_read_voltage_mV(void) {
   return adc_get_mV(8) * 11U;
 }
 
-uint32_t cuatro_read_current_mA(void) {
+static uint32_t cuatro_read_current_mA(void) {
   return adc_get_mV(3) * 2U;
 }
 
-void cuatro_set_fan_enabled(bool enabled) {
+static void cuatro_set_fan_enabled(bool enabled) {
   set_gpio_output(GPIOD, 3, !enabled);
 }
 
-void cuatro_set_bootkick(BootState state) {
+static void cuatro_set_bootkick(BootState state) {
   set_gpio_output(GPIOA, 0, state != BOOT_BOOTKICK);
   // only use if we have to
   //set_gpio_output(GPIOC, 12, state != BOOT_RESET);
 }
 
-void cuatro_init(void) {
+static void cuatro_init(void) {
   red_chiplet_init();
 
-  // LED init
-  set_gpio_pullup(GPIOD, 14, PULL_NONE);
-  set_gpio_mode(GPIOD, 14, MODE_OUTPUT);
-  set_gpio_output_type(GPIOD, 14, OUTPUT_TYPE_OPEN_DRAIN);
-
-  set_gpio_pullup(GPIOD, 15, PULL_NONE);
-  set_gpio_mode(GPIOD, 15, MODE_OUTPUT);
-  set_gpio_output_type(GPIOD, 15, OUTPUT_TYPE_OPEN_DRAIN);
-
-  set_gpio_pullup(GPIOE, 2, PULL_NONE);
-  set_gpio_mode(GPIOE, 2, MODE_OUTPUT);
+  // init LEDs as open drain
   set_gpio_output_type(GPIOE, 2, OUTPUT_TYPE_OPEN_DRAIN);
+  set_gpio_output_type(GPIOD, 14, OUTPUT_TYPE_OPEN_DRAIN);
+  set_gpio_output_type(GPIOD, 15, OUTPUT_TYPE_OPEN_DRAIN);
 
   // Power readout
   set_gpio_mode(GPIOC, 5, MODE_ANALOG);

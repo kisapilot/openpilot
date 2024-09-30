@@ -1,3 +1,5 @@
+#pragma once
+
 #include "safety_hyundai_common.h"
 
 int OP_LKAS_live = 0;
@@ -15,8 +17,65 @@ bool HKG_forward_obd = false;
 bool HKG_forward_bus2 = true;
 int HKG_LKAS_bus0_cnt = 0;
 int HKG_Lcan_bus1_cnt = 0;
+uint32_t ts_last2 = 0;
 
-const CanMsg HYUNDAI_COMMUNITY2_TX_MSGS[] = {
+static bool msg_allowed2(const CANPacket_t *to_send, const CanMsg msg_list[], int len) {
+  int addr = GET_ADDR(to_send);
+  int bus = GET_BUS(to_send);
+  int length = GET_LEN(to_send);
+
+  bool allowed = false;
+  for (int i = 0; i < len; i++) {
+    if ((addr == msg_list[i].addr) && (bus == msg_list[i].bus) && (length == msg_list[i].len)) {
+      allowed = true;
+      break;
+    }
+  }
+  return allowed;
+}
+
+static bool max_limit_check2(int val, const int MAX_VAL, const int MIN_VAL) {
+  return (val > MAX_VAL) || (val < MIN_VAL);
+}
+
+static bool driver_limit_check2(int val, int val_last, const struct sample_t *val_driver,
+                        const int MAX_VAL, const int MAX_RATE_UP, const int MAX_RATE_DOWN,
+                        const int MAX_ALLOWANCE, const int DRIVER_FACTOR) {
+
+  // torque delta/rate limits
+  int highest_allowed_rl = MAX(val_last, 0) + MAX_RATE_UP;
+  int lowest_allowed_rl = MIN(val_last, 0) - MAX_RATE_UP;
+
+  // driver
+  int driver_max_limit = MAX_VAL + (MAX_ALLOWANCE + val_driver->max) * DRIVER_FACTOR;
+  int driver_min_limit = -MAX_VAL + (-MAX_ALLOWANCE + val_driver->min) * DRIVER_FACTOR;
+
+  // if we've exceeded the applied torque, we must start moving toward 0
+  int highest_allowed = MIN(highest_allowed_rl, MAX(val_last - MAX_RATE_DOWN,
+                                             MAX(driver_max_limit, 0)));
+  int lowest_allowed = MAX(lowest_allowed_rl, MIN(val_last + MAX_RATE_DOWN,
+                                           MIN(driver_min_limit, 0)));
+
+  // check for violation
+  return max_limit_check2(val, highest_allowed, lowest_allowed);
+}
+
+static bool rt_rate_limit_check2(int val, int val_last, const int MAX_RT_DELTA) {
+
+  // *** torque real time rate limit check ***
+  int highest_val = MAX(val_last, 0) + MAX_RT_DELTA;
+  int lowest_val = MIN(val_last, 0) - MAX_RT_DELTA;
+
+  // check for violation
+  return max_limit_check2(val, highest_val, lowest_val);
+}
+
+static void relay_malfunction_reset2(void) {
+  relay_malfunction = false;
+  fault_recovered(FAULT_RELAY_MALFUNCTION);
+}
+
+static const CanMsg HYUNDAI_COMMUNITY2_TX_MSGS[] = {
   {0x340, 0, 8}, {0x340, 1, 8}, // LKAS11 Bus 0, 1
   {0x4F1, 0, 4}, {0x4F1, 1, 4}, {0x4F1, 2, 4}, // CLU11 Bus 0, 1, 2
   {0x485, 0, 4}, // LFAHDA_MFC Bus 0
@@ -30,14 +89,6 @@ const CanMsg HYUNDAI_COMMUNITY2_TX_MSGS[] = {
   {0x483, 0, 8}, //   FCA12,  Bus 0
   {0x38D, 0, 8},  //   FCA11,  Bus 0
   {0x7D0, 0, 8},  // SCC_DIAG, Bus 0
-};
-
-// older hyundai models have less checks due to missing counters and checksums
-RxCheck hyundai_community2_rx_checks[] = {
-  {.msg = {{0x260, 0, 8, .check_checksum = true, .max_counter = 3U, .frequency = 100U},
-           {0x371, 0, 8, .frequency = 100U}, { 0 }}},
-  {.msg = {{0x386, 0, 8, .frequency = 50U}, { 0 }, { 0 }}},
-  // {.msg = {{916, 0, 8, .frequency = 50U}}}, some Santa Fe does not have this msg, need to find alternative
 };
 
 static void hyundai_community2_rx_hook(const CANPacket_t *to_push) {
@@ -119,7 +170,7 @@ static bool hyundai_community2_tx_hook(const CANPacket_t *to_send) {
   int addr = GET_ADDR(to_send);
   int bus = GET_BUS(to_send);
 
-  tx = msg_allowed(to_send, HYUNDAI_COMMUNITY2_TX_MSGS, sizeof(HYUNDAI_COMMUNITY2_TX_MSGS)/sizeof(HYUNDAI_COMMUNITY2_TX_MSGS[0]));
+  tx = msg_allowed2(to_send, HYUNDAI_COMMUNITY2_TX_MSGS, sizeof(HYUNDAI_COMMUNITY2_TX_MSGS)/sizeof(HYUNDAI_COMMUNITY2_TX_MSGS[0]));
 
   // LKA STEER: safety check
   if (addr == 0x340) {
@@ -132,11 +183,11 @@ static bool hyundai_community2_tx_hook(const CANPacket_t *to_send) {
 
       // *** global torque limit check ***
       bool torque_check = 0;
-      violation |= torque_check = max_limit_check(desired_torque, HYUNDAI_MAX_STEER, -HYUNDAI_MAX_STEER);
+      violation |= torque_check = max_limit_check2(desired_torque, HYUNDAI_MAX_STEER, -HYUNDAI_MAX_STEER);
 
       // *** torque rate limit check ***
       bool torque_rate_check = 0;
-      violation |= torque_rate_check = driver_limit_check(desired_torque, desired_torque_last, &torque_driver,
+      violation |= torque_rate_check = driver_limit_check2(desired_torque, desired_torque_last, &torque_driver,
         HYUNDAI_MAX_STEER, HYUNDAI_MAX_RATE_UP, HYUNDAI_MAX_RATE_DOWN,
         HYUNDAI_DRIVER_TORQUE_ALLOWANCE, HYUNDAI_DRIVER_TORQUE_FACTOR);
 
@@ -145,13 +196,13 @@ static bool hyundai_community2_tx_hook(const CANPacket_t *to_send) {
 
       // *** torque real time rate limit check ***
       bool torque_rt_check = 0;
-      violation |= torque_rt_check = rt_rate_limit_check(desired_torque, rt_torque_last, HYUNDAI_MAX_RT_DELTA);
+      violation |= torque_rt_check = rt_rate_limit_check2(desired_torque, rt_torque_last, HYUNDAI_MAX_RT_DELTA);
 
       // every RT_INTERVAL set the new limits
-      uint32_t ts_elapsed = get_ts_elapsed(ts, ts_last);
+      uint32_t ts_elapsed = get_ts_elapsed(ts, ts_last2);
       if (ts_elapsed > HYUNDAI_RT_INTERVAL) {
         rt_torque_last = desired_torque;
-        ts_last = ts;
+        ts_last2 = ts;
       }
     }
 
@@ -164,7 +215,7 @@ static bool hyundai_community2_tx_hook(const CANPacket_t *to_send) {
     if (!controls_allowed) { // a reset worsen the issue of Panda blocking some valid LKAS messages
       desired_torque_last = 0;
       rt_torque_last = 0;
-      ts_last = ts;
+      ts_last2 = ts;
     }
 
     if (violation) {
@@ -258,9 +309,16 @@ static int hyundai_community2_fwd_hook(int bus_num, int addr) {
 }
 
 static safety_config hyundai_community2_init(uint16_t param) {
+  // older hyundai models have less checks due to missing counters and checksums
+  static RxCheck hyundai_community2_rx_checks[] = {
+    {.msg = {{0x260, 0, 8, .check_checksum = true, .max_counter = 3U, .frequency = 100U},
+            {0x371, 0, 8, .frequency = 100U}, { 0 }}},
+    {.msg = {{0x386, 0, 8, .frequency = 50U}, { 0 }, { 0 }}},
+    // {.msg = {{916, 0, 8, .frequency = 50U}}}, some Santa Fe does not have this msg, need to find alternative
+  };
   hyundai_common_init(param);
   controls_allowed = false;
-  relay_malfunction_reset();
+  relay_malfunction_reset2();
 
   // if (current_board->has_obd && HKG_forward_obd) {
   //   current_board->set_can_mode(CAN_MODE_OBD_CAN2);

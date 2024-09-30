@@ -92,21 +92,6 @@
     </message>
 </context>
 <context>
-    <name>AnnotatedCameraWidget</name>
-    <message>
-        <source>km/h</source>
-        <translation>km/h</translation>
-    </message>
-    <message>
-        <source>mph</source>
-        <translation>mph</translation>
-    </message>
-    <message>
-        <source>MAX</source>
-        <translation>MAX</translation>
-    </message>
-</context>
-<context>
     <name>ConfirmationDialog</name>
     <message>
         <source>Ok</source>
@@ -306,6 +291,21 @@
     </message>
 </context>
 <context>
+    <name>HudRenderer</name>
+    <message>
+        <source>km/h</source>
+        <translation>km/h</translation>
+    </message>
+    <message>
+        <source>mph</source>
+        <translation>mph</translation>
+    </message>
+    <message>
+        <source>MAX</source>
+        <translation>MAX</translation>
+    </message>
+</context>
+<context>
     <name>InputDialog</name>
     <message>
         <source>Cancel</source>
@@ -396,10 +396,6 @@
         <translation>openpilot이 차량을 식별할 수 없었습니다. 지원되지 않는 차량이거나 ECU가 인식되지 않습니다. 해당 차량에 맞는 펌웨어 버전을 추가하려면 PR을 제출하세요. 도움이 필요하시면 discord.comma.ai에 가입하세요.</translation>
     </message>
     <message>
-        <source>openpilot was unable to identify your car. Check integrity of cables and ensure all connections are secure, particularly that the comma power is fully inserted in the OBD-II port of the vehicle. Need help? Join discord.comma.ai.</source>
-        <translation>openpilot이 차량을 식별할 수 없었습니다. 케이블의 무결성을 점검하고 모든 연결부, 특히 comma power가 차량의 OBD-II 포트에 제대로 삽입되었는지 확인하세요. 도움이 필요하시면 discord.comma.ai에 가입하세요.</translation>
-    </message>
-    <message>
         <source>openpilot detected a change in the device&apos;s mounting position. Ensure the device is fully seated in the mount and the mount is firmly secured to the windshield.</source>
         <translation>openpilot 장치의 장착 위치가 변경되었습니다. 장치가 마운트에 완전히 장착되고 마운트가 앞유리에 단단히 고정되었는지 확인하세요. </translation>
     </message>
@@ -430,20 +426,20 @@
         <translation>오픈파일럿을 사용할수없습니다</translation>
     </message>
     <message>
-        <source>Waiting for controls to start</source>
-        <translation>프로세스가 준비중입니다</translation>
-    </message>
-    <message>
         <source>TAKE CONTROL IMMEDIATELY</source>
         <translation>핸들을 잡아주세요</translation>
     </message>
     <message>
-        <source>Controls Unresponsive</source>
-        <translation>프로세스가 응답하지않습니다</translation>
-    </message>
-    <message>
         <source>Reboot Device</source>
         <translation>장치를 재부팅하세요</translation>
+    </message>
+    <message>
+        <source>Waiting to start</source>
+        <translation>시작을 기다리는중</translation>
+    </message>
+    <message>
+        <source>System Unresponsive</source>
+        <translation>시스템이 응답하지않습니다</translation>
     </message>
 </context>
 <context>
@@ -504,7 +500,7 @@
     </message>
     <message>
         <source>Remote snapshots</source>
-        <translation type="unfinished"></translation>
+        <translation>원격 스냅샷</translation>
     </message>
 </context>
 <context>
@@ -1133,15 +1129,15 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>The driving visualization will transition to the road-facing wide-angle camera at low speeds to better show some turns. The Experimental mode logo will also be shown in the top right corner.</source>
-        <translation type="unfinished"></translation>
+        <translation>운전 시각화는 일부 회전을 더 잘 보여주기 위해 저속에서 도로를 향한 광각 카메라로 전환됩니다. 실험 모드 로고도 우측 상단에 표시됩니다.</translation>
     </message>
     <message>
         <source>Always-On Driver Monitoring</source>
-        <translation type="unfinished"></translation>
+        <translation>상시 운전자 모니터링</translation>
     </message>
     <message>
         <source>Enable driver monitoring even when openpilot is not engaged.</source>
-        <translation type="unfinished"></translation>
+        <translation>Openpilot이 활성화되지 않은 경우에도 드라이버 모니터링을 활성화합니다.</translation>
     </message>
 </context>
 <context>
@@ -1360,25 +1356,6 @@ This may take up to a minute.</source>
     <message>
         <source>Long Control</source>
         <translation>롱 컨트롤</translation>
-    </message>
-</context>
-<context>
-    <name>CPandaGroup</name>
-    <message>
-        <source>Panda Values</source>
-        <translation>판다 값</translation>
-    </message>
-    <message>
-        <source>Change Panda Values</source>
-        <translation>판다 값 변경</translation>
-    </message>
-    <message>
-        <source>RUN</source>
-        <translation>실행</translation>
-    </message>
-    <message>
-        <source>Apply the changed panda value. Do you want to proceed? It automatically reboots.</source>
-        <translation>변경된 판다 값을 적용합니다. 계속하시겠습니까? 자동으로 재부팅됩니다.</translation>
     </message>
 </context>
 <context>
@@ -1860,41 +1837,6 @@ This may take up to a minute.</source>
     </message>
 </context>
 <context>
-    <name>ForceShutdown</name>
-    <message>
-        <source>Device ForceShutdown</source>
-        <translation>장치 강제 종료</translation>
-    </message>
-    <message>
-        <source>If the screen is turned off while off-road without driving (on-road X), force it to turn off after a certain period of time. When a touch event occurs, the off time is reset.</source>
-        <translation>장치 오프로드 시 화면이 꺼진 경우 일정 시간이 지나면 강제로 꺼지도록 합니다. 터치 이벤트가 발생하면 종료 시간이 초기화됩니다.</translation>
-    </message>
-    <message>
-        <source>AlwaysOn</source>
-        <translation>항상켜기</translation>
-    </message>
-    <message>
-        <source>1min</source>
-        <translation>1분</translation>
-    </message>
-    <message>
-        <source>3mins</source>
-        <translation>3분</translation>
-    </message>
-    <message>
-        <source>5mins</source>
-        <translation>5분</translation>
-    </message>
-    <message>
-        <source>10mins</source>
-        <translation>10분</translation>
-    </message>
-    <message>
-        <source>30mins</source>
-        <translation>30분</translation>
-    </message>
-</context>
-<context>
     <name>VolumeControl</name>
     <message>
         <source>Device Volume Control(%)</source>
@@ -1987,33 +1929,6 @@ This may take up to a minute.</source>
     <message>
         <source>Sets the maximum number of recording files. Check file size and max recording count to not exceed your storage.</source>
         <translation>최대 녹화 파일 수를 설정합니다. 파일 크기 및 최대 기록 수가 저장소 용량을 초과하지 않도록 확인하십시오.</translation>
-    </message>
-</context>
-<context>
-    <name>RecordQuality</name>
-    <message>
-        <source>Recording Quality</source>
-        <translation>녹화 품질</translation>
-    </message>
-    <message>
-        <source>Set the recording quality. Low/Mid/high definition/high definition/ultra-high definition.</source>
-        <translation>녹화 품질을 설정합니다. 저화질/중화질/고화질/초고화질.</translation>
-    </message>
-    <message>
-        <source>Low</source>
-        <translation>저화질</translation>
-    </message>
-    <message>
-        <source>Mid</source>
-        <translation>중화질</translation>
-    </message>
-    <message>
-        <source>High</source>
-        <translation>고화질</translation>
-    </message>
-    <message>
-        <source>U-High</source>
-        <translation>초고화질</translation>
     </message>
 </context>
 <context>
@@ -2289,50 +2204,6 @@ This may take up to a minute.</source>
     </message>
 </context>
 <context>
-    <name>MaxSteer</name>
-    <message>
-        <source>MAX_STEER</source>
-        <translation>MAX_STEER</translation>
-    </message>
-    <message>
-        <source>Modify the Panda MAX_STEEER value. Press the Run button below to apply.</source>
-        <translation>판다 MAX_STEER 값을 수정합니다. 아래 실행 버튼을 눌러 적용하십시오.</translation>
-    </message>
-</context>
-<context>
-    <name>MaxRTDelta</name>
-    <message>
-        <source>RT_DELTA</source>
-        <translation>RT_DELTA</translation>
-    </message>
-    <message>
-        <source>Modify the panda RT_DELTA value. Press the Run button below to apply. It might be 7(DeltaDown)X16=112?</source>
-        <translation>판다 RT_DELTA 값을 수정합니다. 아래 실행 버튼을 눌러 적용하십시오. 7(DeltaDown)X16=112?</translation>
-    </message>
-</context>
-<context>
-    <name>MaxRateUp</name>
-    <message>
-        <source>MAX_RATE_UP</source>
-        <translation>MAX_RATE_UP</translation>
-    </message>
-    <message>
-        <source>Modify the Panda MAX_RATE_UP value. Press the Run button below to apply.</source>
-        <translation>판다 MAX_RATE_UP 값을 수정합니다. 아래 실행 버튼을 눌러 적용하십시오.</translation>
-    </message>
-</context>
-<context>
-    <name>MaxRateDown</name>
-    <message>
-        <source>MAX_RATE_DOWN</source>
-        <translation>MAX_RATE_DOWN</translation>
-    </message>
-    <message>
-        <source>Modify the Panda MAX_RATE_DOWN value. Press the Run button below to apply.</source>
-        <translation>판다 MAX_RATE_DOWN 값을 수정합니다. 아래 실행 버튼을 눌러 적용하십시오.</translation>
-    </message>
-</context>
-<context>
     <name>CameraOffset</name>
     <message>
         <source>CameraOffset</source>
@@ -2366,17 +2237,6 @@ This may take up to a minute.</source>
     </message>
 </context>
 <context>
-    <name>SRMaxControl</name>
-    <message>
-        <source>SteerRatioMax</source>
-        <translation>SteerRatio최대값</translation>
-    </message>
-    <message>
-        <source>Sets the SteerRatio maximum value.</source>
-        <translation>SteerRatio 최대값을 설정합니다.</translation>
-    </message>
-</context>
-<context>
     <name>SteerActuatorDelay</name>
     <message>
         <source>SteerActuatorDelay</source>
@@ -2407,63 +2267,6 @@ This may take up to a minute.</source>
     <message>
         <source>Adjust the TireStiffnessFactor value.</source>
         <translation>TireStiffnessFactor 값을 조정합니다.</translation>
-    </message>
-</context>
-<context>
-    <name>SteerMax</name>
-    <message>
-        <source>SMBase: </source>
-        <translation>SM기본: </translation>
-    </message>
-    <message>
-        <source>SMMax: </source>
-        <translation>SM최대: </translation>
-    </message>
-    <message>
-        <source>The value cannot exceed SteerMax</source>
-        <translation>값은 SteerMax를 초과할 수 없습니다</translation>
-    </message>
-    <message>
-        <source>The value cannot be less than SteerMaxBase</source>
-        <translation>값은 SteerMaxBase보다 작을 수 없습니다</translation>
-    </message>
-</context>
-<context>
-    <name>SteerDeltaUp</name>
-    <message>
-        <source>DtUpBase: </source>
-        <translation>DtUp기본: </translation>
-    </message>
-    <message>
-        <source>DtUpMax: </source>
-        <translation>DtUp최대: </translation>
-    </message>
-    <message>
-        <source>The value cannot exceed maximum DeltaUp value</source>
-        <translation>값은 최대 DeltaUp값을 초과할 수 없습니다</translation>
-    </message>
-    <message>
-        <source>The value cannot be less than DeltaUp default value</source>
-        <translation>값은 DeltaUp 기본값보다 작을 수 없습니다</translation>
-    </message>
-</context>
-<context>
-    <name>SteerDeltaDown</name>
-    <message>
-        <source>DtDnBase: </source>
-        <translation>DtDn기본: </translation>
-    </message>
-    <message>
-        <source>DtDnMax: </source>
-        <translation>DtDn최대: </translation>
-    </message>
-    <message>
-        <source>The value cannot exceed maximum DeltaDown value</source>
-        <translation>값은 최대 DeltaDown 값을 초과할 수 없습니다</translation>
-    </message>
-    <message>
-        <source>The value cannot be less than DeltaDown default value</source>
-        <translation>값은 DeltaDown 기본값보다 작을 수 없습니다</translation>
     </message>
 </context>
 <context>
@@ -2807,29 +2610,6 @@ This may take up to a minute.</source>
     </message>
 </context>
 <context>
-    <name>GetOffAlert</name>
-    <message>
-        <source>Device Detach Alert Sound</source>
-        <translation>장치 분리 알림음</translation>
-    </message>
-    <message>
-        <source>Device alert you a alarm to detach the Device when ignition off.(NO Alert/KOR/ENG)</source>
-        <translation>시동이 꺼지면 장치를 분리하도록 알림을 보냅니다.(없음/한국어/영어)</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>없음</translation>
-    </message>
-    <message>
-        <source>KOR</source>
-        <translation>한국어</translation>
-    </message>
-    <message>
-        <source>ENG</source>
-        <translation>영어</translation>
-    </message>
-</context>
-<context>
     <name>KISANaviSelect</name>
     <message>
         <source>Navigation Select</source>
@@ -2850,72 +2630,6 @@ This may take up to a minute.</source>
     <message>
         <source>Waze</source>
         <translation>웨이즈</translation>
-    </message>
-</context>
-<context>
-    <name>KISAServerSelect</name>
-    <message>
-        <source>API Server</source>
-        <translation>서버 API</translation>
-    </message>
-    <message>
-        <source>Set API server to KISA/Comma/User&apos;s</source>
-        <translation>API 서버를 KISA/Comma/사용자로 설정</translation>
-    </message>
-    <message>
-        <source>KISA</source>
-        <translation>KISA</translation>
-    </message>
-    <message>
-        <source>Comma</source>
-        <translation>Comma</translation>
-    </message>
-    <message>
-        <source>User&apos;s</source>
-        <translation>사용자</translation>
-    </message>
-    <message>
-        <source>You&apos;ve chosen comma server. Your uploads might be ignored if you upload your data. I highly recommend you should reset the device to avoid be banned.</source>
-        <translation>콤마 서버를 선택했습니다. 공식장치를 사용하는 경우 장치가 블락되지 않도록 장치를 완전 초기화하고 콤마 순정 소프트웨어로 설치하는것을 강력히 권장합니다.</translation>
-    </message>
-    <message>
-        <source>You&apos;ve chosen own server. Please set your api host at the menu below.</source>
-        <translation>자체 서버를 선택했습니다. 아래 메뉴에서 api 호스트를 설정하십시오.</translation>
-    </message>
-</context>
-<context>
-    <name>KISAServerAPI</name>
-    <message>
-        <source>User&apos;s API</source>
-        <translation>사용자 API</translation>
-    </message>
-    <message>
-        <source>Set Your API server URL or IP</source>
-        <translation>API 서버 URL 또는 IP 설정</translation>
-    </message>
-    <message>
-        <source>SET</source>
-        <translation>설정</translation>
-    </message>
-    <message>
-        <source>UNSET</source>
-        <translation>해제</translation>
-    </message>
-    <message>
-        <source>Input Your API without http://</source>
-        <translation>API 입력(http://제외)</translation>
-    </message>
-    <message>
-        <source>Your Input is</source>
-        <translation>입력 내용</translation>
-    </message>
-    <message>
-        <source>Press OK to apply and reboot</source>
-        <translation>적용하려면 [확인]을 누르십시오</translation>
-    </message>
-    <message>
-        <source>Do you want to unset? the API server gets back to KISA server and Device will be rebooted now.</source>
-        <translation>설정을 해제하시겠습니까? API 서버가 KISA 서버로 바뀌며 장치가 지금 재부팅됩니다.</translation>
     </message>
 </context>
 <context>
@@ -3451,28 +3165,6 @@ This may take up to a minute.</source>
     </message>
 </context>
 <context>
-    <name>VariableSteerMaxToggle</name>
-    <message>
-        <source>SteerMax/Variable SteerMax Toggle</source>
-        <translation>SteerMax/가변SteerMax 토글</translation>
-    </message>
-    <message>
-        <source>Use the variable SteerMax by curvature. If this is off, runs only with base value below. STBase: SteerMax Default value. STMax: SteerMax Maximum value.</source>
-        <translation>곡률별로 변하는 SteerMax를 사용합니다. 이 옵션이 꺼져 있으면 아래 값에서만 실행됩니다. SM기본: SteerMax 기본값. SM최대: SteerMax 최대값.</translation>
-    </message>
-</context>
-<context>
-    <name>VariableSteerDeltaToggle</name>
-    <message>
-        <source>DeltaUpDown/Variable Delta Toggle</source>
-        <translation>Delta UpDown/가변 Delta 토글</translation>
-    </message>
-    <message>
-        <source>Use variable SteerDelta by curvature. If this is off, runs only with base value below. DUBase: Steer DeltaUp Default value. DUMax: Steer DeltaUp Maximum value. DDBase: Steer DeltaDown Default value. DDMax: Steer DeltaDown Maximum value.</source>
-        <translation>곡률별로 변하는 SteerDelta를 사용합니다. 이 옵션이 꺼져 있으면 아래 값에서만 실행됩니다. DtUp기본: Steer DeltaUp 기본값입니다. DtUp최대: 스티어링 델타 업 최대값. DtDn기본: Steer DeltaDown 기본값. DtDn최대: Steer DeltaDown 최대값.</translation>
-    </message>
-</context>
-<context>
     <name>DrivingRecordToggle</name>
     <message>
         <source>Use Auto Screen Record</source>
@@ -3567,17 +3259,6 @@ This may take up to a minute.</source>
     </message>
 </context>
 <context>
-    <name>FPTwoToggle</name>
-    <message>
-        <source>Use FingerPrint 2.0</source>
-        <translation>핑거프린트 2.0 사용</translation>
-    </message>
-    <message>
-        <source>Activate Fingerprint 2.0. Activate the vehicle with ECU recognition.</source>
-        <translation>핑거프린트 2.0을 활성화합니다. ECU 인식으로 차량을 활성화하십시오.</translation>
-    </message>
-</context>
-<context>
     <name>GearDToggle</name>
     <message>
         <source>Set DriverGear by Force</source>
@@ -3586,17 +3267,6 @@ This may take up to a minute.</source>
     <message>
         <source>It is used when the gear recognition problem. Basically, CABANA data should be analyzed, but it is temporarily resolved.</source>
         <translation>기어 인식 문제가 있을 때 사용합니다. 기본적으로 CABANA 데이터를 분석해야 하지만 임시로 해결합니다.</translation>
-    </message>
-</context>
-<context>
-    <name>ComIssueToggle</name>
-    <message>
-        <source>Turn Off Communication Issue Alarm</source>
-        <translation>프로세스간 통신오류 알람 끄기</translation>
-    </message>
-    <message>
-        <source>Turn this option on to disable the communication issue alarm.</source>
-        <translation>프로세스간 통신오류 알람을 비활성화하려면 이 옵션을 켜십시오. 켜는것을 추천합니다.</translation>
     </message>
 </context>
 <context>
@@ -3754,17 +3424,6 @@ This may take up to a minute.</source>
     </message>
 </context>
 <context>
-    <name>FCA11MessageToggle</name>
-    <message>
-        <source>Enable FCA11 Message</source>
-        <translation>FCA11 메시지 사용</translation>
-    </message>
-    <message>
-        <source>Turn this on, if you get an error with forward collision warning.(reboot required)</source>
-        <translation>전방 충돌 경고와 함께 오류가 발생하면 이 옵션을 켜십시오. (재부팅 필요)</translation>
-    </message>
-</context>
-<context>
     <name>StandstillResumeAltToggle</name>
     <message>
         <source>Standstill Resume Alternative</source>
@@ -3897,17 +3556,6 @@ This may take up to a minute.</source>
     </message>
 </context>
 <context>
-    <name>JoystickModeToggle</name>
-    <message>
-        <source>JoyStick Debug Mode</source>
-        <translation>조이스틱 디버그 모드</translation>
-    </message>
-    <message>
-        <source>How to use: https://github.com/commaai/openpilot/tree/master/tools/joystick</source>
-        <translation>사용방법: https://github.com/commaai/openpilot/tree/master/tools/joystick</translation>
-    </message>
-</context>
-<context>
     <name>RPMAnimatedToggle</name>
     <message>
         <source>RPM Animated</source>
@@ -3938,39 +3586,6 @@ This may take up to a minute.</source>
     <message>
         <source>This increase offset at low speed and decrease offset at low speed. If you feel car moves to right at low speed.</source>
         <translation>이 기능은 저속에서는 카메라오프셋을 증가시키고 고속에서는 카메라오프셋을 원래대로 만듭니다. 만약 차량이 낮은 속도에서 오른쪽으로 치우치는 것을 느낀다면 이기능을 켜는것을 추천합니다.</translation>
-    </message>
-</context>
-<context>
-    <name>HoldForSettingToggle</name>
-    <message>
-        <source>Hold Button for Setting Menu</source>
-        <translation>설정메뉴 진입 지연 사용</translation>
-    </message>
-    <message>
-        <source>Use 0.3 sec delay to enter setting menu. This is to prevent being touched in setting menu when you use external program(Mixplorer, etc)</source>
-        <translation>0.3초 지연을 사용하여 설정 메뉴로 들어갑니다. 외부 프로그램(Mixplor 등)을 사용할 때 설정 메뉴에서 터치되는 것을 방지하기 위한 것입니다.</translation>
-    </message>
-</context>
-<context>
-    <name>RTShieldToggle</name>
-    <message>
-        <source>Enable RTShield Process</source>
-        <translation>RTShield 프로세스 사용</translation>
-    </message>
-    <message>
-        <source>Seems regarding process stability. This uses resource.</source>
-        <translation>장치 프로세스 안정성에 관한 것 같습니다. 이 기능은 리소스를 사용합니다.</translation>
-    </message>
-</context>
-<context>
-    <name>OSMOfflineUseToggle</name>
-    <message>
-        <source>Offline OSM(64G storage only)</source>
-        <translation>오프라인 OSM(64G 스토리지만 해당)</translation>
-    </message>
-    <message>
-        <source>Local only OSM. This will download DBs from online. Much storage is required. If your storage is not enough, Compiling occurs every boot time.</source>
-        <translation>로컬 전용 OSM. 온라인에서 DB를 다운로드합니다. 많은 스토리지가 필요합니다. 저장 공간이 충분하지 않으면 부팅 시마다 컴파일이 발생합니다. 이경우 기능을 끄십시오.</translation>
     </message>
 </context>
 <context>
@@ -4169,17 +3784,6 @@ This may take up to a minute.</source>
     </message>
 </context>
 <context>
-    <name>SetSpeedByFive</name>
-    <message>
-        <source>SetSpeed Change by 5</source>
-        <translation>MAX 설정속도 5단위 증감</translation>
-    </message>
-    <message>
-        <source>MAX Speed can be adjusted by 5. Cruise Set Speed will be set as same with MAX quickly.</source>
-        <translation>MAX 스피드를 5씩 증감합니다. 크루즈 스피드도 다른 조건이 없다면 같이 동기화 됩니다.</translation>
-    </message>
-</context>
-<context>
     <name>LowUIProfile</name>
     <message>
         <source>Low UI Profile</source>
@@ -4265,6 +3869,21 @@ This may take up to a minute.</source>
     <message>
         <source>Advanced regeneration brake features. ST: full stop, AT: deceleration level adjustment with distance, EE: E2E longitudinal assist</source>
         <translation>회생제동 기능을 확장하여 사용합니다. ST: 완전정지, AT: 거리에따른 감속 레벨 조정, EE: E2E롱 어시스트</translation>
+    </message>
+</context>
+<context>
+    <name>SetSpeedPlus</name>
+    <message>
+        <source>SetSpeed Changed by Num</source>
+        <translation>MAX 설정속도 증감 수</translation>
+    </message>
+    <message>
+        <source>MAX Speed can be adjusted by number. Cruise Set Speed will be set as same with MAX quickly.</source>
+        <translation>MAX 스피드를 일정 숫자 씩 증감합니다. 크루즈 스피드도 다른 조건이 없다면 같이 동기화 됩니다.</translation>
+    </message>
+    <message>
+        <source>NotUse</source>
+        <translation>사용안함</translation>
     </message>
 </context>
 </TS>

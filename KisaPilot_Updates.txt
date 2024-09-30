@@ -1,3 +1,7 @@
+2024-10-01
+- Game Boy Model
+- your own Params from Github(Easy Restore)
+- many refactoring of codes in line with Comma's
 2024-07-16
 - Notre Dame Model
 - Re-Add exception log, Manual onroad view

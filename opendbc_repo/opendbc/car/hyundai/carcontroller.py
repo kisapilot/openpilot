@@ -151,26 +151,10 @@ class CarController(CarControllerBase):
     self.autohold_popup_timer = 0
     self.autohold_popup_switch = False
 
-    self.steerMax_base = int(self.c_params.get("SteerMaxBaseAdj", encoding="utf8"))
-    self.steerDeltaUp_base = int(self.c_params.get("SteerDeltaUpBaseAdj", encoding="utf8"))
-    self.steerDeltaDown_base = int(self.c_params.get("SteerDeltaDownBaseAdj", encoding="utf8"))
-    self.steerMax_Max = int(self.c_params.get("SteerMaxAdj", encoding="utf8"))
-    self.steerDeltaUp_Max = int(self.c_params.get("SteerDeltaUpAdj", encoding="utf8"))
-    self.steerDeltaDown_Max = int(self.c_params.get("SteerDeltaDownAdj", encoding="utf8"))
     self.model_speed = 255.0
-    self.steerMax_range = [self.steerMax_Max, self.steerMax_base, self.steerMax_base]
-    self.steerDeltaUp_range = [self.steerDeltaUp_Max, self.steerDeltaUp_base, self.steerDeltaUp_base]
-    self.steerDeltaDown_range = [self.steerDeltaDown_Max, self.steerDeltaDown_base, self.steerDeltaDown_base]
-    self.steerMax = 0
-    self.steerDeltaUp = 0
-    self.steerDeltaDown = 0
 
-    self.variable_steer_max = self.c_params.get_bool("KisaVariableSteerMax")
-    self.variable_steer_delta = self.c_params.get_bool("KisaVariableSteerDelta")
     self.osm_spdlimit_enabled = self.c_params.get_bool("OSMSpeedLimitEnable")
     self.stock_safety_decel_enabled = self.c_params.get_bool("UseStockDecelOnSS")
-    self.joystick_debug_mode = self.c_params.get_bool("JoystickDebugMode")
-    #self.stopsign_enabled = self.c_params.get_bool("StopAtStopSign")
 
     self.smooth_start = False
 
@@ -207,6 +191,11 @@ class CarController(CarControllerBase):
     self.gap_by_spd_on_sw_trg = True
     self.gap_by_spd_on_sw_cnt = 0
     self.gap_by_spd_on_sw_cnt2 = 0
+    self.road_limit_spd_enabled = self.c_params.get_bool("CruiseSetwithRoadLimitSpeedEnabled")
+    self.road_spd_on_sw = False
+    self.road_spd_on_sw_trg = True
+    self.road_spd_on_sw_cnt = 0
+    self.road_spd_on_sw_cnt2 = 0    
 
     self.prev_cruiseButton = 0
     self.lead_visible = False
@@ -372,10 +361,7 @@ class CarController(CarControllerBase):
 
     apply_steer = apply_driver_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, self.params)
 
-    if self.joystick_debug_mode:
-      lat_active = CC.latActive
-    # disable when temp fault is active, or below LKA minimum speed
-    elif self.kisa_maxanglelimit == 90:
+    if self.kisa_maxanglelimit == 90:
       lat_active = CC.latActive and abs(CS.out.steeringAngleDeg) < self.kisa_maxanglelimit and (CS.out.gearShifter == GearShifter.drive or self.user_specific_feature == 11)
     elif self.kisa_maxanglelimit > 90:
       str_angle_limit = interp(CS.out.vEgo * CV.MS_TO_KPH, [0, 20], [self.kisa_maxanglelimit+60, self.kisa_maxanglelimit])
@@ -572,7 +558,7 @@ class CarController(CarControllerBase):
         except:
           pass
 
-    if CS.out.brakeLights and CS.out.vEgo == 0 and not CS.out.cruiseState.standstill:
+    if (CS.out.brakeLights and CS.out.vEgo == 0 and not CS.out.cruiseState.standstill) or CS.i_pedel_stop:
       self.standstill_status_timer += 1
       if self.standstill_status_timer > 200:
         self.standstill_status = 1
@@ -605,6 +591,8 @@ class CarController(CarControllerBase):
         self.lkas_onoff_counter += 1
         self.gap_by_spd_on_sw = True
         self.gap_by_spd_on_sw_cnt2 = 0
+        self.road_spd_on_sw = True
+        self.road_spd_on_sw_cnt2 = 0
         if self.lkas_onoff_counter > 100:
           self.lkas_onoff_counter = 0
           self.lkas_temp_disabled = not self.lkas_temp_disabled
@@ -628,6 +616,18 @@ class CarController(CarControllerBase):
           if self.gap_by_spd_on_sw_cnt2 > 20:
             self.gap_by_spd_on_sw_cnt = 0
             self.gap_by_spd_on_sw_cnt2 = 0
+        if self.road_spd_on_sw:
+          self.road_spd_on_sw = False
+          self.road_spd_on_sw_cnt += 1
+          if self.road_spd_on_sw_cnt > 2: #temporary disable setting of road limit spped if you press gap button 3 times quickly.
+            self.road_spd_on_sw_trg = not self.road_spd_on_sw_trg
+            self.road_spd_on_sw_cnt = 0
+            self.road_spd_on_sw_cnt2 = 0
+        elif self.road_spd_on_sw_cnt:
+          self.road_spd_on_sw_cnt2 += 1
+          if self.road_spd_on_sw_cnt2 > 20:
+            self.road_spd_on_sw_cnt = 0
+            self.road_spd_on_sw_cnt2 = 0
       self.second2 += 1
       if self.second2 > 100:
         self.second2 = 100
@@ -654,6 +654,10 @@ class CarController(CarControllerBase):
       self.gap_by_spd_on_sw_cnt2 = 0
       self.gap_by_spd_on_sw = False
       self.gap_by_spd_on_sw_trg = True
+      self.road_spd_on_sw_cnt = 0
+      self.road_spd_on_sw_cnt2 = 0
+      self.road_spd_on_sw = False
+      self.road_spd_on_sw_trg = True
 
     if CS.out.cruiseState.modeSel == 0 and self.mode_change_switch == 5:
       self.mode_change_timer = 50
@@ -1058,9 +1062,7 @@ class CarController(CarControllerBase):
           faccel = actuators.accel if CC.longActive and not CS.out.gasPressed else 0
           accel = actuators.oaccel if CC.longActive and not CS.out.gasPressed else 0
           radar_recog = (0 < CS.lead_distance <= 149)
-          if self.joystick_debug_mode:
-            accel = actuators.accel
-          elif self.radar_helper_option == 0: # Vision Only
+          if self.radar_helper_option == 0: # Vision Only
             if 0 < CS.lead_distance <= self.stoppingdist:
               stock_weight = interp(CS.lead_distance, [2.0, self.stoppingdist], [1., 0.])
               accel = accel * (1. - stock_weight) + aReqValue * stock_weight
@@ -1360,6 +1362,7 @@ class CarController(CarControllerBase):
 
     new_actuators.autoResvCruisekph = self.v_cruise_kph_auto_res
     new_actuators.resSpeed = self.res_speed
+    new_actuators.roadLimitSpeedOnTemp = (self.road_spd_on_sw_trg and self.road_limit_spd_enabled)
 
     new_actuators.kisaLog1 = str_log1 + '  ' + self.str_log2
     new_actuators.kisaLog2 = str_log2
