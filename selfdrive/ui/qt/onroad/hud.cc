@@ -1075,11 +1075,12 @@ void HudRenderer::drawSetSpeed(QPainter &p, const QRect &surface_rect) {
   }
 
   // Draw "MAX" text and set speed
-  QString setSpeedStr = is_cruise_set ? QString::number(std::nearbyint(set_speed)) : "–";
+  QString setSpeedStr = is_cruise_set ? QString::number(std::nearbyint(set_speed)) : "-";
+  p.setFont(InterFont(70, QFont::Bold));
   p.setPen(whiteColor(200));
-  p.drawText(set_speed_rect.adjusted(0, 15, 0, 0), Qt::AlignTop | Qt::AlignHCenter, s->scene.ctrl_speed > 1?QString::number(s->scene.ctrl_speed, 'f', 0):setSpeedStr);
+  p.drawText(set_speed_rect.adjusted(0, 10, 0, 0), Qt::AlignTop | Qt::AlignHCenter, s->scene.ctrl_speed > 1?QString::number(s->scene.ctrl_speed, 'f', 0):setSpeedStr);
   p.setPen(QPen(Qt::white, 6));
-  p.drawLine(set_speed_rect.left()+35, set_speed_rect.y()+set_speed_size.height()/2-10, set_speed_rect.right()-35, set_speed_rect.y()+set_speed_size.height()/2-10);
+  p.drawLine(set_speed_rect.left()+35, set_speed_rect.y()+set_speed_size.height()/2-7, set_speed_rect.right()-35, set_speed_rect.y()+set_speed_size.height()/2-7);
   p.setFont(InterFont(90, QFont::Bold));
   p.setPen(set_speed_color);
   if (!s->scene.op_long_enabled) {

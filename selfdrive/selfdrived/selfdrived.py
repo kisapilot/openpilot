@@ -22,6 +22,8 @@ from openpilot.selfdrive.controls.lib.latcontrol import MIN_LATERAL_CONTROL_SPEE
 from openpilot.system.hardware import HARDWARE
 from openpilot.system.version import get_build_metadata
 
+from openpilot.common.conversions import Conversions as CV
+
 USE_LEGACY_LANE_MODEL = int(Params().get("UseLegacyLaneModel", encoding="utf8")) if Params().get("UseLegacyLaneModel", encoding="utf8") is not None else 0
 
 REPLAY = "REPLAY" in os.environ
