@@ -114,7 +114,7 @@ function launch {
   Model_Size=$(stat --printf=%s /data/openpilot/selfdrive/modeld/models/supercombo.onnx)
   Model_Hash=$(md5sum /data/openpilot/selfdrive/modeld/models/supercombo.onnx | awk '{print $1}')
 
-  if [ "$Model_Size" == "62486469" ]; then echo -en "Game_Boy" > /data/params/d/DrivingModel;
+  if [ "$Model_Size" == "50309976" ]; then echo -en "Game_Boy" > /data/params/d/DrivingModel;
   elif [ "$Model_Size" == "51453312" ]; then echo -en "Notre_Dame" > /data/params/d/DrivingModel;
   elif [ "$Model_Size" == "51452435" ]; then echo -en "North_Dakota" > /data/params/d/DrivingModel;
   elif [ "$Model_Size" == "50660999" ]; then echo -en "WD40" > /data/params/d/DrivingModel;
