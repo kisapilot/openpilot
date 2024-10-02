@@ -23,6 +23,7 @@ from openpilot.system.hardware import HARDWARE
 from openpilot.system.version import get_build_metadata
 
 from openpilot.common.conversions import Conversions as CV
+from opendbc.car import structs
 
 USE_LEGACY_LANE_MODEL = int(Params().get("UseLegacyLaneModel", encoding="utf8")) if Params().get("UseLegacyLaneModel", encoding="utf8") is not None else 0
 
@@ -46,7 +47,7 @@ ButtonType = car.CarState.ButtonEvent.Type
 SafetyModel = car.CarParams.SafetyModel
 
 IGNORED_SAFETY_MODES = (SafetyModel.silent, SafetyModel.noOutput)
-
+GearShifter = structs.CarState.GearShifter
 
 class SelfdriveD:
   def __init__(self):
