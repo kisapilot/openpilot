@@ -165,7 +165,7 @@ def main() -> NoReturn:
         if len(os.listdir(STATS_DIR)) < STATS_DIR_FILE_LIMIT:
           if len(result) > 0:
             stats_path = os.path.join(STATS_DIR, f"{current_time.timestamp():.0f}_{idx}")
-            with atomic_write_in_dir(stats_path) as f:
+            with atomic_write_in_dir(stats_path, overwrite=True) as f:
               f.write(result)
             idx += 1
         else:
