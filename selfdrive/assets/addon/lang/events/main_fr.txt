@@ -1,0 +1,195 @@
+openpilot Non disponible
+REPRENEZ LE CONTROLE IMMEDIATEMENT
+openpilot se désengage
+REPRENEZ LE CONTROLE IMMEDIATEMENT
+Restez attentifs à la route
+Vitesse basse
+Volant non disponible
+Calibration en cours
+Roulez moins vite
+Réception GPS faible
+Si le ciel est visible, contactez le support
+Vérifiez le placement de l'antenne GPS 
+Régulateur désactivé
+Bouton principale Off
+Accélérateur
+Volant
+Joystick Mode
+Perte du signal CAN
+Signal CAN, temps dépassé
+Erreur CAN, vérifiez le harnais
+Joystick Mode
+Initialisation du système
+Soyez prêt à reprendre le contrôle
+ATTENTION: Cette branche n'a pas été testée
+Mode Dashcam
+Mode Dashcam pour voitures non supportées
+Véhicule non reconnu
+Vérifiez la connection à l'alimentation
+Mode Dashcam
+LKAS d'origine activé
+Désactivez le LKAS pour engager
+Mode Dashcam
+Véhicule non reconnu
+FREINEZ !
+AEB: Risque de Collision
+AEB: Risque de Collision
+FREINEZ !
+Risque de Collision
+Franchissement de ligne détecté
+Relachez l'accélérateur pour engager
+Parametres Live Invalide
+Parametres Live Invalide
+Volant temporairement indisponible
+Faites Attention
+Faites Attention
+Conducteur distrait
+DESENGAGEZ IMMEDIATEMENT
+Conducteur distrait
+Touchez le volant : Pas de visage détecté
+Touchez le volant
+Conducteur ne répond pas
+DESENGAGEZ IMMEDIATEMENT
+Conducteur ne répond pas
+REPRENEZ LE CONTROLE
+Reprenez la contruite manuelle
+ARRET
+Appuyez sur reprise pour partir
+Dirigez-vous vers la gauche pour démarrer le changement de file une fois en sécurité
+Dirigez-vous vers la droite pour démarrer le changement de file une fois en sécurité
+Véhicule détecté dans l'angle mort
+Changement de file
+E2E Long Activé
+Attention, cela peut fonctionner de manière inattendue
+Activation du clignotant à basse vitesse
+L'assistance à la direction est temporairement désactivée. Tournez manuellement.
+Feux de détresse activés
+Le conducteur tourne le volant
+L'assistance à la direction est temporairement affaibli.
+Reprenez le contrôle
+Assistez la direction
+Malfonction du ventilateur
+Contactez le Support
+Malfunction de la Camera 
+Contactez Support
+Malfunction du GPS
+Contactez Support
+Malfunction du capteur
+Contactez Support
+Openpilot d'origine
+Mode Distance et Courbe
+Mode Distance 
+Mode Courbe 
+Mode Oneway
+Mode limitations de vitesses 
+Freinez !
+Risque de collision
+Conduire avec routines
+AUTO HOLD
+Frein à main activé
+Pedale appuyée
+Régulateur adaptatif desactivé
+Volant temporairement non disponible
+Volant temporairement non disponible
+Volant en pause, ISG en fonctionnement
+Réduction de la vitesse par rapport au limitations
+RES déclenché pour le départ
+Ajustement de la distance de sécurité
+Auto RES déclenché
+Réduction de le vitesse en courbe
+Réduction de le vitesse par coupage
+Mémoire de stockage insuffisante
+Mémoire de stockage insuffisante
+Aucune donnée provenant des capteurs
+Redemarrez l'appareil
+Aucune donnée provenant des capteurs
+Haut parleur non disponible
+Redemarrez l'appareil
+Haut parleur non disponible
+Niveau de distraction trop élevé
+Système en surchauffe
+Système en surchauffe
+Système en surchauffe
+La vitesse n'est pas en mode D
+Calibration invalide
+Remontez l'appareil et recalibrez
+Calibration invalide: Remontez l'appareil et recalibrez
+Calibration invalide: Remontez l'appareil et recalibrez
+Calibration en cours
+Calibration en cours
+Porte ouverte
+Porte ouverte
+Ceinture détachée
+Ceinture détachée
+ESP désactivé
+ESP désactivé
+Batterie faible
+Batterie faible
+Reprennez le contrôle
+Problème de communication entre les processus
+Faible taux de communication entre les processus
+Faible taux de communication entre les processus
+System Malfonction: Redémarrez votre appareil
+Erreur radar: Redémarrez votre appareil
+Erreur radar: Redémarrez votre appareil
+Problème de ralentissement du model
+Problème de ralentissement du model
+Modèle incertain
+Modèle incertain
+L'appareil est tombé du support
+L'appareil est tombé du support
+Mémoire faible: Redémarrez votre appareil
+Mémoire faible
+Redémarrez votre appareil
+Mémoire faible: Redémarrez votre appareil
+Malfonction système: Redémarrez votre appareil
+Erreur régulateur de vitesse
+Erreur régulateur de vitesse
+Erreur régulateur de vitesse
+Contrôles en erreur
+Erreur camera
+Erreur camera
+Erreur camera
+Erreur USB : Redémarrez votre appareil
+Erreur USB : Redémarrez votre appareil
+Erreur USB : Redémarrez votre appareil
+Erreur CAN : Redémarrez votre appareil
+Erreur CAN : Vérifiez les connections
+Erreur LKAS : Redémarrez votre véhicule
+Erreur LKAS : Redémarrez votre appareil
+Erreur LKAS : Redémarrez votre appareil
+Erreur Régulateur de vitesse: Redémarrez votre appareil
+Erreur Régulateur de vitesse: Redémarrez votre appareil
+Erreur Régulateur de vitesse: Redémarrez votre appareil
+Marche arrière
+Marche arrière
+La vitesse n'est pas en D
+La vitesse n'est pas en D
+Régulateur de vitesse désactivé
+Erreur de planificateur
+Erreur de planificateur
+Malfunction du harnais
+Malfunction du harnais
+Vérifiez le hardware
+Malfunction du harnais
+openpilot annulé
+Pas de véhicule proche
+Pas de véhicule proche
+openpilot annulé
+Vitesse trop faible
+Vitesse trop élevée
+Modèle incertain à cette vitesse
+Ralentir pour engager
+Erreur régulateur de vitesse : Redemarrez le véhicule pour engager
+Erreur régulateur de vitesse : Redemarrez le véhicule
+LKAS desactivé
+LKAS activé
+Mise en veille désactivée
+Ralentissement avant dos-d'âne
+Vitesse du régulateur modifiée par le conducteur
+Ne pas perturber le mode d'allumage
+Touchez la boîte en haut à gauche pour éteindre
+Carillon pour le départ
+Ralentir pour l'alerte Waze
+Mauvaise réception GPS
+Assurez-vous que l'appareil a une vue dégagée sur le ciel

@@ -1,0 +1,195 @@
+openpilot Unavailable
+TAKE CONTROL IMMEDIATELY
+openpilot will disengage
+TAKE CONTROL IMMEDIATELY
+Always keep hands on wheel and eyes on road
+Speed Below
+Steer Unavailable Below
+Calibration in Progress
+Drive Above
+Poor GPS reception
+If sky is visible, contact support
+Check GPS antenna placement
+Cruise Mode Disabled
+Main Switch Off
+Gas
+Steer
+Joystick Mode
+CAN Signal missing
+CAN Signal timeout
+CAN Error: Check Harness Connections
+Joystick Mode
+System Initializing
+Be ready to take over at any time
+WARNING: This branch is not tested
+Dashcam mode
+Dashcam mode for unsupported car
+Car Unrecognized
+Check comma power connections
+Dashcam Mode
+Stock LKAS is on
+Turn off stock LKAS to engage
+Dashcam Mode
+Car Unrecognized
+BRAKE!
+Stock AEB: Risk of Collision
+Stock AEB: Risk of Collision
+BRAKE!
+Risk of Collision
+Lane Departure Detected
+Release Gas Pedal to Engage
+Live Parameters Invalid
+Live Parameters Invalid
+Steering Temporarily Unavailable
+Pay Attention
+Pay Attention
+Driver Distracted
+DISENGAGE IMMEDIATELY
+Driver Distracted
+Touch Steering Wheel: No Face Detected
+Touch Steering Wheel
+Driver Unresponsive
+DISENGAGE IMMEDIATELY
+Driver Unresponsive
+TAKE CONTROL
+Resume Driving Manually
+STOPPED
+Press Resume to Go
+Steer Left to Start Lane Change Once Safe
+Steer Right to Start Lane Change Once Safe
+Car Detected in Blindspot
+Changing Lanes
+E2E Long Enabled
+Be careful, It may work unexpectedly.
+Turning Blinker On at Low Speed
+Steering Assist is temporarily disabled. Please steer yourself.
+Hazard Flasher On
+Driver is Steering
+Steer Assist is temporarily weakened.
+Take Control
+Assist Steering
+Fan Malfunction
+Contact Support
+Camera Malfunction
+Contact Support
+GPS Malfunction
+Contact Support
+Sensor Malfunction
+Contact Support
+Openpilot Stock
+Distance and Curve Mode
+Distance Only Mode
+Curve Only Mode
+Oneway Mode
+SpeedLimit Only Mode
+Brake!
+Risk of Collision
+Driving as Routine
+AUTO HOLD
+Parking Brake Engaged
+Pedal Pressed
+Adaptive Cruise Disabled
+Steering Temporarily Unavailable
+Steering Temporarily Unavailable
+Steering paused, ISG is working
+Slowing Down for SpeedLimit
+RES triggered for Departure
+Adjusting Cruise Gap
+Auto RES triggered
+Slowing Down for Curve
+Slowing Down for Vehicle Cut-In
+Out of Storage
+Out of Storage
+No Data from Device Sensors
+Reboot your Device
+No Data from Device Sensors
+Speaker not found
+Reboot your Device
+Speaker not found
+Distraction Level Too High
+System Overheated
+System Overheated
+System Overheated
+Gear not D
+Calibration Invalid
+Remount Device and Recalibrate
+Calibration Invalid: Remount Device & Recalibrate
+Calibration Invalid: Remount Device & Recalibrate
+Calibration in Progress
+Calibration in Progress
+Door Open
+Door Open
+Seatbelt Unlatched
+Seatbelt Unlatched
+ESP Off
+ESP Off
+Low Battery
+Low Battery
+Take Control
+Communication Issue between Processes
+Low Communication Rate between Processes
+Low Communication Rate between Processes
+System Malfunction: Reboot Your Device
+Radar Error: Restart the Car
+Radar Error: Restart the Car
+Driving model lagging
+Driving model lagging
+Model Output Uncertain
+Model Output Uncertain
+Device Fell Off Mount
+Device Fell Off Mount
+Low Memory: Reboot Your Device
+Low Memory
+Reboot your Device
+Low Memory: Reboot Your Device
+System Malfunction: Reboot Your Device
+Cruise Faulted
+Cruise Faulted
+Cruise Faulted
+Controls Mismatch
+Camera Error
+Camera Error
+Camera Error
+USB Error: Reboot Your Device
+USB Error: Reboot Your Device
+USB Error: Reboot Your Device
+CAN Error: Check Connections
+CAN Error: Check Connections
+LKAS Fault: Restart the Car
+LKAS Fault: Restart the car to engage
+LKAS Fault: Restart the Car
+Cruise Fault: Restart the Car
+Cruise Fault: Restart the car to engage
+Cruise Fault: Restart the Car
+Reverse Gear
+Reverse Gear
+Gear not D
+Gear not D
+Cruise Is Off
+Planner Solution Error
+Planner Solution Error
+Harness Malfunction
+Harness Malfunction
+Check Hardware
+Harness Malfunction
+openpilot Canceled
+No close lead car
+No close lead car
+openpilot Canceled
+Speed too low
+Speed Too High
+Model uncertain at this speed
+Slow down to engage
+Cruise Fault: Restart the car to engage
+Cruise Fault: Restart the Car
+LKAS is Off status
+LKAS turned On
+UnSleep Mode turned On
+Slowing Down for SpeedBump
+SCC Set Speed Driver Override
+Do Not Disturb Mode On
+Touch Top-Left Box to turn Off
+Chime for Depart
+Slowing Down for Waze Alert
+Poor GPS reception
+Ensure device has a clear view of the sky

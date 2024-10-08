@@ -1,0 +1,53 @@
+2024-10-01
+- MLSIM Model
+- your own Params from Github(Easy Restore)
+- many refactoring of codes in line with Comma's
+2024-07-16
+- Notre Dame Model
+- Re-Add exception log, Manual onroad view
+- Bug fixes
+2024-05-18
+- AgnOS 10.1
+- Support CanFD cars overally with UFC
+- Variable Cruise(button spamming) for CanFD cars
+- More reliable resume spamming
+- Support angle controlled cars(EV9, IONIQ5 PE 2025)
+2024-05-05
+- North Dakota Model
+2024-04-15
+- WD40 Model
+- Duck Amigo Model
+2024-03-01
+- Recertified Herbalist Model
+- More visible BSM alert on UI
+- ALC uses model curvature on MPC and Mix mode
+- Waze safety img added
+2024-02-23
+- IP auto detection for external Navigation
+- Hotspot Autorun
+- Kisa connect App for non-Rooted device
+- Add a param of lane change time for legacy lateral plan
+2024-02-18
+- Mappy and Waze added. See Readme.txt before use.
+2024-02-06
+- SteerActuatorDelay(0.35->0.15) Must confirm your tune value
+- Certified Herbalist model
+- Optimized curvature btw Lane&Model
+2024-02-01
+- Los Angeles model
+- Support legacy lane mode
+- Fix the feature of changing branch
+2023-12-22
+- NEXO gear shifter support
+- New Delhi model
+2023-12-14
+- Sound volume adjust(more precisely)
+- Waze unit(can use mile unit on ext navi)
+- Easy ext IP address
+2023-11-25
+- Blue Diamond model
+2023-11-12
+- Legacy Lane Mode
+- Enhanced Driver Monitoring
+2023-11-10
+- KisaPilot Launched
