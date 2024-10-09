@@ -911,6 +911,7 @@ struct ControlsState @0x97ff69c53601abf1 {
   autoResvCruisekph @85 :Float32;
   resSpeed @86 :Float32;
   roadLimitSpeedOnTemp @87: Bool;
+  standStill @88: Bool;
 
   lateralControlState :union {
     indiState @52 :LateralINDIState;

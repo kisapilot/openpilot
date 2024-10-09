@@ -56,6 +56,7 @@ static void update_state(UIState *s) {
     scene.desired_angle_steers = cons_data.getSteeringAngleDesiredDeg();
     scene.gap_by_speed_on = cons_data.getGapBySpeedOn();
     scene.btn_pressing = cons_data.getBtnPressing();
+    scene.standStill = cons_data.getStandStill();
   }
   if (sm.updated("carState")) {
     scene.car_state = sm["carState"].getCarState();
@@ -81,7 +82,6 @@ static void update_state(UIState *s) {
     scene.tpmsPressureRr = cs_data.getTpms().getRr();
     scene.radarDRel = cs_data.getRadarDRel();
     scene.radarVRel = cs_data.getRadarVRel();
-    scene.standStill = cs_data.getStandStill();
     scene.vSetDis = cs_data.getVSetDis();
     scene.cruiseAccStatus = cs_data.getCruiseAccStatus();
     scene.driverAcc = cs_data.getDriverAcc();

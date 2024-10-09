@@ -319,6 +319,7 @@ class Controls:
     cs.autoResvCruisekph = float(CO.actuatorsOutput.autoResvCruisekph)
     cs.resSpeed = float(CO.actuatorsOutput.resSpeed)
     cs.roadLimitSpeedOnTemp = bool(CO.actuatorsOutput.roadLimitSpeedOnTemp)
+    cs.standStill = bool(CO.actuatorsOutput.standStill)
 
     lat_tuning = self.CP.lateralTuning.which()
     if self.CP.steerControlType == car.CarParams.SteerControlType.angle:

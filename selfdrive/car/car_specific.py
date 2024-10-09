@@ -48,6 +48,7 @@ class CarSpecificEvents:
     self.user_specific_feature = int(Params().get("UserSpecificFeature", encoding="utf8"))
     self.long_alt = int(Params().get("KISALongAlt", encoding="utf8"))
     self.exp_long = self.CP.sccBus <= 0 and self.CP.openpilotLongitudinalControl and self.long_alt not in (1, 2)
+    self.no_mdps_mods = Params().get_bool("NoSmartMDPS")
 
   def update(self, CS: car.CarState, CS_prev: car.CarState, CC: car.CarControl):
     if self.CP.carName in ('body', 'mock'):
@@ -163,66 +164,55 @@ class CarSpecificEvents:
         self.low_speed_alert = True
       if CS.vEgo > (self.CP.minSteerSpeed + 4.):
         self.low_speed_alert = False
-      if self.low_speed_alert and CC.no_mdps_mods:
+      if self.low_speed_alert and self.no_mdps_mods:
         events.add(EventName.belowSteerSpeed)
 
       # kisa
-      if CC.need_brake and not CC.longcontrol:
+      if CC.actuators.needBrake and not self.CP.openpilotLongitudinalControl:
         events.add(EventName.needBrake)
-      if not CC.lkas_temp_disabled:
-        if CC.lanechange_manual_timer and CS.out.vEgo > 0.3:
+      if not CC.actuators.lkasTempDisabled:
+        if CC.actuators.lanechangeManualTimer and CS.vEgo > 0.3:
           events.add(EventName.laneChangeManual)
-        if CC.emergency_manual_timer:
+        if CC.actuators.emergencyManualTimer:
           events.add(EventName.emgButtonManual)
-        if CC.standstill_res_button:
+        if CC.actuators.standstillResButton:
           events.add(EventName.standstillResButton)
-        if CC.cruise_gap_adjusting:
+        if CC.actuators.cruiseGapAdjusting:
           events.add(EventName.gapAdjusting)
-        if CC.on_speed_bump_control and CS.out.vEgo > 8.3:
+        if CC.actuators.onSpeedBumpControl and CS.vEgo > 8.3:
           events.add(EventName.speedBump)
-        if CC.on_speed_control and CS.out.vEgo > 0.3:
+        if CC.actuators.onSpeedControl and CS.vEgo > 0.3:
           events.add(EventName.camSpeedDown)
-        if CC.curv_speed_control and CS.out.vEgo > 8.3:
+        if CC.actuators.curvSpeedControl and CS.vEgo > 8.3:
           events.add(EventName.curvSpeedDown)
-        if CC.cut_in_control and CS.out.vEgo > 8.3:
+        if CC.actuators.cutInControl and CS.vEgo > 8.3:
           events.add(EventName.cutinDetection)
-        if CC.driver_scc_set_control:
+        if CC.actuators.driverSccSetControl:
           events.add(EventName.sccDriverOverride)        
-        if CC.autohold_popup_timer:
+        if CC.actuators.autoholdPopupTimer:
           events.add(EventName.autoHold)
-        if CC.auto_res_starting:
+        if CC.actuators.autoResStarting:
           events.add(EventName.resCruise)
-        if CC.e2e_standstill:
+        if CC.actuators.e2eStandstill:
           events.add(EventName.chimeAtResume)
-      if CS.out.cruiseState.standstill or CC.standstill_status == 1:
-        self.CP.standStill = True
-      else:
-        self.CP.standStill = False
-      if CC.vFuture >= 1:
-        self.CP.vFuture = CC.vFuture
-      else:
-        self.CP.vFuture = 0
-      if CC.vFutureA >= 1:
-        self.CP.vFutureA = CC.vFutureA
-      else:
-        self.CP.vFutureA = 0
 
-      if CC.mode_change_timer and CS.out.cruiseState.modeSel == 0:
-        events.add(EventName.modeChangeOpenpilot)
-      elif CC.mode_change_timer and CS.out.cruiseState.modeSel == 1:
-        events.add(EventName.modeChangeDistcurv)
-      elif CC.mode_change_timer and CS.out.cruiseState.modeSel == 2:
-        events.add(EventName.modeChangeDistance)
-      elif CC.mode_change_timer and CS.out.cruiseState.modeSel == 3:
-        events.add(EventName.modeChangeCurv)
-      elif CC.mode_change_timer and CS.out.cruiseState.modeSel == 4:
-        events.add(EventName.modeChangeOneway)
-      elif CC.mode_change_timer and CS.out.cruiseState.modeSel == 5:
-        events.add(EventName.modeChangeMaponly)
+      if CC.actuators.modeChangeTimer:
+        if CS.cruiseState.modeSel == 0:
+          events.add(EventName.modeChangeOpenpilot)
+        elif CS.cruiseState.modeSel == 1:
+          events.add(EventName.modeChangeDistcurv)
+        elif CS.cruiseState.modeSel == 2:
+          events.add(EventName.modeChangeDistance)
+        elif CS.cruiseState.modeSel == 3:
+          events.add(EventName.modeChangeCurv)
+        elif CS.cruiseState.modeSel == 4:
+          events.add(EventName.modeChangeOneway)
+        elif CS.cruiseState.modeSel == 5:
+          events.add(EventName.modeChangeMaponly)
 
-      if CC.lkas_temp_disabled:
+      if CC.actuators.lkasTempDisabled:
         events.add(EventName.lkasDisabled)
-      elif CC.lkas_temp_disabled_timer:
+      elif CC.actuators.lkasTempDisabledTimer:
         events.add(EventName.lkasEnabled)
 
       if self.exp_long:
@@ -286,7 +276,7 @@ class CarSpecificEvents:
       events.add(EventName.vehicleSensorsInvalid)
     if CS.invalidLkasSetting:
       events.add(EventName.invalidLkasSetting)
-    if CS.lowSpeedAlert and CC.no_mdps_mods:
+    if CS.lowSpeedAlert and self.no_mdps_mods:
       events.add(EventName.belowSteerSpeed)
 
     # Handle button presses

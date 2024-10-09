@@ -214,11 +214,6 @@ class CarInterfaceBase(ABC):
     ret.longitudinalActuatorDelay = 0.15
     ret.steerLimitTimer = 1.0
 
-    ret.vCruisekph = 0
-    ret.resSpeed = 0
-    ret.vFuture = 0
-    ret.vFutureA = 0
-    ret.standStill = False
     ret.isCanFD = False
 
     return ret

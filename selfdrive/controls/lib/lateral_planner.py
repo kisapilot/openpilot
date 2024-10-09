@@ -323,7 +323,7 @@ class LateralPlanner:
       self.second = 0.0
 
     self.v_cruise_kph = sm['carState'].vCruise
-    self.stand_still = sm['carState'].standStill
+    self.stand_still = sm['carControl'].actuators.standStill
 
     v_ego = sm['carState'].vEgo
     if sm.frame % 5 == 0:

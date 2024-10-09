@@ -136,7 +136,7 @@ class CarController(CarControllerBase):
     self.standstill_res_button = False
     self.standstill_res_count = int(self.c_params.get("RESCountatStandstill", encoding="utf8"))
 
-    self.standstill_status = 0
+    self.standstill_status = False
     self.standstill_status_canfd = False
     self.standstill_status_timer = 0
     self.switch_timer = 0
@@ -560,10 +560,10 @@ class CarController(CarControllerBase):
     if (CS.out.brakeLights and CS.out.vEgo == 0 and not CS.out.cruiseState.standstill) or CS.i_pedel_stop:
       self.standstill_status_timer += 1
       if self.standstill_status_timer > 200:
-        self.standstill_status = 1
+        self.standstill_status = True
         self.standstill_status_timer = 0
-    if self.standstill_status == 1 and CS.out.vEgo > 1:
-      self.standstill_status = 0
+    if self.standstill_status and CS.out.vEgo > 1:
+      self.standstill_status = False
       self.standstill_fault_reduce_timer = 0
       self.last_resume_frame = self.frame
       self.res_switch_timer = 0
@@ -727,7 +727,7 @@ class CarController(CarControllerBase):
                                                 left_lane_warning, right_lane_warning, 0, self.ldws_fix))
 
       if CS.out.cruiseState.standstill:
-        self.standstill_status = 1
+        self.standstill_status = True
         if self.kisa_autoresume:
           # run only first time when the car stopped
           if self.last_lead_distance == 0:
@@ -1365,6 +1365,27 @@ class CarController(CarControllerBase):
 
     new_actuators.kisaLog1 = str_log1 + '  ' + self.str_log2
     new_actuators.kisaLog2 = str_log2
+
+    new_actuators.needBrake = self.need_brake #bool
+    new_actuators.lkasTempDisabled = self.lkas_temp_disabled #bool
+    new_actuators.lanechangeManualTimer = self.lanechange_manual_timer #int
+    new_actuators.emergencyManualTimer = self.emergency_manual_timer #int
+    new_actuators.standstillResButton = self.standstill_res_button #bool
+    new_actuators.cruiseGapAdjusting = self.cruise_gap_adjusting #bool
+    new_actuators.onSpeedBumpControl = self.on_speed_bump_control #bool
+    new_actuators.onSpeedControl = self.on_speed_control #bool
+    new_actuators.curvSpeedControl = self.curv_speed_control #bool
+    new_actuators.cutInControl = self.cut_in_control #bool
+    new_actuators.driverSccSetControl = self.driver_scc_set_control #bool
+    new_actuators.autoholdPopupTimer = self.autohold_popup_timer #int
+    new_actuators.autoResStarting = self.auto_res_starting #bool
+    new_actuators.e2eStandstill = self.e2e_standstill #bool
+    new_actuators.vFuture = self.vFuture #float
+    new_actuators.vFutureA = self.vFutureA #float
+    new_actuators.modeChangeTimer = self.mode_change_timer #int
+    new_actuators.lkasTempDisabled = self.lkas_temp_disabled #bool
+    new_actuators.lkasTempDisabledTimer = self.lkas_temp_disabled_timer #int
+    new_actuators.standStill = True if CS.out.cruiseState.standstill or self.standstill_status else False
 
     self.frame += 1
     return new_actuators, can_sends

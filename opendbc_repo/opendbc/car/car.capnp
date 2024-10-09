@@ -238,22 +238,21 @@ struct CarState {
   tpms @57 :TPMS;
   radarDRel @58 :Float32;
   radarVRel @59 :Float32;
-  standStill @60 :Bool;
-  vSetDis @61 :Float32;
-  cruiseButtons @62 :Float32;
-  cruiseAccStatus @63 :Bool;
-  driverAcc @64 :Bool;
-  autoHold @65 :Bool;    # AutoHold
-  cruiseGapSet @66 :UInt8;
-  safetyDist @67 :Float32;
-  safetySign @68 :Float32;
-  vEgoOP @69 :Float32;  # openpilot speed
-  gearStep @70 :Int8;
-  isMph @71 :Bool;
-  aReqValue @72 :Float32;
-  chargeMeter @73 :Float32;
-  brakeLights @74 :Bool;
-  pauseSpdLimit @75 :Bool;
+  vSetDis @60 :Float32;
+  cruiseButtons @61 :Float32;
+  cruiseAccStatus @62 :Bool;
+  driverAcc @63 :Bool;
+  autoHold @64 :Bool;    # AutoHold
+  cruiseGapSet @65 :UInt8;
+  safetyDist @66 :Float32;
+  safetySign @67 :Float32;
+  vEgoOP @68 :Float32;  # openpilot speed
+  gearStep @69 :Int8;
+  isMph @70 :Bool;
+  aReqValue @71 :Float32;
+  chargeMeter @72 :Float32;
+  brakeLights @73 :Bool;
+  pauseSpdLimit @74 :Bool;
 
   struct TPMS {
     unit @0 :Int8;
@@ -415,6 +414,26 @@ struct CarControl {
     kisaLog1 @20: Text;
     kisaLog2 @21: Text;
     kisaLog3 @22: Text;
+
+    needBrake @23: Bool;
+    lkasTempDisabled @24: Bool;
+    lanechangeManualTimer @25: Int8;
+    emergencyManualTimer @26: Int8;
+    standstillResButton @27: Bool;
+    cruiseGapAdjusting @28: Bool;
+    onSpeedBumpControl @29: Bool;
+    onSpeedControl @30: Bool;
+    curvSpeedControl @31: Bool;
+    cutInControl @32: Bool;
+    driverSccSetControl @33: Bool;
+    autoholdPopupTimer @34: Int8;
+    autoResStarting @35: Bool;
+    e2eStandstill @36: Bool;
+    vFuture @37: Float32;
+    vFutureA @38: Float32;
+    modeChangeTimer @39: Int8;
+    lkasTempDisabledTimer @40: Int8;
+    standStill @41: Bool;
 
     enum LongControlState @0xe40f3a917d908282{
       off @0;
@@ -591,18 +610,13 @@ struct CarParams {
   lvrAvailable @87: Bool;
   evgearAvailable @88: Bool;
   emsAvailable @89: Bool;
-  standStill @90: Bool;
-  vCruisekph @91: Float32;
-  resSpeed @92: Float32;
-  vFuture @93: Float32;
-  vFutureA @94: Float32;
-  autoHoldAvailable @95 :Bool;
-  scc13Available @96 :Bool;
-  scc14Available @97 :Bool;
-  lfaHdaAvailable @98 :Bool;
-  navAvailable @99 :Bool;
-  isCanFD @100 :Bool;
-  adrvAvailable @101 :Bool;
+  autoHoldAvailable @90 :Bool;
+  scc13Available @91 :Bool;
+  scc14Available @92 :Bool;
+  lfaHdaAvailable @93 :Bool;
+  navAvailable @94 :Bool;
+  isCanFD @95 :Bool;
+  adrvAvailable @96 :Bool;
 
   struct SmoothSteerData
   {
