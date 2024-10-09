@@ -558,6 +558,10 @@ TuningPanel::TuningPanel(QWidget *parent) : QFrame(parent) {
   layout->addWidget(new LiveSRPercent());
   layout->addWidget(new SRBaseControl());
   layout->addWidget(horizontal_line());
+  layout->addWidget(new SteerMax());
+  layout->addWidget(new SteerDeltaUp());
+  layout->addWidget(new SteerDeltaDown());
+  layout->addWidget(horizontal_line());
 
   layout->addWidget(new CLateralControlGroup());
   layout->addWidget(horizontal_line());

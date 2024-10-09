@@ -1394,6 +1394,51 @@ private:
   void refresh();
 };
 
+class SteerMax : public AbstractControl {
+  Q_OBJECT
+
+public:
+  SteerMax();
+
+private:
+  QPushButton btnplus;
+  QPushButton btnminus;
+  QLabel label;
+  Params params;
+  
+  void refresh();
+};
+
+class SteerDeltaUp : public AbstractControl {
+  Q_OBJECT
+
+public:
+  SteerDeltaUp();
+
+private:
+  QPushButton btnplus;
+  QPushButton btnminus;
+  QLabel label;
+  Params params;
+  
+  void refresh();
+};
+
+class SteerDeltaDown : public AbstractControl {
+  Q_OBJECT
+
+public:
+  SteerDeltaDown();
+
+private:
+  QPushButton btnplus;
+  QPushButton btnminus;
+  QLabel label;
+  Params params;
+  
+  void refresh();
+};
+
 // control
 class LateralControl : public AbstractControl {
   Q_OBJECT

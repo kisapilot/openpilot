@@ -37,6 +37,9 @@ SteerRatioAdj:1375
 SteerActuatorDelayAdj:15
 SteerLimitTimerAdj:100
 TireStiffnessFactorAdj:85
+SteerMaxAdj:384
+SteerDeltaUpAdj:3
+SteerDeltaDownAdj:7
 LeftCurvOffsetAdj:0
 RightCurvOffsetAdj:0
 DebugUi1:0

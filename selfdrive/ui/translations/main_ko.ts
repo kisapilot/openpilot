@@ -2270,6 +2270,39 @@ This may take up to a minute.</source>
     </message>
 </context>
 <context>
+    <name>SteerMax</name>
+    <message>
+        <source>SteerMax</source>
+        <translation>SteerMax</translation>
+    </message>
+    <message>
+        <source>Adjust the SteerMax value.</source>
+        <translation>SteerMax 값을 조정합니다.</translation>
+    </message>
+</context>
+<context>
+    <name>SteerDeltaUp</name>
+    <message>
+        <source>SteerDeltaUp</source>
+        <translation>SteerDeltaUp</translation>
+    </message>
+    <message>
+        <source>Adjust the SteerDeltaUp value.</source>
+        <translation>SteerDeltaUp 값을 조정합니다.</translation>
+    </message>
+</context>
+<context>
+    <name>SteerDeltaDown</name>
+    <message>
+        <source>SteerDeltaDown</source>
+        <translation>SteerDeltaDown</translation>
+    </message>
+    <message>
+        <source>Adjust the SteerDeltaDown value.</source>
+        <translation>SteerDeltaDown 값을 조정합니다.</translation>
+    </message>
+</context>
+<context>
     <name>SteerThreshold</name>
     <message>
         <source>SteerThreshold</source>
