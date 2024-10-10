@@ -51,13 +51,13 @@ class MapD():
     self.roadname_and_offset = Params().get("RoadList", encoding="utf8").strip().splitlines()[0].split(',')
 
   def udpate_state(self, sm):
-    sock = 'controlsState'
+    sock = 'selfdriveState'
     if not sm.updated[sock] or not sm.valid[sock]:
       return
 
-    controls_state = sm[sock]
-    self._disengaging = not controls_state.enabled and self._op_enabled
-    self._op_enabled = controls_state.enabled
+    selfdrive_state = sm[sock]
+    self._disengaging = not selfdrive_state.enabled and self._op_enabled
+    self._op_enabled = selfdrive_state.enabled
 
   def update_gps(self, sm):
     sock = 'gpsLocationExternal'
@@ -260,7 +260,7 @@ def mapd_thread(sm=None, pm=None):
 
   # *** setup messaging
   if sm is None:
-    sm = messaging.SubMaster(['gpsLocationExternal', 'controlsState'])
+    sm = messaging.SubMaster(['gpsLocationExternal', 'selfdriveState'])
   if pm is None:
     pm = messaging.PubMaster(['liveMapData'])
 
