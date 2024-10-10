@@ -68,12 +68,16 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
 
   painter.save();
 
-  int offset = UI_BORDER_SIZE + btn_size / 2;
+  int offset = UI_BORDER_SIZE + btn_size / 2 - 5;
   float x = is_rhd ? surface_rect.width() - offset : offset;
-  float y = surface_rect.height() - offset;
+  float y = uiState()->scene.low_ui_profile?offset:(surface_rect.height() - offset);
   float opacity = is_active ? 0.65f : 0.2f;
 
-  drawIcon(painter, QPoint(x, y), dm_img, QColor(0, 0, 0, 70), opacity);
+  if (uiState()->scene.monitoring_mode) {
+    drawIcon(painter, QPoint(x, y), dm_img, QColor(255, 175, 3, 130), opacity);
+  } else {
+    drawIcon(painter, QPoint(x, y), dm_img, QColor(0, 0, 0, 70), opacity);
+  }
 
   QPointF keypoints[std::size(DEFAULT_FACE_KPTS_3D)];
   for (int i = 0; i < std::size(keypoints); ++i) {
