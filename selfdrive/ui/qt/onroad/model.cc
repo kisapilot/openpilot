@@ -105,7 +105,7 @@ void ModelRenderer::drawLaneLines(QPainter &painter) {
   // lanelines
   if (!s->scene.lateralPlan.lanelessModeStatus) {
     for (int i = 0; i < std::size(lane_line_vertices); ++i) {
-      painter.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, std::clamp<float>(lane_line_probs[i], 0.0, 0.7)));
+      painter.setBrush(QColor::fromRgbF(0.09, 0.68, 0.00, std::clamp<float>(lane_line_probs[i], 0.0, 0.7)));
       if (s->scene.leftblindspot && i == 1) {
         painter.setBrush(QColor::fromRgbF(1.0, 0.5, 0.0, std::clamp<float>(lane_line_probs[i], 0.0, 0.7)));
       }

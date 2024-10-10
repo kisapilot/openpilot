@@ -67,9 +67,7 @@ class LateralPlanner:
     self.laneless_mode_status = False
     self.laneless_mode_status_buffer = False
 
-    self.standstill_elapsed_time = 0.0
     self.v_cruise_kph = 0
-    self.stand_still = False
     
     self.second = 0.0
     self.model_speed = 255.0
@@ -323,7 +321,6 @@ class LateralPlanner:
       self.second = 0.0
 
     self.v_cruise_kph = sm['carState'].vCruise
-    self.stand_still = sm['carControl'].actuators.standStill
 
     v_ego = sm['carState'].vEgo
     if sm.frame % 5 == 0:
@@ -462,11 +459,5 @@ class LateralPlanner:
     lateralPlan.vCurvature = float(sm['controlsState'].curvature)
     lateralPlan.lanelessMode = bool(self.laneless_mode_status)
     lateralPlan.totalCameraOffset = float(self.total_camera_offset)
-
-    if self.stand_still:
-      self.standstill_elapsed_time += DT_MDL
-    else:
-      self.standstill_elapsed_time = 0.0
-    lateralPlan.standstillElapsedTime = int(self.standstill_elapsed_time)
 
     pm.send('lateralPlan', plan_send)

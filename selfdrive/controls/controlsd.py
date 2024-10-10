@@ -6,7 +6,7 @@ from cereal import car, log
 import cereal.messaging as messaging
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.params import Params
-from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper
+from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper, DT_CTRL
 from openpilot.common.swaglog import cloudlog
 
 from opendbc.car.car_helpers import get_car_interface
@@ -106,6 +106,7 @@ class Controls:
     self.desired_angle_deg = 0
     self.navi_selection = int(self.params.get("KISANaviSelect", encoding="utf8"))
     self.legacy_lane_mode = int(self.params.get("UseLegacyLaneModel", encoding="utf8"))
+    self.standstill_elapsed_time = 0
 
   def update(self):
     self.sm.update(15)
@@ -320,6 +321,11 @@ class Controls:
     cs.resSpeed = float(CO.actuatorsOutput.resSpeed)
     cs.roadLimitSpeedOnTemp = bool(CO.actuatorsOutput.roadLimitSpeedOnTemp)
     cs.standStill = bool(CO.actuatorsOutput.standStill)
+    if cs.standStill:
+      self.standstill_elapsed_time += DT_CTRL
+    else:
+      self.standstill_elapsed_time = 0
+    cs.standStillTimer = int(self.standstill_elapsed_time)    
 
     lat_tuning = self.CP.lateralTuning.which()
     if self.CP.steerControlType == car.CarParams.SteerControlType.angle:

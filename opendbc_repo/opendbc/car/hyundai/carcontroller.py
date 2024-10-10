@@ -1385,7 +1385,7 @@ class CarController(CarControllerBase):
     new_actuators.modeChangeTimer = self.mode_change_timer #int
     new_actuators.lkasTempDisabled = self.lkas_temp_disabled #bool
     new_actuators.lkasTempDisabledTimer = self.lkas_temp_disabled_timer #int
-    new_actuators.standStill = True if CS.out.cruiseState.standstill or self.standstill_status else False
+    new_actuators.standStill = True if CS.out.cruiseState.standstill or (self.standstill_status or self.standstill_status_canfd) else False
 
     self.frame += 1
     return new_actuators, can_sends

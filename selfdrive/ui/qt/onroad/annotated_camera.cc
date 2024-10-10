@@ -156,11 +156,11 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
 
   // rec_stat and toggle
   if (s->scene.driving_record) {
-    if (!s->scene.rec_stat && s->scene.car_state.getVEgo() > 0.8 && s->scene.lateralPlan.standstillElapsedTime == 0 && int(s->scene.getGearShifter) == 2) {
+    if (!s->scene.rec_stat && s->scene.car_state.getVEgo() > 0.8 && s->scene.standstillElapsedTime == 0 && int(s->scene.getGearShifter) == 2) {
       s->scene.rec_stat = !s->scene.rec_stat;
       params.putBool("RecordingRunning", s->scene.rec_stat);
       if (recorder) recorder->toggle();
-    } else if (s->scene.rec_stat && ((s->scene.standStill && s->scene.lateralPlan.standstillElapsedTime > 5) || int(s->scene.getGearShifter) == 1)) {
+    } else if (s->scene.rec_stat && ((s->scene.standStill && s->scene.standstillElapsedTime > 5) || int(s->scene.getGearShifter) == 1)) {
       s->scene.rec_stat = !s->scene.rec_stat;
       params.putBool("RecordingRunning", s->scene.rec_stat);
       if (recorder) recorder->toggle();

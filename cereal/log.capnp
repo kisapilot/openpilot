@@ -910,8 +910,9 @@ struct ControlsState @0x97ff69c53601abf1 {
   btnPressing @84 :UInt8;
   autoResvCruisekph @85 :Float32;
   resSpeed @86 :Float32;
-  roadLimitSpeedOnTemp @87: Bool;
-  standStill @88: Bool;
+  roadLimitSpeedOnTemp @87 :Bool;
+  standStill @88 :Bool;
+  standStillTimer @89 :UInt8;
 
   lateralControlState :union {
     indiState @52 :LateralINDIState;
@@ -1416,12 +1417,11 @@ struct LateralPlan @0xe1e9318e2ae8b51e {
   }
 
   outputScale @34 :Float32;
-  standstillElapsedTime @35 :Float32;
-  vCruiseSet @36 :Float32;
-  vCurvature @37 :Float32;
-  lanelessMode @38 :Bool;
-  modelSpeed @39 :Float32;
-  totalCameraOffset @40 :Float32;
+  vCruiseSet @35 :Float32;
+  vCurvature @36 :Float32;
+  lanelessMode @37 :Bool;
+  modelSpeed @38 :Float32;
+  totalCameraOffset @39 :Float32;
 
   enum Desire {
     none @0;

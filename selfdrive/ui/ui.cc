@@ -57,6 +57,7 @@ static void update_state(UIState *s) {
     scene.gap_by_speed_on = cons_data.getGapBySpeedOn();
     scene.btn_pressing = cons_data.getBtnPressing();
     scene.standStill = cons_data.getStandStill();
+    scene.standstillElapsedTime = cons_data.getStandStillTimer();
   }
   if (sm.updated("carState")) {
     scene.car_state = sm["carState"].getCarState();
@@ -203,7 +204,6 @@ static void update_state(UIState *s) {
     scene.lateralPlan.dProb = lp_data.getDProb();
     scene.lateralPlan.lProb = lp_data.getLProb();
     scene.lateralPlan.rProb = lp_data.getRProb();
-    scene.lateralPlan.standstillElapsedTime = lp_data.getStandstillElapsedTime();
     scene.lateralPlan.lanelessModeStatus = lp_data.getLanelessMode();
     scene.lateralPlan.totalCameraOffset = lp_data.getTotalCameraOffset();
   }

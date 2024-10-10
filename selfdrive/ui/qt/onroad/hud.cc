@@ -594,8 +594,8 @@ void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
   if (s->scene.standStill && s->scene.comma_stock_ui != 1) {
     int minute = 0;
     int second = 0;
-    minute = int(s->scene.lateralPlan.standstillElapsedTime / 60);
-    second = int(s->scene.lateralPlan.standstillElapsedTime) - (minute * 60);
+    minute = int(s->scene.standstillElapsedTime / 60);
+    second = int(s->scene.standstillElapsedTime) - (minute * 60);
     p.setPen(ochreColor(220));
     debugText(p, surface_rect.right()-UI_BORDER_SIZE-545, UI_BORDER_SIZE+420, "STOP", 220, 135);
     p.setPen(whiteColor(220));

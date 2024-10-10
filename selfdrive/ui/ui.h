@@ -189,6 +189,7 @@ typedef struct UIScene {
   int user_specific_feature = 0;
   bool use_radar_value;
   bool error_occurred = false;
+  int standstillElapsedTime = 0;
 
   QString model_name;
 
@@ -216,7 +217,6 @@ typedef struct UIScene {
   struct _LateralPlan
   {
     float laneWidth;
-    int standstillElapsedTime = 0;
 
     float dProb;
     float lProb;
