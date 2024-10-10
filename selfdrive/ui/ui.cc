@@ -55,6 +55,7 @@ static void update_state(UIState *s) {
     scene.ctrl_speed = cons_data.getSafetySpeed();
     scene.desired_angle_steers = cons_data.getSteeringAngleDesiredDeg();
     scene.gap_by_speed_on = cons_data.getGapBySpeedOn();
+    scene.exp_mode_temp = cons_data.getExpModeTemp();
     scene.btn_pressing = cons_data.getBtnPressing();
     scene.standStill = cons_data.getStandStill();
     scene.standstillElapsedTime = cons_data.getStandStillTimer();
