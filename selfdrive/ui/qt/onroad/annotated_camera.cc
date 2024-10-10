@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <algorithm>
 #include <cmath>
+#include <unistd.h> // kisapilot
 
 #include "common/swaglog.h"
 #include "selfdrive/ui/qt/util.h"
