@@ -762,7 +762,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       tr(79),
       "",
       AlertStatus.normal, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.warning, 1.),
+      Priority.LOW, VisualAlert.none, AudibleAlert.warning, .5),
   },
   
   EventName.modeChangeDistcurv: {
@@ -770,35 +770,35 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       tr(80),
       "",
       AlertStatus.normal, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.warning, 1.),
+      Priority.LOW, VisualAlert.none, AudibleAlert.warning, .5),
   },
   EventName.modeChangeDistance: {
     ET.WARNING: Alert(
       tr(81),
       "",
       AlertStatus.normal, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.warning, 1.),
+      Priority.LOW, VisualAlert.none, AudibleAlert.warning, .5),
   },
   EventName.modeChangeCurv: {
     ET.WARNING: Alert(
       tr(82),
       "",
       AlertStatus.normal, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.warning, 1.),
+      Priority.LOW, VisualAlert.none, AudibleAlert.warning, .5),
   },
   EventName.modeChangeOneway: {
     ET.WARNING: Alert(
       tr(83),
       "",
       AlertStatus.normal, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.warning, 1.),
+      Priority.LOW, VisualAlert.none, AudibleAlert.warning, .5),
   },
   EventName.modeChangeMaponly: {
     ET.WARNING: Alert(
       tr(84),
       "",
       AlertStatus.normal, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.warning, 1.),
+      Priority.LOW, VisualAlert.none, AudibleAlert.warning, .5),
   },
   EventName.needBrake: {
     ET.WARNING: Alert(

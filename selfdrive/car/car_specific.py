@@ -168,35 +168,35 @@ class CarSpecificEvents:
         events.add(EventName.belowSteerSpeed)
 
       # kisa
-      if CC.actuators.needBrake and not self.CP.openpilotLongitudinalControl:
+      if CC.needBrake and not self.CP.openpilotLongitudinalControl:
         events.add(EventName.needBrake)
-      if not CC.actuators.lkasTempDisabled:
-        if CC.actuators.lanechangeManualTimer and CS.vEgo > 0.3:
+      if not CC.lkasTempDisabled:
+        if CC.lanechangeManualTimer and CS.vEgo > 0.3:
           events.add(EventName.laneChangeManual)
-        if CC.actuators.emergencyManualTimer:
+        if CC.emergencyManualTimer:
           events.add(EventName.emgButtonManual)
-        if CC.actuators.standstillResButton:
+        if CC.standstillResButton:
           events.add(EventName.standstillResButton)
-        if CC.actuators.cruiseGapAdjusting:
+        if CC.cruiseGapAdjusting:
           events.add(EventName.gapAdjusting)
-        if CC.actuators.onSpeedBumpControl and CS.vEgo > 8.3:
+        if CC.onSpeedBumpControl and CS.vEgo > 8.3:
           events.add(EventName.speedBump)
-        if CC.actuators.onSpeedControl and CS.vEgo > 0.3:
+        if CC.onSpeedControl and CS.vEgo > 0.3:
           events.add(EventName.camSpeedDown)
-        if CC.actuators.curvSpeedControl and CS.vEgo > 8.3:
+        if CC.curvSpeedControl and CS.vEgo > 8.3:
           events.add(EventName.curvSpeedDown)
-        if CC.actuators.cutInControl and CS.vEgo > 8.3:
+        if CC.cutInControl and CS.vEgo > 8.3:
           events.add(EventName.cutinDetection)
-        if CC.actuators.driverSccSetControl:
+        if CC.driverSccSetControl:
           events.add(EventName.sccDriverOverride)        
-        if CC.actuators.autoholdPopupTimer:
+        if CC.autoholdPopupTimer:
           events.add(EventName.autoHold)
-        if CC.actuators.autoResStarting:
+        if CC.autoResStarting:
           events.add(EventName.resCruise)
-        if CC.actuators.e2eStandstill:
+        if CC.e2eStandstill:
           events.add(EventName.chimeAtResume)
 
-      if CC.actuators.modeChangeTimer:
+      if CC.modeChangeTimer:
         if CS.cruiseState.modeSel == 0:
           events.add(EventName.modeChangeOpenpilot)
         elif CS.cruiseState.modeSel == 1:
@@ -210,9 +210,9 @@ class CarSpecificEvents:
         elif CS.cruiseState.modeSel == 5:
           events.add(EventName.modeChangeMaponly)
 
-      if CC.actuators.lkasTempDisabled:
+      if CC.lkasTempDisabled:
         events.add(EventName.lkasDisabled)
-      elif CC.actuators.lkasTempDisabledTimer:
+      elif CC.lkasTempDisabledTimer:
         events.add(EventName.lkasEnabled)
 
       if self.exp_long:

@@ -284,6 +284,8 @@ class Controls:
     cs.forceDecel = bool((self.sm['driverMonitoringState'].awarenessStatus < 0.) or
                          (self.sm['selfdriveState'].state == State.softDisabling))
 
+    cs.vFuture = float(v_future_speed)
+    cs.vFutureA = float(v_future_speed_a)
     cs.alertTextMsg1 = str(CO.actuatorsOutput.kisaLog1)
     cs.alertTextMsg2 = str(CO.actuatorsOutput.kisaLog2)
     cs.alertTextMsg3 = str(trace1.global_alertTextMsg3)
@@ -326,6 +328,23 @@ class Controls:
     else:
       self.standstill_elapsed_time = 0.0
     cs.standStillTimer = int(self.standstill_elapsed_time)    
+
+    CC.needBrake = bool(CO.actuatorsOutput.needBrake)
+    CC.lkasTempDisabled = bool(CO.actuatorsOutput.lkasTempDisabled)
+    CC.lanechangeManualTimer = int(CO.actuatorsOutput.lanechangeManualTimer)
+    CC.emergencyManualTimer = int(CO.actuatorsOutput.emergencyManualTimer)
+    CC.standstillResButton = bool(CO.actuatorsOutput.standstillResButton)
+    CC.cruiseGapAdjusting = bool(CO.actuatorsOutput.cruiseGapAdjusting)
+    CC.onSpeedBumpControl = bool(CO.actuatorsOutput.onSpeedBumpControl)
+    CC.onSpeedControl = bool(CO.actuatorsOutput.onSpeedControl)
+    CC.curvSpeedControl = bool(CO.actuatorsOutput.curvSpeedControl)
+    CC.cutInControl = bool(CO.actuatorsOutput.cutInControl)
+    CC.driverSccSetControl = bool(CO.actuatorsOutput.driverSccSetControl)
+    CC.autoholdPopupTimer = int(CO.actuatorsOutput.autoholdPopupTimer)
+    CC.autoResStarting = bool(CO.actuatorsOutput.autoResStarting)
+    CC.e2eStandstill = bool(CO.actuatorsOutput.e2eStandstill)
+    CC.modeChangeTimer = int(CO.actuatorsOutput.modeChangeTimer)
+    CC.lkasTempDisabledTimer = int(CO.actuatorsOutput.lkasTempDisabledTimer)
 
     lat_tuning = self.CP.lateralTuning.which()
     if self.CP.steerControlType == car.CarParams.SteerControlType.angle:

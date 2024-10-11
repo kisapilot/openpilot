@@ -384,6 +384,23 @@ struct CarControl {
   cruiseControl @4 :CruiseControl;
   hudControl @5 :HUDControl;
 
+  needBrake @17: Bool;
+  lkasTempDisabled @18: Bool;
+  lanechangeManualTimer @19: Int8;
+  emergencyManualTimer @20: Int8;
+  standstillResButton @21: Bool;
+  cruiseGapAdjusting @22: Bool;
+  onSpeedBumpControl @23: Bool;
+  onSpeedControl @24: Bool;
+  curvSpeedControl @25: Bool;
+  cutInControl @26: Bool;
+  driverSccSetControl @27: Bool;
+  autoholdPopupTimer @28: Int8;
+  autoResStarting @29: Bool;
+  e2eStandstill @30: Bool;
+  modeChangeTimer @31: Int8;
+  lkasTempDisabledTimer @32: Int8;
+
   struct Actuators {
     # lateral commands, mutually exclusive
     steer @2: Float32;  # [0.0, 1.0]
@@ -429,11 +446,9 @@ struct CarControl {
     autoholdPopupTimer @34: Int8;
     autoResStarting @35: Bool;
     e2eStandstill @36: Bool;
-    vFuture @37: Float32;
-    vFutureA @38: Float32;
-    modeChangeTimer @39: Int8;
-    lkasTempDisabledTimer @40: Int8;
-    standStill @41: Bool;
+    modeChangeTimer @37: Int8;
+    lkasTempDisabledTimer @38: Int8;
+    standStill @39: Bool;
 
     enum LongControlState @0xe40f3a917d908282{
       off @0;

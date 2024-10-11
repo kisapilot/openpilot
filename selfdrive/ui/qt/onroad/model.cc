@@ -17,9 +17,6 @@ static int get_path_length_idx(const cereal::XYZTData::Reader &line, const float
 
 void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   auto &sm = *(uiState()->sm);
-  if (sm.updated("carParams")) {
-    longitudinal_control = sm["carParams"].getCarParams().getOpenpilotLongitudinalControl();
-  }
 
   // Check if data is up-to-date
   if (!(sm.alive("liveCalibration") && sm.alive("modelV2"))) {
@@ -39,7 +36,7 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   drawLaneLines(painter);
   drawPath(painter, model, surface_rect.height());
 
-  if (longitudinal_control && sm.alive("radarState")) {
+  if (sm.alive("radarState")) {
     update_leads(radar_state, model.getPosition());
     const auto &lead_two = radar_state.getLeadTwo();
     if (lead_one.getStatus()) {

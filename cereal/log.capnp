@@ -913,6 +913,8 @@ struct ControlsState @0x97ff69c53601abf1 {
   roadLimitSpeedOnTemp @87 :Bool;
   standStill @88 :Bool;
   standStillTimer @89 :Float32;
+  vFuture @90: Float32;
+  vFutureA @91: Float32;
 
   lateralControlState :union {
     indiState @52 :LateralINDIState;

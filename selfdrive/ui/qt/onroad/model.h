@@ -23,7 +23,6 @@ private:
   void drawLaneLines(QPainter &painter);
   void drawPath(QPainter &painter, const cereal::ModelDataV2::Reader &model, int height);
 
-  bool longitudinal_control = false;
   bool experimental_model = false;
   float lane_line_probs[4] = {};
   float road_edge_stds[2] = {};
