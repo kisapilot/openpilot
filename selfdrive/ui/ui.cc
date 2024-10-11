@@ -6,7 +6,6 @@
 #include <QtConcurrent>
 
 #include "common/transformations/orientation.hpp"
-#include "common/params.h"
 #include "common/swaglog.h"
 #include "common/util.h"
 #include "common/watchdog.h"
