@@ -80,7 +80,6 @@ class CarState(CarStateBase):
     
     self.cruise_gap = int(Params().get("KisaCruiseGapSet", encoding="utf8"))
     self.is_highway = False
-    self.is_set_speed_in_mph = False
     self.cruise_active = False
 
     # atom
@@ -178,9 +177,9 @@ class CarState(CarStateBase):
       elif self.cruise_buttons[-1] == Buttons.CANCEL and not self.cruiseState_standstill:  # dn
         set_speed_kph = 255
 
-      if set_speed_kph <= 30 and not self.is_set_speed_in_mph:
+      if set_speed_kph <= 30 and self.is_metric:
         set_speed_kph = 30
-      elif set_speed_kph <= 20 and self.is_set_speed_in_mph:
+      elif set_speed_kph <= 20 and not self.is_metric:
         set_speed_kph = 20
       self.cruise_set_speed_kph = set_speed_kph
     else:
@@ -240,9 +239,9 @@ class CarState(CarStateBase):
             set_speed_kph = int(round(set_speed_kph/self.set_spd_plus)*self.set_spd_plus)
         else:
           set_speed_kph += 1
-        if set_speed_kph <= 10 and not self.is_set_speed_in_mph:
+        if set_speed_kph <= 10 and self.is_metric:
           set_speed_kph = 10
-        elif set_speed_kph <= 5 and self.is_set_speed_in_mph:
+        elif set_speed_kph <= 5 and not self.is_metric:
           set_speed_kph = 5
 
       elif self.cruise_buttons[-1] == Buttons.SET_DECEL:  # dn
@@ -252,9 +251,9 @@ class CarState(CarStateBase):
             set_speed_kph = int(round(set_speed_kph/self.set_spd_plus)*self.set_spd_plus)
         else:
           set_speed_kph -= 1
-        if set_speed_kph <= 10 and not self.is_set_speed_in_mph:
+        if set_speed_kph <= 10 and self.is_metric:
           set_speed_kph = 10
-        elif set_speed_kph <= 5 and self.is_set_speed_in_mph:
+        elif set_speed_kph <= 5 and not self.is_metric:
           set_speed_kph = 5
 
       self.cruise_set_speed_kph = set_speed_kph
@@ -312,9 +311,9 @@ class CarState(CarStateBase):
         else:
           set_speed_kph -= 1
 
-      if set_speed_kph <= 30 and not self.is_set_speed_in_mph:
+      if set_speed_kph <= 30 and self.is_metric:
         set_speed_kph = 30
-      elif set_speed_kph <= 20 and self.is_set_speed_in_mph:
+      elif set_speed_kph <= 20 and not self.is_metric:
         set_speed_kph = 20
 
       self.cruise_set_speed_kph = set_speed_kph
@@ -398,8 +397,7 @@ class CarState(CarStateBase):
       self.driverAcc_time -= 1
 
     self.clu_Vanz = cp.vl["CLU11"]["CF_Clu_Vanz"]
-    self.is_set_speed_in_mph = bool(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
-    ret.isMph = self.is_set_speed_in_mph
+    ret.isMph = not self.is_metric
 
     self.cruise_main_button = cp.vl["CLU11"]["CF_Clu_CruiseSwMain"]
     self.prev_cruise_buttons = self.cruise_buttons[-1]
@@ -446,9 +444,9 @@ class CarState(CarStateBase):
       elif self.cruise_buttons[-1] == 4:
         self.exp_engage_available = False
         self.acc_active = False
-      speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
-      ret.cruiseState.speed = set_speed * speed_conv if self.acc_active else 0
-      ret.cruiseState.speedCluster = set_speed * speed_conv if self.acc_active else 0
+      if set_speed is not None:
+        ret.cruiseState.speed = set_speed * speed_conv if self.acc_active else 0
+        ret.cruiseState.speedCluster = set_speed * speed_conv if self.acc_active else 0
       ret.cruiseState.available = self.exp_engage_available
       ret.cruiseState.enabled = ret.cruiseState.available
       ret.cruiseAccStatus = self.acc_active
@@ -472,8 +470,8 @@ class CarState(CarStateBase):
 
       set_speed = self.cruise_speed_button()
       if ret.cruiseState.enabled and (self.brake_check == False or self.cancel_check == False):
-        speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
-        ret.cruiseState.speed = set_speed * speed_conv if not self.exp_long else \
+        if set_speed is not None:
+          ret.cruiseState.speed = set_speed * speed_conv if not self.exp_long else \
                                           cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv
       else:
         ret.cruiseState.speed = 0
@@ -608,7 +606,6 @@ class CarState(CarStateBase):
     ret = structs.CarState()
 
     self.is_metric = cp.vl["CRUISE_BUTTONS_ALT"]["DISTANCE_UNIT"] != 1
-    self.is_set_speed_in_mph = not self.is_metric
     speed_factor = CV.KPH_TO_MS if self.is_metric else CV.MPH_TO_MS
 
     self.clu_Vanz = cp.vl["CRUISE_BUTTONS_ALT"]["CLUSTER_SPEED"]
@@ -689,9 +686,9 @@ class CarState(CarStateBase):
       elif self.cruise_buttons[-1] == 4:
         self.exp_engage_available = False
         self.acc_active = False
-      speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
-      ret.cruiseState.speed = set_speed * speed_conv if self.acc_active else 0
-      ret.cruiseState.speedCluster = set_speed * speed_conv if self.acc_active else 0
+      if set_speed is not None:
+        ret.cruiseState.speed = set_speed * speed_factor if self.acc_active else 0
+        ret.cruiseState.speedCluster = set_speed * speed_factor if self.acc_active else 0
       ret.cruiseState.available = self.exp_engage_available
       ret.cruiseState.enabled = ret.cruiseState.available
       ret.cruiseAccStatus = self.acc_active
@@ -703,7 +700,7 @@ class CarState(CarStateBase):
       ret.cruiseState.available = cp_cruise_info.vl["SCC_CONTROL"]["MainMode_ACC"] != 0
       ret.cruiseState.enabled = cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"] in (1, 2)
       ret.cruiseState.standstill = cp_cruise_info.vl["SCC_CONTROL"]["CRUISE_STANDSTILL"] == 1
-      ret.cruiseState.speed = cp_cruise_info.vl["SCC_CONTROL"]["VSetDis"] * speed_factor
+      #ret.cruiseState.speed = cp_cruise_info.vl["SCC_CONTROL"]["VSetDis"] * speed_factor
       self.VSetDis = cp_cruise_info.vl["SCC_CONTROL"]["VSetDis"]
       ret.vSetDis = self.VSetDis
       self.cruiseState_standstill = ret.cruiseState.standstill
@@ -724,8 +721,8 @@ class CarState(CarStateBase):
 
       set_speed = self.cruise_speed_button_alt()
       if ret.cruiseState.enabled and (self.brake_check == False or self.cancel_check == False):
-        speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
-        ret.cruiseState.speed = set_speed * speed_factor
+        if set_speed is not None:
+          ret.cruiseState.speed = set_speed * speed_factor
       else:
         ret.cruiseState.speed = 0
       self.cruise_active = self.acc_active

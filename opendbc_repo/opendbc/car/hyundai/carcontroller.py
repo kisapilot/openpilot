@@ -826,7 +826,7 @@ class CarController(CarControllerBase):
                 self.switch_timer -= 1
               else:
                 btn_count = 1
-                btn_count = int(interp(self.KCC.t_interval, [self.nt_interval+3,70],[1,self.btn_count])) if CS.is_set_speed_in_mph else int(interp(self.KCC.t_interval, [self.nt_interval,40],[1,self.btn_count]))
+                btn_count = int(interp(self.KCC.t_interval, [self.nt_interval+3,70],[1,self.btn_count])) if not CS.is_metric else int(interp(self.KCC.t_interval, [self.nt_interval,40],[1,self.btn_count]))
                 can_sends.extend([hyundaican.create_clu11(self.packer, self.resume_cnt, CS.clu11, btn_signal)] * btn_count) if not self.longcontrol \
                 else can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_signal, clu11_speed, self.CP.sccBus)] * btn_count)
                 self.resume_cnt += 1
@@ -924,7 +924,7 @@ class CarController(CarControllerBase):
                 self.switch_timer -= 1
               else:
                 btn_count = 1
-                btn_count = int(interp(self.KCC.t_interval, [self.nt_interval+3,70],[1,self.btn_count])) if CS.is_set_speed_in_mph else int(interp(self.KCC.t_interval, [self.nt_interval,40],[1,self.btn_count]))
+                btn_count = int(interp(self.KCC.t_interval, [self.nt_interval+3,70],[1,self.btn_count])) if not CS.is_metric else int(interp(self.KCC.t_interval, [self.nt_interval,40],[1,self.btn_count]))
                 can_sends.extend([hyundaican.create_clu11(self.packer, self.resume_cnt, CS.clu11, btn_signal)] * btn_count) if not self.longcontrol \
                 else can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn_signal, clu11_speed, self.CP.sccBus)] * btn_count)
                 self.resume_cnt += 1
@@ -981,10 +981,10 @@ class CarController(CarControllerBase):
 
       kisa_cruise_auto_res_condition = False
       kisa_cruise_auto_res_condition = not self.kisa_cruise_auto_res_condition or CS.out.gasPressed
-      t_speed = 20 if CS.is_set_speed_in_mph else 30
+      t_speed = 20 if not CS.is_metric else 30
       if self.auto_res_timer > 0:
         self.auto_res_timer -= 1
-      elif self.model_speed > (60 if CS.is_set_speed_in_mph else 95) and self.cancel_counter == 0 and not CS.cruise_active and not CS.out.brakeLights and round(CS.VSetDis) >= t_speed and \
+      elif self.model_speed > (60 if not CS.is_metric else 95) and self.cancel_counter == 0 and not CS.cruise_active and not CS.out.brakeLights and round(CS.VSetDis) >= t_speed and \
       (1 < CS.lead_distance < 149 or round(CS.clu_Vanz) > t_speed) and round(CS.clu_Vanz) >= 3 and self.cruise_init and \
       self.kisa_cruise_auto_res and kisa_cruise_auto_res_condition and (self.auto_res_limit_sec == 0 or self.auto_res_limit_timer < self.auto_res_limit_sec) and \
       (self.auto_res_delay == 0 or self.auto_res_delay_timer >= self.auto_res_delay):
@@ -992,7 +992,7 @@ class CarController(CarControllerBase):
           can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.RES_ACCEL)) if not self.longcontrol \
           else can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.RES_ACCEL, clu11_speed, self.CP.sccBus))  # auto res
           self.auto_res_starting = True
-          self.res_speed = round(CS.VSetDis) if CS.is_set_speed_in_mph or self.osm_spdlimit_enabled else round(CS.clu_Vanz*1.1)
+          self.res_speed = round(CS.VSetDis) if not CS.is_metric or self.osm_spdlimit_enabled else round(CS.clu_Vanz*1.1)
           self.res_speed_timer = 300
           self.resume_cnt += 1
           if self.resume_cnt >= int(randint(4, 5) * 2):
@@ -1525,6 +1525,8 @@ class CarController(CarControllerBase):
           self.btnsignal = 0
           self.refresh_time = 0.25
           self.refresh_count = 0
+        if self.standstill_status_canfd and CS.out.vEgo > 1:
+          self.standstill_status_canfd = False
 
         # if not CS.regen_level_auto and (self.regen_stop or self.regen_dist or self.regen_e2e): #Todo
         #   if self.regen_stop and CS.regen_level != 20:

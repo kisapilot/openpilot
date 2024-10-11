@@ -190,7 +190,7 @@ class KisaCruiseControl():
 
   def ascc_button_control(self, CS, set_speed, set_gap):
     self.gap_point = set_gap
-    self.set_point = max(20 if CS.is_set_speed_in_mph else 30, set_speed)
+    self.set_point = max(20 if not CS.is_metric else 30, set_speed)
     self.curr_speed = CS.out.vEgo * CV.MS_TO_KPH
     self.DistSet = CS.DistSet if CS.DistSet > 0 else CS.cruiseGapSet
     self.VSetDis = round(CS.VSetDis)
@@ -220,9 +220,9 @@ class KisaCruiseControl():
           self.map_speed_dist_extend = self.sm['liveENaviData'].wazeAlertExtend
           spdTarget = self.map_speed
           cam_distance_calc = 0
-          cam_distance_calc = interp(self.map_speed * CV.MPH_TO_KPH if CS.is_set_speed_in_mph else 1, [30, 60, 110], [2.5, 3.0, 3.7])
-          consider_speed = interp((v_ego_kph - self.map_speed * CV.MPH_TO_KPH if CS.is_set_speed_in_mph else 1), [0, 50], [1, 1.8])
-          min_control_dist = interp(self.map_speed * CV.MPH_TO_KPH if CS.is_set_speed_in_mph else 1, [30, 110], [40, 250])
+          cam_distance_calc = interp(self.map_speed * CV.MPH_TO_KPH if not CS.is_metric else 1, [30, 60, 110], [2.5, 3.0, 3.7])
+          consider_speed = interp((v_ego_kph - self.map_speed * CV.MPH_TO_KPH if not CS.is_metric else 1), [0, 50], [1, 1.8])
+          min_control_dist = interp(self.map_speed * CV.MPH_TO_KPH if not CS.is_metric else 1, [30, 110], [40, 250])
           final_cam_decel_start_dist = cam_distance_calc*consider_speed*v_ego_kph * (1 + self.safetycam_decel_dist_gain*0.01)
           if 0 < self.map_speed and self.map_speed_dist != 0:
             if self.map_speed_dist < final_cam_decel_start_dist:
@@ -240,9 +240,9 @@ class KisaCruiseControl():
             cruise_set_speed_kph = spdTarget + self.map_spdlimit_offset
           elif self.map_spdlimit_offset_option == 2:
             cruise_set_speed_kph = int(interp(spdTarget, self.osm_custom_spdlimit_c, self.osm_custom_spdlimit_t))
-          if cruise_set_speed_kph+1.5 < v_ego_mph and CS.is_set_speed_in_mph and not CS.out.gasPressed:
+          if cruise_set_speed_kph+1.5 < v_ego_mph and not CS.is_metric and not CS.out.gasPressed:
             self.onSpeedControl = True
-          elif cruise_set_speed_kph+1.5 < v_ego_kph and not CS.is_set_speed_in_mph and not CS.out.gasPressed:
+          elif cruise_set_speed_kph+1.5 < v_ego_kph and not not CS.is_metric and not CS.out.gasPressed:
             self.onSpeedControl = True
           else:
             self.onSpeedControl = False
@@ -257,9 +257,9 @@ class KisaCruiseControl():
           self.map_speed = self.sm['liveMapData'].speedLimitAhead
           self.map_speed_dist = max(0, self.sm['liveMapData'].speedLimitAheadDistance)
           cam_distance_calc = 0
-          cam_distance_calc = interp(self.map_speed * CV.MPH_TO_KPH if CS.is_set_speed_in_mph else 1, [30, 60, 110], [2.5, 3.0, 3.7])
-          consider_speed = interp((v_ego_kph - self.map_speed * CV.MPH_TO_KPH if CS.is_set_speed_in_mph else 1), [0, 50], [1, 1.8])
-          min_control_dist = interp(self.map_speed * CV.MPH_TO_KPH if CS.is_set_speed_in_mph else 1, [30, 110], [40, 250])
+          cam_distance_calc = interp(self.map_speed * CV.MPH_TO_KPH if not CS.is_metric else 1, [30, 60, 110], [2.5, 3.0, 3.7])
+          consider_speed = interp((v_ego_kph - self.map_speed * CV.MPH_TO_KPH if not CS.is_metric else 1), [0, 50], [1, 1.8])
+          min_control_dist = interp(self.map_speed * CV.MPH_TO_KPH if not CS.is_metric else 1, [30, 110], [40, 250])
           final_cam_decel_start_dist = cam_distance_calc*consider_speed*v_ego_kph * (1 + self.safetycam_decel_dist_gain*0.01)
           if ((21 < self.map_speed < spdTarget) or (21 < self.map_speed and spdTarget == 0)) and self.map_speed_dist != 0:
             if self.map_speed_dist < final_cam_decel_start_dist:
@@ -280,9 +280,9 @@ class KisaCruiseControl():
             cruise_set_speed_kph = spdTarget + self.map_spdlimit_offset
           else:
             cruise_set_speed_kph = int(interp(spdTarget, self.osm_custom_spdlimit_c, self.osm_custom_spdlimit_t))
-          if cruise_set_speed_kph+1.5 < v_ego_mph and CS.is_set_speed_in_mph and not CS.out.gasPressed:
+          if cruise_set_speed_kph+1.5 < v_ego_mph and not CS.is_metric and not CS.out.gasPressed:
             self.onSpeedControl = True
-          elif cruise_set_speed_kph+1.5 < v_ego_kph and not CS.is_set_speed_in_mph and not CS.out.gasPressed:
+          elif cruise_set_speed_kph+1.5 < v_ego_kph and not not CS.is_metric and not CS.out.gasPressed:
             self.onSpeedControl = True
           else:
             self.onSpeedControl = False
@@ -296,22 +296,22 @@ class KisaCruiseControl():
               cruise_set_speed_kph = spdTarget + self.map_spdlimit_offset
             else:
               cruise_set_speed_kph = int(interp(spdTarget, self.osm_custom_spdlimit_c, self.osm_custom_spdlimit_t))
-            if cruise_set_speed_kph+1.5 < v_ego_mph and CS.is_set_speed_in_mph and not CS.out.gasPressed:
+            if cruise_set_speed_kph+1.5 < v_ego_mph and not CS.is_metric and not CS.out.gasPressed:
               self.onSpeedControl = True
-            elif cruise_set_speed_kph+1.5 < v_ego_kph and not CS.is_set_speed_in_mph and not CS.out.gasPressed:
+            elif cruise_set_speed_kph+1.5 < v_ego_kph and not not CS.is_metric and not CS.out.gasPressed:
               self.onSpeedControl = True
             else:
               self.onSpeedControl = False
       elif self.decel_on_speedbump and self.liveNaviData.safetySign == 22 and self.navi_sel == 1:
-        sb_consider_speed = interp((v_ego_kph - (20 if CS.is_set_speed_in_mph else 30)), [0, 10, 25, 50], [1.5, 1.9, 2.0, 2.1])
+        sb_consider_speed = interp((v_ego_kph - (20 if not CS.is_metric else 30)), [0, 10, 25, 50], [1.5, 1.9, 2.0, 2.1])
         sb_final_decel_start_dist = sb_consider_speed*v_ego_kph
         min_dist_v = interp(CS.out.vEgo, [8.3, 13.8], [20, 40])
         if min_dist_v < self.liveNaviData.safetyDistance < sb_final_decel_start_dist:
-          cruise_set_speed_kph == 20 if CS.is_set_speed_in_mph else 30
+          cruise_set_speed_kph == 20 if not CS.is_metric else 30
           self.onSpeedBumpControl = True
           self.onSpeedBumpControl2 = False
         elif self.liveNaviData.safetyDistance >= sb_final_decel_start_dist:
-          cruise_set_speed_kph == 35 if CS.is_set_speed_in_mph else 60
+          cruise_set_speed_kph == 35 if not CS.is_metric else 60
           self.onSpeedBumpControl = False
           self.onSpeedBumpControl2 = True
         else:
@@ -349,9 +349,9 @@ class KisaCruiseControl():
           cruise_set_speed_kph = spdTarget + self.map_spdlimit_offset
         else:
           cruise_set_speed_kph = int(interp(spdTarget, self.osm_custom_spdlimit_c, self.osm_custom_spdlimit_t))
-        if cruise_set_speed_kph+1.5 < v_ego_mph and CS.is_set_speed_in_mph and not CS.out.gasPressed:
+        if cruise_set_speed_kph+1.5 < v_ego_mph and not CS.is_metric and not CS.out.gasPressed:
           self.onSpeedControl = True
-        elif cruise_set_speed_kph+1.5 < v_ego_kph and not CS.is_set_speed_in_mph and not CS.out.gasPressed:
+        elif cruise_set_speed_kph+1.5 < v_ego_kph and not not CS.is_metric and not CS.out.gasPressed:
           self.onSpeedControl = True
         else:
           self.onSpeedControl = False
@@ -392,7 +392,7 @@ class KisaCruiseControl():
   def auto_speed_control(self, CS, navi_speed):
     self.sm.update(0)
     modelSpeed = self.sm['lateralPlan'].modelSpeed
-    min_control_speed = 20 if CS.is_set_speed_in_mph else 30
+    min_control_speed = 20 if not CS.is_metric else 30
     var_speed = navi_speed
     self.lead_0 = self.sm['radarState'].leadOne
     self.lead_1 = self.sm['radarState'].leadTwo
@@ -413,85 +413,85 @@ class KisaCruiseControl():
     self.driverSccSetControl = False
 
     if CS.driverAcc_time and CS.cruise_set_mode in (1,2,4):
-      self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
+      self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if not CS.is_metric else randint(self.t_interval2, self.t_interval2+2)
       self.driverSccSetControl = True
-      return min(max(CS.clu_Vanz + (3 if CS.is_set_speed_in_mph else 5), 30 if CS.is_set_speed_in_mph else 50), navi_speed)
+      return min(max(CS.clu_Vanz + (3 if not CS.is_metric else 5), 30 if not CS.is_metric else 50), navi_speed)
     # elif self.gasPressed_old:
     #   clu_Vanz = CS.clu_Vanz
     #   ctrl_speed = max(min_control_speed, ctrl_speed, clu_Vanz)
     #   CS.set_cruise_speed(ctrl_speed)
     elif self.sm['controlsState'].resSpeed > 21:
-      self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
+      self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if not CS.is_metric else randint(self.t_interval2, self.t_interval2+2)
       res_speed = max(min_control_speed, self.sm['controlsState'].resSpeed)
       return min(res_speed, navi_speed)
     elif CS.cruise_set_mode in (1,2,3,4):
       if self.sm['selfdriveState'].experimentalMode and CS.CP.sccBus == 0:
-        self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
+        self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if not CS.is_metric else randint(self.t_interval2, self.t_interval2+2)
         var_speed = min(self.sm['carControl'].actuators.vFuture, navi_speed)
       elif CS.out.brakeLights and CS.out.vEgo == 0 and CS.cruise_set_mode in (1,2,4):
         self.faststart = True
-        self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
-        var_speed = min(navi_speed, 30 if CS.is_set_speed_in_mph else 50)
+        self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if not CS.is_metric else randint(self.t_interval2, self.t_interval2+2)
+        var_speed = min(navi_speed, 30 if not CS.is_metric else 50)
       elif self.onSpeedBumpControl2 and not self.lead_0.status:
-        var_speed = min(navi_speed, 30 if CS.is_set_speed_in_mph else 60)
-        self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
+        var_speed = min(navi_speed, 30 if not CS.is_metric else 60)
+        self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if not CS.is_metric else randint(self.t_interval2, self.t_interval2+2)
       elif self.onSpeedBumpControl:
-        var_speed = min(navi_speed, 20 if CS.is_set_speed_in_mph else 30)
-        self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
-      elif self.faststart and self.sm['carControl'].actuators.vFuture <= (25 if CS.is_set_speed_in_mph else 40):
-        var_speed = min(navi_speed, 30 if CS.is_set_speed_in_mph else 50)
-      elif (self.lead_0.status or self.lead_1.status) and self.sm['carControl'].actuators.vFuture >= (min_control_speed-(4 if CS.is_set_speed_in_mph else 7)) and CS.cruise_set_mode in (1,2,4):
+        var_speed = min(navi_speed, 20 if not CS.is_metric else 30)
+        self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if not CS.is_metric else randint(self.t_interval2, self.t_interval2+2)
+      elif self.faststart and self.sm['carControl'].actuators.vFuture <= (25 if not CS.is_metric else 40):
+        var_speed = min(navi_speed, 30 if not CS.is_metric else 50)
+      elif (self.lead_0.status or self.lead_1.status) and self.sm['carControl'].actuators.vFuture >= (min_control_speed-(4 if not CS.is_metric else 7)) and CS.cruise_set_mode in (1,2,4):
         self.faststart = False
         # dRel = CS.lead_distance if 0 < CS.lead_distance < 149 and not self.cut_in_run_timer else int(self.lead_0.dRel)
-        # vRel = CS.lead_objspd * (CV.KPH_TO_MPH if CS.is_set_speed_in_mph else 1) if 0 < CS.lead_distance < 149 and \
-        #  not self.cut_in_run_timer else int(self.lead_0.vRel * (CV.MS_TO_MPH if CS.is_set_speed_in_mph else CV.MS_TO_KPH))
+        # vRel = CS.lead_objspd * (CV.KPH_TO_MPH if not CS.is_metric else 1) if 0 < CS.lead_distance < 149 and \
+        #  not self.cut_in_run_timer else int(self.lead_0.vRel * (CV.MS_TO_MPH if not CS.is_metric else CV.MS_TO_KPH))
         dRel = CS.lead_distance if self.use_radar_value and CS.lead_distance < 149 else self.lead_0.dRel
-        vRel = int(CS.lead_objspd * (CV.MS_TO_MPH if CS.is_set_speed_in_mph else CV.MS_TO_KPH)) if self.use_radar_value and CS.lead_distance < 149 else int(self.lead_0.vRel * (CV.MS_TO_MPH if CS.is_set_speed_in_mph else CV.MS_TO_KPH))
+        vRel = int(CS.lead_objspd * (CV.MS_TO_MPH if not CS.is_metric else CV.MS_TO_KPH)) if self.use_radar_value and CS.lead_distance < 149 else int(self.lead_0.vRel * (CV.MS_TO_MPH if not CS.is_metric else CV.MS_TO_KPH))
         if self.cut_in_run_timer > 0:
           self.cut_in_run_timer -= 1
         elif self.cut_in:
           self.cut_in_run_timer = 1500
         d_ratio = interp(CS.clu_Vanz, [40, 110], [0.3, 0.19])
         if self.cut_in_run_timer and dRel < CS.clu_Vanz * d_ratio: # keep decel when cut_in, max running time 15sec
-          self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
+          self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if not CS.is_metric else randint(self.t_interval2, self.t_interval2+2)
           self.cutInControl = True
           var_speed = min(self.sm['carControl'].actuators.vFutureA, navi_speed)
-        elif vRel > (-3 if CS.is_set_speed_in_mph else -5):
-          var_speed = min(self.sm['carControl'].actuators.vFuture + max(0, int(dRel*(0.11 if CS.is_set_speed_in_mph else 0.16)+vRel)), navi_speed)
-          ttime = randint(60, 80) if CS.is_set_speed_in_mph else randint(30, 50)
-          self.t_interval = int(interp(dRel, [15, 50], [self.t_interval2, ttime])) if not (self.onSpeedControl or self.curvSpeedControl or self.cut_in) else self.t_interval2+3 if CS.is_set_speed_in_mph else self.t_interval2
+        elif vRel > (-3 if not CS.is_metric else -5):
+          var_speed = min(self.sm['carControl'].actuators.vFuture + max(0, int(dRel*(0.11 if not CS.is_metric else 0.16)+vRel)), navi_speed)
+          ttime = randint(60, 80) if not CS.is_metric else randint(30, 50)
+          self.t_interval = int(interp(dRel, [15, 50], [self.t_interval2, ttime])) if not (self.onSpeedControl or self.curvSpeedControl or self.cut_in) else self.t_interval2+3 if not CS.is_metric else self.t_interval2
           self.cutInControl = False
         else:
           var_speed = min(self.sm['carControl'].actuators.vFuture, navi_speed)
-          self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
+          self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if not CS.is_metric else randint(self.t_interval2, self.t_interval2+2)
           self.cut_in_run_timer = 0
           self.cutInControl = False
       elif self.lead_0.status and self.sm['carControl'].actuators.vFuture < min_control_speed and CS.cruise_set_mode in (1,2,4):
         self.faststart = False
         var_speed = min(self.sm['carControl'].actuators.vFuture, navi_speed)
-        self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
+        self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if not CS.is_metric else randint(self.t_interval2, self.t_interval2+2)
         self.cutInControl = False
       elif CS.cruise_set_mode == 3:
         self.faststart = False
         var_speed = navi_speed
-        self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
+        self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if not CS.is_metric else randint(self.t_interval2, self.t_interval2+2)
         self.cutInControl = False
       else:
         self.faststart = False
         var_speed = navi_speed
-        ttime = randint(60, 80) if CS.is_set_speed_in_mph else randint(30, 50)
-        self.t_interval = ttime if not (self.onSpeedControl or self.curvSpeedControl or self.cut_in) else self.t_interval2+3 if CS.is_set_speed_in_mph else self.t_interval2
+        ttime = randint(60, 80) if not CS.is_metric else randint(30, 50)
+        self.t_interval = ttime if not (self.onSpeedControl or self.curvSpeedControl or self.cut_in) else self.t_interval2+3 if not CS.is_metric else self.t_interval2
         self.cutInControl = False
     else:
       var_speed = navi_speed
-      self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
+      self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if not CS.is_metric else randint(self.t_interval2, self.t_interval2+2)
       self.cut_in_run_timer = 0
       self.cutInControl = False
 
     if CS.cruise_set_mode in (1,3,4) and self.curv_decel_option in (1,2):
-      if CS.out.vEgo * CV.MS_TO_KPH > 40 and modelSpeed < (self.vision_curv_speed_cmph[-1] if CS.is_set_speed_in_mph else self.vision_curv_speed_c[-1]) and self.sm['lateralPlan'].laneChangeState == LaneChangeState.off and \
+      if CS.out.vEgo * CV.MS_TO_KPH > 40 and modelSpeed < (self.vision_curv_speed_cmph[-1] if not CS.is_metric else self.vision_curv_speed_c[-1]) and self.sm['lateralPlan'].laneChangeState == LaneChangeState.off and \
        not (CS.out.leftBlinker or CS.out.rightBlinker):
-        if CS.is_set_speed_in_mph:
+        if not CS.is_metric:
           v_curv_speed = int(interp(modelSpeed, self.vision_curv_speed_cmph, self.vision_curv_speed_tmph)/2)*2
         else:
           v_curv_speed = int(interp(modelSpeed, self.vision_curv_speed_c, self.vision_curv_speed_t)/3)*3
@@ -504,7 +504,7 @@ class KisaCruiseControl():
     if CS.cruise_set_mode in (1,3,4) and self.curv_decel_option in (1,3):
       if self.sm['liveMapData'].turnSpeedLimitEndDistance > 30:
         o_curv_speed = int(interp(self.sm['liveMapData'].turnSpeedLimit, self.osm_curv_speed_c, self.osm_curv_speed_t))
-        self.osm_wait_timer += 1 if modelSpeed > (self.vision_curv_speed_cmph[-1] if CS.is_set_speed_in_mph else self.vision_curv_speed_c[-1]) else 0
+        self.osm_wait_timer += 1 if modelSpeed > (self.vision_curv_speed_cmph[-1] if not CS.is_metric else self.vision_curv_speed_c[-1]) else 0
         if self.osm_wait_timer > 100:
           o_curv_speed = 255
       else:
@@ -516,7 +516,7 @@ class KisaCruiseControl():
 
     # self.gasPressed_old = CS.gasPressed
     if var_speed > round(min(v_curv_speed, o_curv_speed)):
-      v_ego_kph_or_mph = CS.out.vEgo * CV.MS_TO_MPH if CS.is_set_speed_in_mph else CS.out.vEgo * CV.MS_TO_KPH
+      v_ego_kph_or_mph = CS.out.vEgo * CV.MS_TO_MPH if not CS.is_metric else CS.out.vEgo * CV.MS_TO_KPH
       if round(min(v_curv_speed, o_curv_speed))+1 < v_ego_kph_or_mph and not CS.out.gasPressed:
         self.curvSpeedControl = True
       else:
@@ -527,7 +527,7 @@ class KisaCruiseControl():
     return round(min(var_speed, v_curv_speed, o_curv_speed))
 
   def get_live_gap(self, CS, spd_gap_on):
-    self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if CS.is_set_speed_in_mph else randint(self.t_interval2, self.t_interval2+2)
+    self.t_interval = randint(self.t_interval2+3, self.t_interval2+5) if not CS.is_metric else randint(self.t_interval2, self.t_interval2+2)
     gap_to_set = CS.DistSet if CS.DistSet > 0 else CS.cruiseGapSet
     now_gap = gap_to_set
     if 0 < CS.lead_distance <= 149 and CS.lead_objspd < -4 and CS.clu_Vanz > 30 and 0 < self.e2e_x < 120 and self.try_early_stop:

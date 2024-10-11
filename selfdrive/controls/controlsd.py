@@ -106,7 +106,7 @@ class Controls:
     self.desired_angle_deg = 0
     self.navi_selection = int(self.params.get("KISANaviSelect", encoding="utf8"))
     self.legacy_lane_mode = int(self.params.get("UseLegacyLaneModel", encoding="utf8"))
-    self.standstill_elapsed_time = 0
+    self.standstill_elapsed_time = 0.0
 
   def update(self):
     self.sm.update(15)
@@ -324,7 +324,7 @@ class Controls:
     if cs.standStill:
       self.standstill_elapsed_time += DT_CTRL
     else:
-      self.standstill_elapsed_time = 0
+      self.standstill_elapsed_time = 0.0
     cs.standStillTimer = int(self.standstill_elapsed_time)    
 
     lat_tuning = self.CP.lateralTuning.which()
