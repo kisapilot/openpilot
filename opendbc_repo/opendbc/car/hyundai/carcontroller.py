@@ -1522,6 +1522,7 @@ class CarController(CarControllerBase):
           self.btnsignal = 0
           self.refresh_time = 0.25
           self.refresh_count = 0
+          self.last_lead_distance = 0
         if self.standstill_status_canfd and CS.out.vEgo > 1:
           self.standstill_status_canfd = False
 

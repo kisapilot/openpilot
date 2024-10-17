@@ -985,11 +985,6 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, .2, creation_delay=600.)
   },
 
-  EventName.soundsUnavailable: {
-    ET.PERMANENT: NormalPermanentAlert(tr(106), tr(107)),
-    ET.NO_ENTRY: NoEntryAlert(tr(108)),
-  },
-
   EventName.tooDistracted: {
     ET.NO_ENTRY: NoEntryAlert(tr(109)),
   },
