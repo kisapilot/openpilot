@@ -44,14 +44,6 @@ void ExperimentalButton::updateState(const UIState &s) {
 
 void ExperimentalButton::paintEvent(QPaintEvent *event) {
   QPainter p(this);
-
-  QPoint center(btn_size / 2, btn_size / 2);
   QPixmap img = experimental_mode ? experimental_img : engage_img;
-
-  p.setOpacity(1.0);
-  p.setPen(Qt::NoPen);
-  p.setBrush(QColor(0, 0, 0, 166));
-  p.drawEllipse(center, btn_size / 2, btn_size / 2);
-  p.setOpacity((isDown() || !engageable) ? 0.6 : 1.0);
-  p.drawPixmap((btn_size - img_size) / 2, (btn_size - img_size) / 2, img);
+  drawIcon(p, QPoint(btn_size / 2, btn_size / 2), img, QColor(0, 0, 0, 166), (isDown() || !engageable) ? 0.6 : 1.0);
 }
