@@ -31,6 +31,7 @@ class CarState(CarStateBase):
 
     self.cruise_buttons: deque = deque([Buttons.NONE] * PREV_BUTTON_SAMPLES, maxlen=PREV_BUTTON_SAMPLES)
     self.main_buttons: deque = deque([Buttons.NONE] * PREV_BUTTON_SAMPLES, maxlen=PREV_BUTTON_SAMPLES)
+    self.lfa_buttons: deque = deque([Buttons.NONE] * PREV_BUTTON_SAMPLES, maxlen=PREV_BUTTON_SAMPLES)
 
     self.gear_msg_canfd = "ACCELERATOR" if CP.flags & HyundaiFlags.EV else \
                           "GEAR_ALT" if CP.flags & HyundaiFlags.CANFD_ALT_GEARS else \
@@ -94,6 +95,8 @@ class CarState(CarStateBase):
     self.prev_acc_reset_btn = False
     self.prev_cruise_btn = False
     self.prev_main_btn = False
+    self.prev_lfa_btn = False
+    self.prev_lfa_btn_timer = 0
     self.acc_active = False
     self.cruise_set_speed_kph = 0
     self.cruise_set_mode = int(Params().get("CruiseStatemodeSelInit", encoding="utf8"))
@@ -101,6 +104,7 @@ class CarState(CarStateBase):
     self.cruiseGapSet = 4.0
 
     self.ufc_mode = Params().get_bool("UFCModeEnabled")
+    self.lfa_button_eng = Params().get_bool("LFAButtonEngagement")
     self.long_alt = int(Params().get("KISALongAlt", encoding="utf8"))
     self.exp_engage_available = False
 
@@ -697,14 +701,30 @@ class CarState(CarStateBase):
       cp_cruise_info = cp_cam if self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC else cp
       # cruise state
       # CAN FD cars enable on main button press, set available if no TCS faults preventing engagement
-      ret.cruiseState.available = cp_cruise_info.vl["SCC_CONTROL"]["MainMode_ACC"] != 0
-      ret.cruiseState.enabled = cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"] in (1, 2)
+      if not self.lfa_button_eng:
+        ret.cruiseState.available = cp_cruise_info.vl["SCC_CONTROL"]["MainMode_ACC"] != 0
+        ret.cruiseState.enabled = cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"] in (1, 2)
       ret.cruiseState.standstill = cp_cruise_info.vl["SCC_CONTROL"]["CRUISE_STANDSTILL"] == 1
       #ret.cruiseState.speed = cp_cruise_info.vl["SCC_CONTROL"]["VSetDis"] * speed_factor
       self.VSetDis = cp_cruise_info.vl["SCC_CONTROL"]["VSetDis"]
       ret.vSetDis = self.VSetDis
       self.cruiseState_standstill = ret.cruiseState.standstill
       self.cruise_info = copy.copy(cp_cruise_info.vl["SCC_CONTROL"])
+      if self.lfa_button_eng:
+        if self.lfa_buttons[-1]:
+          self.prev_lfa_btn_timer = 2
+        elif self.prev_lfa_btn_timer:
+          self.prev_lfa_btn_timer -= 1
+          if self.prev_lfa_btn_timer == 0:
+            self.prev_lfa_btn = not self.prev_lfa_btn
+        if self.prev_lfa_btn:
+          ret.cruiseState.available = True
+          ret.cruiseState.enabled = ret.cruiseState.available
+        else:
+          ret.cruiseState.available = False
+          ret.cruiseState.enabled = ret.cruiseState.available
+        prev_lfa_buttons = self.lfa_buttons[-1]
+        self.lfa_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["LFA_BTN"])
       if self.ufc_mode:
         ret.cruiseState.enabled = ret.cruiseState.available
 
@@ -784,8 +804,13 @@ class CarState(CarStateBase):
       self.hda2_lfa_block_msg = copy.copy(cp_cam.vl["CAM_0x362"] if self.CP.flags & HyundaiFlags.CANFD_HDA2_ALT_STEERING
                                           else cp_cam.vl["CAM_0x2a4"])
 
-    ret.buttonEvents = [*create_button_events(self.cruise_buttons[-1], prev_cruise_buttons, BUTTONS_DICT),
-                        *create_button_events(self.main_buttons[-1], prev_main_buttons, {1: ButtonType.mainCruise})]
+    if self.lfa_button_eng:
+      ret.buttonEvents = [*create_button_events(self.cruise_buttons[-1], prev_cruise_buttons, BUTTONS_DICT),
+                          *create_button_events(self.main_buttons[-1], prev_main_buttons, {1: ButtonType.mainCruise}),
+                          *create_button_events(self.lfa_buttons[-1], prev_lfa_buttons, {1: ButtonType.lfa})]
+    else:
+      ret.buttonEvents = [*create_button_events(self.cruise_buttons[-1], prev_cruise_buttons, BUTTONS_DICT),
+                          *create_button_events(self.main_buttons[-1], prev_main_buttons, {1: ButtonType.mainCruise})]
 
     return ret
 

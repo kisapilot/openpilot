@@ -2649,16 +2649,16 @@ This may take up to a minute.</source>
         <translation>네비게이션 선택</translation>
     </message>
     <message>
-        <source>Select the navigation you want to use.(None/TMap/Mappy/Waze) Refer to Readme.txt in the directory.</source>
-        <translation>사용할 네비게이션을 선택합니다.(없음/티맵/맵피/웨이즈), KISA Connect 어플과 함께 별도 단말기로 실행해야 합니다. 폴더 내 Readme.txt 파일 참조</translation>
+        <source>Select the navigation you want to use.(None/TMap/Mappy/Waze/NaverMap) Refer to Readme.txt in the directory.</source>
+        <translation>사용할 네비게이션을 선택합니다.(없음/티맵/맵피/웨이즈/네이버지도), KISA Connect 어플과 함께 별도 단말기로 실행해야 합니다. 폴더 내 Readme.txt 파일 참조</translation>
     </message>
     <message>
         <source>None</source>
         <translation>없음</translation>
     </message>
     <message>
-        <source>TMap/Mappy</source>
-        <translation>티맵/맵피</translation>
+        <source>TMap/Mappy/NaverMap</source>
+        <translation>티맵/맵피/네이버지도</translation>
     </message>
     <message>
         <source>Waze</source>
@@ -3162,6 +3162,17 @@ This may take up to a minute.</source>
     <message>
         <source>OP activates with Main Cruise Switch, AutoRES while driving, Seperate Lat/Long and etc</source>
         <translation>오픈파일럿이 메인 크루즈 스위치를 이용하여 활성화하고 주행 중 AutoRES, Lat/Long 분리 기능 등을 사용시에는 켜야합니다.</translation>
+    </message>
+</context>
+<context>
+    <name>LFAButtonEngagementToggle</name>
+    <message>
+        <source>Enable LFA Button Engagement</source>
+        <translation>LFA 버튼으로 오픈파일럿 활성화</translation>
+    </message>
+    <message>
+        <source>Use LFA Button to engage Openpilot Lateral</source>
+        <translation>LFA 버튼을 사용하여 오픈파일럿을 활성화 합니다.</translation>
     </message>
 </context>
 <context>

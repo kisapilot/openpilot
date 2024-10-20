@@ -285,6 +285,19 @@ class ENavi:
             self.kisa_lon = arr[1]
             if int(float(self.kisa_lon)) > 360:
               self.kisa_lon = self.int_to_degree(int(arr[1]))
+          if "SafetyItem" in line:
+            self.sign_type = line.split('code=')[1].split(',')[0]
+            self.safety_distance = str(line.split('distance=')[1].split(',')[0])
+            section_distance = str(line.split('remainSectionDistance=')[1].split(',')[0])
+            if self.safety_distance == "0" and section_distance != "0":
+              self.safety_distance = section_distance
+            self.spd_limit = line.split('speedLimit=')[1].split(',')[0]
+          if "RoadItem" in line:
+            self.road_limit_speed = line.split('speed=')[1].split(',')[0]
+            self.road_name = line.split('roadName=')[1].split(',')[0]
+          if "turnPointDistanceFromPrevItem=0" in line:
+            self.turn_distance=line.split('distance=')[1].split(',')[0]
+            self.turn_info = line.split('guidanceCode=')[1].split(',')[0]
 
           if self.kisa_lat and self.kisa_lon and self.kisa_lat != self.kisa_lat_prev and self.kisa_lon != self.kisa_lon_prev:
             self.dest_changed = True
@@ -463,8 +476,8 @@ class ENavi:
       if self.navi_selection == 1:
         navi_msg.liveENaviData.speedLimit = int(self.spd_limit)
         navi_msg.liveENaviData.safetyDistance = float(self.safety_distance)
-        navi_msg.liveENaviData.safetySign = int(self.sign_type)
-        navi_msg.liveENaviData.turnInfo = int(self.turn_info)
+        navi_msg.liveENaviData.safetySign = str(self.sign_type)
+        navi_msg.liveENaviData.turnInfo = str(self.turn_info)
         navi_msg.liveENaviData.distanceToTurn = float(self.turn_distance)
         navi_msg.liveENaviData.connectionAlive = bool(self.check_connection)
         navi_msg.liveENaviData.roadLimitSpeed = int(self.road_limit_speed)

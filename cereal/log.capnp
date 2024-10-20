@@ -899,7 +899,7 @@ struct ControlsState @0x97ff69c53601abf1 {
   limitSpeedCamera @72 :Float32 = 0;
   limitSpeedCameraDist @73 :Float32 = 0;
   steerRatio @74 :Float32;
-  mapSign @75 :Float32;
+  mapSign @75 :Text;
   mapSignCam @76 :Float32;
   dynamicTRMode @77 :UInt8;
   dynamicTRValue @78 :Float32;
@@ -2397,8 +2397,8 @@ struct LiveTorqueParametersData {
 struct LiveENaviData {
   speedLimit @0 :Int32;
   safetyDistance @1 :Float32;
-  safetySign @2 :Int32;
-  turnInfo @3 :Int32;
+  safetySign @2 :Text;
+  turnInfo @3 :Text;
   distanceToTurn @4 :Float32;
   safetySignCam @5 :Int32;
   connectionAlive @6 :Bool;

@@ -524,6 +524,7 @@ DeveloperPanel::DeveloperPanel(QWidget *parent) : QFrame(parent) {
   layout->addWidget(new NoSmartMDPSToggle());
   layout->addWidget(horizontal_line());
   layout->addWidget(new UFCModeEnabledToggle());
+  layout->addWidget(new LFAButtonEngagementToggle());
   layout->addWidget(new StockLKASEnabledatDisenagedStatusToggle());
   layout->addWidget(horizontal_line());
   layout->addWidget(new UserSpecificFeature());

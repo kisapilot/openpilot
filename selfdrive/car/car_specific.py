@@ -49,6 +49,7 @@ class CarSpecificEvents:
     self.long_alt = int(Params().get("KISALongAlt", encoding="utf8"))
     self.exp_long = self.CP.sccBus <= 0 and self.CP.openpilotLongitudinalControl and self.long_alt not in (1, 2)
     self.no_mdps_mods = Params().get_bool("NoSmartMDPS")
+    self.lfa_button_eng = Params().get_bool("LFAButtonEngagement")
 
   def update(self, CS: car.CarState, CS_prev: car.CarState, CC: car.CarControl):
     if self.CP.carName in ('body', 'mock'):
@@ -215,7 +216,7 @@ class CarSpecificEvents:
       elif CC.lkasTempDisabledTimer:
         events.add(EventName.lkasEnabled)
 
-      if self.exp_long:
+      if self.exp_long or self.lfa_button_eng:
         if CS.cruiseState.enabled and not CS_prev.cruiseState.enabled and any(self.cruise_buttons):
           events.add(EventName.buttonEnable)
         elif not CS.cruiseState.enabled and any(self.cruise_buttons):

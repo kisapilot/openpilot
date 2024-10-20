@@ -5485,7 +5485,7 @@ void OCurvSpeed::refresh() {
   btn.setText(tr("EDIT"));
 }
 
-KISANaviSelect::KISANaviSelect() : AbstractControl(tr("Navigation Select"), tr("Select the navigation you want to use.(None/TMap/Mappy/Waze) Refer to Readme.txt in the directory."), "../assets/offroad/icon_shell.png") {
+KISANaviSelect::KISANaviSelect() : AbstractControl(tr("Navigation Select"), tr("Select the navigation you want to use.(None/TMap/Mappy/Waze/NaverMap) Refer to Readme.txt in the directory."), "../assets/offroad/icon_shell.png") {
 
   label.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
   label.setStyleSheet("color: #e0e879");
@@ -5542,7 +5542,7 @@ KISANaviSelect::KISANaviSelect() : AbstractControl(tr("Navigation Select"), tr("
 void KISANaviSelect::refresh() {
   QString option = QString::fromStdString(params.get("KISANaviSelect"));
   if (option == "0") {label.setText(tr("None"));
-  } else if (option == "1") {label.setText(tr("TMap/Mappy"));
+  } else if (option == "1") {label.setText(tr("TMap/Mappy/NaverMap"));
   } else if (option == "2") {label.setText(tr("Waze"));
   }
 }

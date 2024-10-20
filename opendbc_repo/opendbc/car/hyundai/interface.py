@@ -18,7 +18,7 @@ from decimal import Decimal
 Ecu = structs.CarParams.Ecu
 SteerControlType = structs.CarParams.SteerControlType
 # Cancel button can sometimes be ACC pause/resume button, main button can also enable on some cars
-ENABLE_BUTTONS = (ButtonType.accelCruise, ButtonType.decelCruise, ButtonType.cancel, ButtonType.mainCruise)
+ENABLE_BUTTONS = (ButtonType.accelCruise, ButtonType.decelCruise, ButtonType.cancel, ButtonType.mainCruise, ButtonType.lfa)
 
 
 class CarInterface(CarInterfaceBase):
@@ -84,7 +84,8 @@ class CarInterface(CarInterfaceBase):
         ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_CANFD_ALT_BUTTONS
       if ret.flags & HyundaiFlags.CANFD_CAMERA_SCC:
         ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_CAMERA_SCC
-
+      if Params().get_bool("LFAButtonEngagement"):
+        ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_CANFD_LFA_ENG
     else:
       ret.isCanFD = False
       # Shared configuration for non CAN-FD cars
@@ -151,9 +152,6 @@ class CarInterface(CarInterfaceBase):
         CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
       elif lat_control_method == 4:
         set_lat_tune(ret.lateralTuning, LatTunes.ATOM)    # Hybrid tune
-
-    if ret.flags & HyundaiFlags.ALT_LIMITS:
-      ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_ALT_LIMITS
 
     # Common longitudinal control setup
 
