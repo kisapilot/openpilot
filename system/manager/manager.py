@@ -221,7 +221,7 @@ def manager_init() -> None:
     ("LCTimingKeepFactorRight", "10"),
     ("LCTimingKeepFactorEnable", "1"),
     ("KISACruiseSpammingInterval", "7"),
-    ("KISACruiseSpammingBtnCount", "2"),
+    ("KISACruiseSpammingBtnCount", "1"),
     ("UseRadarValue", "1"),
     ("RegenBrakeFeature", "0"),
     ("RegenBrakeFeatureOn", "0"),
