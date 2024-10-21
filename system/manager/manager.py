@@ -118,6 +118,7 @@ def manager_init() -> None:
     ("KisaMonitorEyesThreshold", "45"),
     ("KisaMonitorBlinkThreshold", "75"),
     ("UFCModeEnabled", "0"),
+    ("LFAButtonEngagement", "0"),    
     ("SteerWarningFix", "0"),
     ("CruiseGap1", "11"),
     ("CruiseGap2", "12"),

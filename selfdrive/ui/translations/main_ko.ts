@@ -3165,6 +3165,17 @@ This may take up to a minute.</source>
     </message>
 </context>
 <context>
+    <name>LFAButtonEngagementToggle</name>
+    <message>
+        <source>Enable LFA Button Engagement</source>
+        <translation>LFA 버튼으로 오픈파일럿 활성화</translation>
+    </message>
+    <message>
+        <source>Use LFA Button to engage Openpilot Lateral</source>
+        <translation>LFA 버튼을 사용하여 오픈파일럿을 활성화 합니다.</translation>
+    </message>
+</context>
+<context>
     <name>WhitePandaSupportToggle</name>
     <message>
         <source>Support WhitePanda</source>

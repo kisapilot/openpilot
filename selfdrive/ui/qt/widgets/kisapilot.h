@@ -287,6 +287,18 @@ public:
   }
 };
 
+class LFAButtonEngagementToggle : public ToggleControl {
+  Q_OBJECT
+
+public:
+  LFAButtonEngagementToggle() : ToggleControl(tr("Enable LFA Button Engagement"), tr("Use LFA Button to engage Openpilot Lateral"), "../assets/offroad/icon_shell.png", Params().getBool("LFAButtonEngagement")) {
+    QObject::connect(this, &LFAButtonEngagementToggle::toggleFlipped, [=](int state) {
+      bool status = state ? true : false;
+      Params().putBool("LFAButtonEngagement", status);
+    });
+  }
+};
+
 class WhitePandaSupportToggle : public ToggleControl {
   Q_OBJECT
 
