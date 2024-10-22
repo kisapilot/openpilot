@@ -37,6 +37,9 @@ bool hyundai_canfd_hda2 = false;
 extern bool hyundai_alt_limits;
 bool hyundai_alt_limits = false;
 
+extern bool hyundai_lfa_button_eng;
+bool hyundai_lfa_button_eng = false;
+
 static uint8_t hyundai_last_button_interaction;  // button messages since the user pressed an enable button
 
 void hyundai_common_init(uint16_t param) {
@@ -45,12 +48,14 @@ void hyundai_common_init(uint16_t param) {
   const int HYUNDAI_PARAM_CAMERA_SCC = 8;
   const int HYUNDAI_PARAM_CANFD_HDA2 = 16;
   const int HYUNDAI_PARAM_ALT_LIMITS = 64; // TODO: shift this down with the rest of the common flags
+  const int HYUNDAI_PARAM_LFA_BUTTON_ENG = 128;
 
   hyundai_ev_gas_signal = GET_FLAG(param, HYUNDAI_PARAM_EV_GAS);
   hyundai_hybrid_gas_signal = !hyundai_ev_gas_signal && GET_FLAG(param, HYUNDAI_PARAM_HYBRID_GAS);
   hyundai_camera_scc = GET_FLAG(param, HYUNDAI_PARAM_CAMERA_SCC);
   hyundai_canfd_hda2 = GET_FLAG(param, HYUNDAI_PARAM_CANFD_HDA2);
   hyundai_alt_limits = GET_FLAG(param, HYUNDAI_PARAM_ALT_LIMITS);
+  hyundai_lfa_button_eng = GET_FLAG(param, HYUNDAI_PARAM_LFA_BUTTON_ENG);
 
   hyundai_last_button_interaction = HYUNDAI_PREV_BUTTON_SAMPLES;
 
@@ -89,24 +94,28 @@ void hyundai_common_cruise_state_check_alt(const bool cruise_engaged) {
   cruise_engaged_prev = cruise_engaged;
 }
 
-void hyundai_common_cruise_buttons_check(const int cruise_button, const bool main_button) {
-  if ((cruise_button == HYUNDAI_BTN_RESUME) || (cruise_button == HYUNDAI_BTN_SET) || (cruise_button == HYUNDAI_BTN_CANCEL) || main_button) {
+void hyundai_common_cruise_buttons_check(const int cruise_button, const bool main_button, const bool lfa_button) {
+  if ((cruise_button == HYUNDAI_BTN_RESUME) || (cruise_button == HYUNDAI_BTN_SET) || (cruise_button == HYUNDAI_BTN_CANCEL) || main_button || lfa_button) {
     hyundai_last_button_interaction = 0U;
   } else {
     hyundai_last_button_interaction = MIN(hyundai_last_button_interaction + 1U, HYUNDAI_PREV_BUTTON_SAMPLES);
   }
 
-  if (hyundai_longitudinal) {
+  if (hyundai_longitudinal || hyundai_lfa_button_eng) {
     // enter controls on falling edge of resume or set
     bool set = (cruise_button != HYUNDAI_BTN_SET) && (cruise_button_prev == HYUNDAI_BTN_SET);
     bool res = (cruise_button != HYUNDAI_BTN_RESUME) && (cruise_button_prev == HYUNDAI_BTN_RESUME);
-    if (set || res) {
+    bool lfa = lfa_button && !lfa_button_prev;
+    if (set || res || lfa) {
       controls_allowed = true;
     }
 
     // exit controls on cancel press
-    if (cruise_button == HYUNDAI_BTN_CANCEL) {
+    if ((cruise_button == HYUNDAI_BTN_CANCEL) || (lfa_button && lfa_button_prev)) {
       controls_allowed = false;
+      lfa_button_prev = false;
+    } else if (!lfa_button_prev) {
+      lfa_button_prev = lfa_button;
     }
 
     cruise_button_prev = cruise_button;

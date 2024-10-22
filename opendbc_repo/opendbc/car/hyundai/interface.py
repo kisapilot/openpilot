@@ -207,6 +207,9 @@ class CarInterface(CarInterfaceBase):
     elif ret.flags & HyundaiFlags.EV:
       ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_EV_GAS
 
+    if Params().get_bool("LFAButtonEngagement"):
+      ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_LFA_BUTTON_ENG
+
     # Car specific configuration overrides
 
     if candidate == CAR.KIA_OPTIMA_G4_FL:

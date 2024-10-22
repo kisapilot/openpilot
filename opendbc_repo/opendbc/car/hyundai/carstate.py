@@ -31,6 +31,7 @@ class CarState(CarStateBase):
 
     self.cruise_buttons: deque = deque([Buttons.NONE] * PREV_BUTTON_SAMPLES, maxlen=PREV_BUTTON_SAMPLES)
     self.main_buttons: deque = deque([Buttons.NONE] * PREV_BUTTON_SAMPLES, maxlen=PREV_BUTTON_SAMPLES)
+    self.lfa_buttons: deque = deque([Buttons.NONE] * PREV_BUTTON_SAMPLES, maxlen=PREV_BUTTON_SAMPLES)
 
     self.gear_msg_canfd = "ACCELERATOR" if CP.flags & HyundaiFlags.EV else \
                           "GEAR_ALT" if CP.flags & HyundaiFlags.CANFD_ALT_GEARS else \
@@ -94,6 +95,7 @@ class CarState(CarStateBase):
     self.prev_acc_reset_btn = False
     self.prev_cruise_btn = False
     self.prev_main_btn = False
+    self.prev_lfa_btn = False
     self.acc_active = False
     self.cruise_set_speed_kph = 0
     self.cruise_set_mode = int(Params().get("CruiseStatemodeSelInit", encoding="utf8"))
@@ -101,6 +103,7 @@ class CarState(CarStateBase):
     self.cruiseGapSet = 4.0
 
     self.ufc_mode = Params().get_bool("UFCModeEnabled")
+    self.lfa_button_eng = Params().get_bool("LFAButtonEngagement")
     self.long_alt = int(Params().get("KISALongAlt", encoding="utf8"))
     self.exp_engage_available = False
 
@@ -737,6 +740,18 @@ class CarState(CarStateBase):
       ret.cruiseGapSet = self.cruiseGapSet
       self.DistSet = cp_cruise_info.vl["SCC_CONTROL"]["DISTANCE_SETTING"] - 5 if cp_cruise_info.vl["SCC_CONTROL"]["DISTANCE_SETTING"] > 5 else cp_cruise_info.vl["SCC_CONTROL"]["DISTANCE_SETTING"]
       ret.cruiseState.modeSel = self.cruise_set_mode
+
+      if self.lfa_button_eng:
+        if self.lfa_buttons[-1]:
+          if not self.prev_lfa_btn:
+            self.prev_lfa_btn = self.lfa_buttons[-1]
+            ret.cruiseState.available = True
+            ret.cruiseState.enabled = ret.cruiseState.available
+          elif self.prev_lfa_btn:
+            self.prev_lfa_btn = False
+            ret.cruiseState.available = False
+            ret.cruiseState.enabled = ret.cruiseState.available
+        self.lfa_buttons.extend(cp.vl_all["CRUISE_BUTTONS_ALT"]["LFA_BTN"])
 
     if not self.exp_long:
       self.lead_distance = cp_cruise_info.vl["SCC_CONTROL"]["ACC_ObjDist"]
