@@ -103,7 +103,7 @@ def create_buttons(packer, CP, CAN, cnt, btn, cruise_btn_info_copy, regen = None
     "CRUISE_BUTTONS",
     "ADAPTIVE_CRUISE_MAIN_BTN",
     "NORMAL_CRUISE_MAIN_BTN",
-    "LKAS_BTN",
+    "LFA_BTN",
     "RIGHT_PADDLE",
     "LEFT_PADDLE",
     "SET_ME_1",
