@@ -751,7 +751,7 @@ class CarState(CarStateBase):
             self.prev_lfa_btn = False
             ret.cruiseState.available = False
             ret.cruiseState.enabled = ret.cruiseState.available
-        self.lfa_buttons.extend(cp.vl_all["CRUISE_BUTTONS_ALT"]["LFA_BTN"])
+        self.lfa_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["LFA_BTN"])
 
     if not self.exp_long:
       self.lead_distance = cp_cruise_info.vl["SCC_CONTROL"]["ACC_ObjDist"]
