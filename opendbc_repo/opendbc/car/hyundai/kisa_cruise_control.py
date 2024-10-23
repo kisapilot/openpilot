@@ -316,7 +316,7 @@ class KisaCruiseControl():
         else:
           self.onSpeedBumpControl = False
           self.onSpeedBumpControl2 = False
-      elif self.navi_sel == 1 and self.liveNaviData.speedLimit > 21 and self.liveNaviData.safetySign not in (20, 21):  # navi app speedlimit
+      elif self.navi_sel in (1, 3) and self.liveNaviData.speedLimit > 21 and self.liveNaviData.safetySign not in (20, 21):  # navi app speedlimit
         self.onSpeedBumpControl = False
         self.onSpeedBumpControl2 = False
         self.map_speed_dist = max(0, self.liveNaviData.safetyDistance - 30)

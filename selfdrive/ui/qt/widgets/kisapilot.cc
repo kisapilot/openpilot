@@ -5485,7 +5485,7 @@ void OCurvSpeed::refresh() {
   btn.setText(tr("EDIT"));
 }
 
-KISANaviSelect::KISANaviSelect() : AbstractControl(tr("Navigation Select"), tr("Select the navigation you want to use.(None/TMap/Mappy/Waze) Refer to Readme.txt in the directory."), "../assets/offroad/icon_shell.png") {
+KISANaviSelect::KISANaviSelect() : AbstractControl(tr("Navigation Select"), tr("Select the navigation you want to use.(None/TMap/Mappy/Waze/NaverMap) Refer to Readme.txt in the directory."), "../assets/offroad/icon_shell.png") {
 
   label.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
   label.setStyleSheet("color: #e0e879");
@@ -5519,7 +5519,7 @@ KISANaviSelect::KISANaviSelect() : AbstractControl(tr("Navigation Select"), tr("
     int value = str.toInt();
     value = value - 1;
     if (value <= -1) {
-      value = 2;
+      value = 3;
     }
     QString values = QString::number(value);
     params.put("KISANaviSelect", values.toStdString());
@@ -5529,7 +5529,7 @@ KISANaviSelect::KISANaviSelect() : AbstractControl(tr("Navigation Select"), tr("
     auto str = QString::fromStdString(params.get("KISANaviSelect"));
     int value = str.toInt();
     value = value + 1;
-    if (value >= 3) {
+    if (value >= 4) {
       value = 0;
     }
     QString values = QString::number(value);
@@ -5544,6 +5544,7 @@ void KISANaviSelect::refresh() {
   if (option == "0") {label.setText(tr("None"));
   } else if (option == "1") {label.setText(tr("TMap/Mappy"));
   } else if (option == "2") {label.setText(tr("Waze"));
+  } else if (option == "3") {label.setText(tr("NaverMap"));
   }
 }
 

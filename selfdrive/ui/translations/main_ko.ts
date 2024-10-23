@@ -2649,8 +2649,8 @@ This may take up to a minute.</source>
         <translation>네비게이션 선택</translation>
     </message>
     <message>
-        <source>Select the navigation you want to use.(None/TMap/Mappy/Waze) Refer to Readme.txt in the directory.</source>
-        <translation>사용할 네비게이션을 선택합니다.(없음/티맵/맵피/웨이즈), KISA Connect 어플과 함께 별도 단말기로 실행해야 합니다. 폴더 내 Readme.txt 파일 참조</translation>
+        <source>Select the navigation you want to use.(None/TMap/Mappy/Waze/NaverMap) Refer to Readme.txt in the directory.</source>
+        <translation>사용할 네비게이션을 선택합니다.(없음/티맵/맵피/웨이즈/네이버지도), KISA Connect 어플과 함께 별도 단말기로 실행해야 합니다. 폴더 내 Readme.txt 파일 참조</translation>
     </message>
     <message>
         <source>None</source>
@@ -2663,6 +2663,10 @@ This may take up to a minute.</source>
     <message>
         <source>Waze</source>
         <translation>웨이즈</translation>
+    </message>
+    <message>
+        <source>NaverMap</source>
+        <translation>네이버지도</translation>
     </message>
 </context>
 <context>
