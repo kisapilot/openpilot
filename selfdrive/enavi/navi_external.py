@@ -402,6 +402,12 @@ class ENavi:
             self.sign_type = line.split('code=')[1].split(',')[0]
             self.safety_distance = line.split('distance=')[1].split(',')[0]
             self.spd_limit = line.split('speedLimit=')[1].split(',')[0]
+          if "SectionItem" in line:
+            self.road_limit_speed = line.split('speed=')[1].split(',')[0]
+            self.road_name = line.split('roadName=')[1].split(',')[0]
+          if "turnPointDistanceFromPrevItem=0" in line:
+            self.turn_distance=line.split('distance=')[1].split(',')[0]
+            self.turn_info = line.split('guidanceCode=')[1].split(',')[0]
 
         if self.KISA_Debug:
           try:
