@@ -107,7 +107,7 @@ typedef struct UIScene {
   bool standStill;
   int limitSpeedCamera = 0;
   float limitSpeedCameraDist = 0;
-  int mapSign;
+  std::string mapSign;
   int mapSignCam;
   float vSetDis;
   bool cruiseAccStatus;

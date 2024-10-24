@@ -899,7 +899,7 @@ struct ControlsState @0x97ff69c53601abf1 {
   limitSpeedCamera @72 :Float32 = 0;
   limitSpeedCameraDist @73 :Float32 = 0;
   steerRatio @74 :Float32;
-  mapSign @75 :Float32;
+  mapSign @75 :Text;
   mapSignCam @76 :Float32;
   dynamicTRMode @77 :UInt8;
   dynamicTRValue @78 :Float32;

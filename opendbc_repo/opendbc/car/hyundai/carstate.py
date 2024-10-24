@@ -748,7 +748,7 @@ class CarState(CarStateBase):
         elif self.lfa_buttons[-1] and not self.prev_lfa_btn_timer:
           self.prev_lfa_btn != self.prev_lfa_btn
           self.prev_lfa_btn_timer = 10
-        if self.prev_lfa_btn:
+        if self.prev_lfa_btn or (ret.cruiseState.available if self.ufc_mode else ret.cruiseState.enabled):
           ret.cruiseState.available = True
           ret.cruiseState.enabled = ret.cruiseState.available
         else:
@@ -803,9 +803,13 @@ class CarState(CarStateBase):
       self.hda2_lfa_block_msg = copy.copy(cp_cam.vl["CAM_0x362"] if self.CP.flags & HyundaiFlags.CANFD_HDA2_ALT_STEERING
                                           else cp_cam.vl["CAM_0x2a4"])
 
-    ret.buttonEvents = [*create_button_events(self.cruise_buttons[-1], prev_cruise_buttons, BUTTONS_DICT),
-                        *create_button_events(self.main_buttons[-1], prev_main_buttons, {1: ButtonType.mainCruise}),
-                        *create_button_events(self.lfa_buttons[-1], prev_lfa_buttons, {1: ButtonType.lfa})]
+    if self.lfa_button_eng:
+      ret.buttonEvents = [*create_button_events(self.cruise_buttons[-1], prev_cruise_buttons, BUTTONS_DICT),
+                          *create_button_events(self.main_buttons[-1], prev_main_buttons, {1: ButtonType.mainCruise}),
+                          *create_button_events(self.lfa_buttons[-1], prev_lfa_buttons, {1: ButtonType.lfa})]
+    else:
+      ret.buttonEvents = [*create_button_events(self.cruise_buttons[-1], prev_cruise_buttons, BUTTONS_DICT),
+                          *create_button_events(self.main_buttons[-1], prev_main_buttons, {1: ButtonType.mainCruise})]
 
     return ret
 
