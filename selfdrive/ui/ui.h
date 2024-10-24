@@ -232,7 +232,7 @@ typedef struct UIScene {
     int ekisaspeedlimit;
     float ekisasafetydist;
     int ekisasafetysign;
-    int ekisaturninfo;
+    std::string ekisaturninfo;
     float ekisadisttoturn;
     bool ekisaconalive;
     int ekisaroadlimitspeed;
