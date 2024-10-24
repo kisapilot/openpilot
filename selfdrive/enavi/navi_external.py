@@ -285,6 +285,16 @@ class ENavi:
             self.kisa_lon = arr[1]
             if int(float(self.kisa_lon)) > 360:
               self.kisa_lon = self.int_to_degree(int(arr[1]))
+          if "SafetyItem" in line:
+            self.sign_type = line.split('code=')[1].split(',')[0]
+            self.safety_distance = line.split('distance=')[1].split(',')[0]
+            self.spd_limit = line.split('speedLimit=')[1].split(',')[0]
+          if "SectionItem" in line:
+            self.road_limit_speed = line.split('speed=')[1].split(',')[0]
+            self.road_name = line.split('roadName=')[1].split(',')[0]
+          if "turnPointDistanceFromPrevItem=0" in line:
+            self.turn_distance=line.split('distance=')[1].split(',')[0]
+            self.turn_info = line.split('guidanceCode=')[1].split(',')[0]
 
           if self.kisa_lat and self.kisa_lon and self.kisa_lat != self.kisa_lat_prev and self.kisa_lon != self.kisa_lon_prev:
             self.dest_changed = True
@@ -397,17 +407,6 @@ class ENavi:
             self.dest_changed_count += 1
             if self.dest_changed_count > 2:
               self.dest_changed = False
-        elif self.navi_selection == 3:
-          if "SafetyItem" in line:
-            self.sign_type = line.split('code=')[1].split(',')[0]
-            self.safety_distance = line.split('distance=')[1].split(',')[0]
-            self.spd_limit = line.split('speedLimit=')[1].split(',')[0]
-          if "SectionItem" in line:
-            self.road_limit_speed = line.split('speed=')[1].split(',')[0]
-            self.road_name = line.split('roadName=')[1].split(',')[0]
-          if "turnPointDistanceFromPrevItem=0" in line:
-            self.turn_distance=line.split('distance=')[1].split(',')[0]
-            self.turn_info = line.split('guidanceCode=')[1].split(',')[0]
 
         if self.KISA_Debug:
           try:
@@ -471,7 +470,7 @@ class ENavi:
           except:
             pass
 
-      if self.navi_selection in (1, 3):
+      if self.navi_selection == 1:
         navi_msg.liveENaviData.speedLimit = int(self.spd_limit)
         navi_msg.liveENaviData.safetyDistance = float(self.safety_distance)
         navi_msg.liveENaviData.safetySign = str(self.sign_type)

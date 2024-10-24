@@ -5519,7 +5519,7 @@ KISANaviSelect::KISANaviSelect() : AbstractControl(tr("Navigation Select"), tr("
     int value = str.toInt();
     value = value - 1;
     if (value <= -1) {
-      value = 3;
+      value = 2;
     }
     QString values = QString::number(value);
     params.put("KISANaviSelect", values.toStdString());
@@ -5529,7 +5529,7 @@ KISANaviSelect::KISANaviSelect() : AbstractControl(tr("Navigation Select"), tr("
     auto str = QString::fromStdString(params.get("KISANaviSelect"));
     int value = str.toInt();
     value = value + 1;
-    if (value >= 4) {
+    if (value >= 3) {
       value = 0;
     }
     QString values = QString::number(value);
@@ -5542,9 +5542,8 @@ KISANaviSelect::KISANaviSelect() : AbstractControl(tr("Navigation Select"), tr("
 void KISANaviSelect::refresh() {
   QString option = QString::fromStdString(params.get("KISANaviSelect"));
   if (option == "0") {label.setText(tr("None"));
-  } else if (option == "1") {label.setText(tr("TMap/Mappy"));
+  } else if (option == "1") {label.setText(tr("TMap/Mappy/NaverMap"));
   } else if (option == "2") {label.setText(tr("Waze"));
-  } else if (option == "3") {label.setText(tr("NaverMap"));
   }
 }
 

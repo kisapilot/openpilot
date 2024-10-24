@@ -2657,16 +2657,12 @@ This may take up to a minute.</source>
         <translation>없음</translation>
     </message>
     <message>
-        <source>TMap/Mappy</source>
-        <translation>티맵/맵피</translation>
+        <source>TMap/Mappy/NaverMap</source>
+        <translation>티맵/맵피/네이버지도</translation>
     </message>
     <message>
         <source>Waze</source>
         <translation>웨이즈</translation>
-    </message>
-    <message>
-        <source>NaverMap</source>
-        <translation>네이버지도</translation>
     </message>
 </context>
 <context>
