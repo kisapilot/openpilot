@@ -292,7 +292,7 @@ class ENavi:
             if self.safety_distance == "0" and section_distance != "0":
               self.safety_distance = section_distance
             self.spd_limit = line.split('speedLimit=')[1].split(',')[0]
-          if "SectionItem" in line:
+          if "RoadItem" in line:
             self.road_limit_speed = line.split('speed=')[1].split(',')[0]
             self.road_name = line.split('roadName=')[1].split(',')[0]
           if "turnPointDistanceFromPrevItem=0" in line:
