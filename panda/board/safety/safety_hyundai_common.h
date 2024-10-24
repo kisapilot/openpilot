@@ -111,7 +111,7 @@ void hyundai_common_cruise_buttons_check(const int cruise_button, const bool mai
     }
 
     // exit controls on cancel press
-    if ((cruise_button == HYUNDAI_BTN_CANCEL) || (lfa_button && lfa_button_prev)) {
+    if (lfa_button && lfa_button_prev) {
       controls_allowed = false;
       lfa_button_prev = false;
     } else if (!lfa_button_prev) {
