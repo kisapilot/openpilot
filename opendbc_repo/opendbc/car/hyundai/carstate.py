@@ -751,6 +751,7 @@ class CarState(CarStateBase):
             self.prev_lfa_btn = False
             ret.cruiseState.available = False
             ret.cruiseState.enabled = ret.cruiseState.available
+        prev_lfa_buttons = self.lfa_buttons[-1]
         self.lfa_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["LFA_BTN"])
 
     if not self.exp_long:
@@ -800,7 +801,8 @@ class CarState(CarStateBase):
                                           else cp_cam.vl["CAM_0x2a4"])
 
     ret.buttonEvents = [*create_button_events(self.cruise_buttons[-1], prev_cruise_buttons, BUTTONS_DICT),
-                        *create_button_events(self.main_buttons[-1], prev_main_buttons, {1: ButtonType.mainCruise})]
+                        *create_button_events(self.main_buttons[-1], prev_main_buttons, {1: ButtonType.mainCruise}),
+                        *create_button_events(self.lfa_buttons[-1], prev_lfa_buttons, {1: ButtonType.lfa})]
 
     return ret
 
