@@ -96,6 +96,7 @@ class CarState(CarStateBase):
     self.prev_cruise_btn = False
     self.prev_main_btn = False
     self.prev_lfa_btn = False
+    self.prev_lfa_btn_timer = 0
     self.acc_active = False
     self.cruise_set_speed_kph = 0
     self.cruise_set_mode = int(Params().get("CruiseStatemodeSelInit", encoding="utf8"))
@@ -742,15 +743,17 @@ class CarState(CarStateBase):
       ret.cruiseState.modeSel = self.cruise_set_mode
 
       if self.lfa_button_eng:
-        if self.lfa_buttons[-1]:
-          if not self.prev_lfa_btn:
-            self.prev_lfa_btn = self.lfa_buttons[-1]
-            ret.cruiseState.available = True
-            ret.cruiseState.enabled = ret.cruiseState.available
-          elif self.prev_lfa_btn:
-            self.prev_lfa_btn = False
-            ret.cruiseState.available = False
-            ret.cruiseState.enabled = ret.cruiseState.available
+        if self.prev_lfa_btn_timer:
+          self.prev_lfa_btn_timer -= 1
+        elif self.lfa_buttons[-1] and not self.prev_lfa_btn_timer:
+          self.prev_lfa_btn != self.prev_lfa_btn
+          self.prev_lfa_btn_timer = 10
+        if self.prev_lfa_btn:
+          ret.cruiseState.available = True
+          ret.cruiseState.enabled = ret.cruiseState.available
+        else:
+          ret.cruiseState.available = False
+          ret.cruiseState.enabled = ret.cruiseState.available
         prev_lfa_buttons = self.lfa_buttons[-1]
         self.lfa_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["LFA_BTN"])
 
