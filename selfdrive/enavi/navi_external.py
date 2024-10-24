@@ -474,7 +474,7 @@ class ENavi:
       if self.navi_selection in (1, 3):
         navi_msg.liveENaviData.speedLimit = int(self.spd_limit)
         navi_msg.liveENaviData.safetyDistance = float(self.safety_distance)
-        navi_msg.liveENaviData.safetySign = int(self.sign_type)
+        navi_msg.liveENaviData.safetySign = str(self.sign_type)
         navi_msg.liveENaviData.turnInfo = str(self.turn_info)
         navi_msg.liveENaviData.distanceToTurn = float(self.turn_distance)
         navi_msg.liveENaviData.connectionAlive = bool(self.check_connection)
