@@ -287,7 +287,10 @@ class ENavi:
               self.kisa_lon = self.int_to_degree(int(arr[1]))
           if "SafetyItem" in line:
             self.sign_type = line.split('code=')[1].split(',')[0]
-            self.safety_distance = line.split('distance=')[1].split(',')[0]
+            self.safety_distance = str(line.split('distance=')[1].split(',')[0])
+            section_distance = str(line.split('remainSectionDistance=')[1].split(',')[0])
+            if self.safety_distance == "0" and section_distance != "0":
+              self.safety_distance = section_distance
             self.spd_limit = line.split('speedLimit=')[1].split(',')[0]
           if "SectionItem" in line:
             self.road_limit_speed = line.split('speed=')[1].split(',')[0]

@@ -301,7 +301,7 @@ class KisaCruiseControl():
               self.onSpeedControl = True
             else:
               self.onSpeedControl = False
-      elif self.decel_on_speedbump and self.liveNaviData.safetySign == 22 and self.navi_sel == 1:
+      elif self.decel_on_speedbump and self.liveNaviData.safetySign in ("22", "SpeedBump") and self.navi_sel == 1:
         sb_consider_speed = interp((v_ego_kph - (20 if not CS.is_metric else 30)), [0, 10, 25, 50], [1.5, 1.9, 2.0, 2.1])
         sb_final_decel_start_dist = sb_consider_speed*v_ego_kph
         min_dist_v = interp(CS.out.vEgo, [8.3, 13.8], [20, 40])
@@ -316,7 +316,7 @@ class KisaCruiseControl():
         else:
           self.onSpeedBumpControl = False
           self.onSpeedBumpControl2 = False
-      elif self.navi_sel == 1 and self.liveNaviData.speedLimit > 21 and self.liveNaviData.safetySign not in (20, 21):  # navi app speedlimit
+      elif self.navi_sel == 1 and self.liveNaviData.speedLimit > 21 and self.liveNaviData.safetySign not in ("20", "21"):  # navi app speedlimit
         self.onSpeedBumpControl = False
         self.onSpeedBumpControl2 = False
         self.map_speed_dist = max(0, self.liveNaviData.safetyDistance - 30)
