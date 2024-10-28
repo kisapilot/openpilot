@@ -48,6 +48,7 @@ GEAR_SHIFTER_MAP: dict[str, structs.CarState.GearShifter] = {
 UseLiveTorque = Params().get_bool("KisaLiveTorque") if Params().get_bool("KisaLiveTorque") is not None else False
 NoMdpsMod = Params().get_bool("NoSmartMDPS") if Params().get_bool("NoSmartMDPS") is not None else False
 TireStiffnessFactor = float(Decimal(Params().get("TireStiffnessFactorAdj", encoding="utf8")) * Decimal('0.01')) if Params().get("TireStiffnessFactorAdj") is not None else 1.0
+CAR_CANDIDATE = Params().get("CarModel", encoding="utf8")
 
 class LatControlInputs(NamedTuple):
   lateral_acceleration: float
@@ -72,6 +73,9 @@ def get_torque_params():
   for candidate in (sub.keys() | params.keys() | override.keys()) - {'legend'}:
     if sum([candidate in x for x in [sub, params, override]]) > 1:
       raise RuntimeError(f'{candidate} is defined twice in torque config')
+
+    if CAR_CANDIDATE is not None:
+      candidate = CAR_CANDIDATE.rstrip('\n')
 
     sub_candidate = sub.get(candidate, candidate)
 
