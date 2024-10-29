@@ -176,13 +176,17 @@ class Controls:
       desired_curvature1, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo, lat_plan.psis, lat_plan.curvatures, lat_plan.curvatureRates)
       desired_curvature2 = clip_curvature(CS.vEgo, self.desired_curvature, model_v2.action.desiredCurvature)
       desired_curvature3 = interp(CS.vEgo, [0.3, 1.0], [desired_curvature1, desired_curvature2])
-      self.desired_curvature = interp(model_speed, [50, 100], [desired_curvature3, desired_curvature1])
+      self.desired_curvature = interp(model_speed, [30, 80], [desired_curvature3, desired_curvature1])
       if lat_plan.laneChangeState != LaneChangeState.off:
         self.desired_curvature = desired_curvature2
     elif self.legacy_lane_mode == 1:
-      self.desired_curvature, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo, lat_plan.psis, lat_plan.curvatures, lat_plan.curvatureRates)
+      model_speed = self.sm['lateralPlan'].modelSpeed
+      desired_curvature1, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo, lat_plan.psis, lat_plan.curvatures, lat_plan.curvatureRates)
+      desired_curvature2 = clip_curvature(CS.vEgo, self.desired_curvature, model_v2.action.desiredCurvature)
+      desired_curvature3 = interp(CS.vEgo, [0.3, 1.0], [desired_curvature1, desired_curvature2])
+      self.desired_curvature = interp(model_speed, [29, 30], [desired_curvature3, desired_curvature1])
       if lat_plan.laneChangeState != LaneChangeState.off:
-        self.desired_curvature = clip_curvature(CS.vEgo, self.desired_curvature, model_v2.action.desiredCurvature)
+        self.desired_curvature = desired_curvature2
     else:
       self.desired_curvature = clip_curvature(CS.vEgo, self.desired_curvature, model_v2.action.desiredCurvature)
     actuators.curvature = self.desired_curvature
