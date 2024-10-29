@@ -14,15 +14,15 @@ if [ "$?" == "0" ]; then
   fi
   CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
   git clean -d -f -f
-  git fetch --all
-  git reset --hard origin/$CURRENT_BRANCH
-  git pull origin $CURRENT_BRANCH
+  git fetch --all --prune
+  git checkout -B $CURRENT_BRANCH origin/$CURRENT_BRANCH
+  git branch --set-upstream-to=origin/$CURRENT_BRANCH $CURRENT_BRANCH
 
   rm -f /data/params/d/DrivingModel
   rm -f /data/openpilot/selfdrive/modeld/models/supercombo.onnx
   rm -f /data/openpilot/selfdrive/modeld/models/supercombo.thneed
   rm -f /data/openpilot/selfdrive/modeld/models/supercombo_metadata.pkl
-  git -C /data/openpilot/selfdrive//modeld/models checkout supercombo.onnx
+  git -C /data/openpilot/selfdrive/modeld/models checkout supercombo.onnx
   touch /data/kisa_compiling
   sleep 1
 
