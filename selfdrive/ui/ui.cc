@@ -409,9 +409,9 @@ UIState::UIState(QObject *parent) : QObject(parent) {
   sm = std::make_unique<SubMaster>(std::vector<const char*>{
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState",
     "pandaStates", "carParams", "driverMonitoringState", "carState", "driverStateV2",
-    "wideRoadCameraState", "managerState", "selfdriveState",
+    "wideRoadCameraState", "managerState", "selfdriveState", "longitudinalPlan",
     "peripheralState", "liveParameters", "ubloxGnss", "qcomGnss", "gpsLocationExternal", "gpsLocation",
-    "lateralPlan", "longitudinalPlan", "liveENaviData", "liveMapData",
+    "lateralPlan", "liveENaviData", "liveMapData",
   });
   prime_state = new PrimeState(this);
   language = QString::fromStdString(Params().get("LanguageSetting"));

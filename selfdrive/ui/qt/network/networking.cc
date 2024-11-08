@@ -166,11 +166,6 @@ AdvancedNetworking::AdvancedNetworking(QWidget* parent, WifiManager* wifi): QWid
   ipLabel = new LabelControl(tr("IP Address"), wifi->ipv4_address);
   list->addItem(ipLabel);
 
-  // SSH keys
-  list->addItem(new SshToggle());
-  list->addItem(new SshControl());
-  list->addItem(new SshLegacyToggle());
-
   // Roaming toggle
   const bool roamingEnabled = params.getBool("GsmRoaming");
   roamingToggle = new ToggleControl(tr("Enable Roaming"), "", "", roamingEnabled);

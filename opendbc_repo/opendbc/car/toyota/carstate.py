@@ -8,7 +8,7 @@ from opendbc.car.common.filter_simple import FirstOrderFilter
 from opendbc.car.common.numpy_fast import mean
 from opendbc.car.interfaces import CarStateBase
 from opendbc.car.toyota.values import ToyotaFlags, CAR, DBC, STEER_THRESHOLD, NO_STOP_TIMER_CAR, \
-                                                  TSS2_CAR, RADAR_ACC_CAR, EPS_SCALE, UNSUPPORTED_DSU_CAR
+                                                  TSS2_CAR, RADAR_ACC_CAR, EPS_SCALE, UNSUPPORTED_DSU_CAR, SECOC_CAR
 
 ButtonType = structs.CarState.ButtonEvent.Type
 SteerControlType = structs.CarParams.SteerControlType
@@ -51,7 +51,6 @@ class CarState(CarStateBase):
     self.acc_type = 1
     self.lkas_hud = {}
     self.pcm_accel_net = 0.0
-    self.slope_angle = 0.0
     self.secoc_synchronization = None
 
   def update(self, cp, cp_cam, *_) -> structs.CarState:
@@ -61,7 +60,7 @@ class CarState(CarStateBase):
     # Describes the acceleration request from the PCM if on flat ground, may be higher or lower if pitched
     # CLUTCH->ACCEL_NET is only accurate for gas, PCM_CRUISE->ACCEL_NET is only accurate for brake
     # These signals only have meaning when ACC is active
-    if self.CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT:
+    if "CLUTCH" in cp.vl:
       self.pcm_accel_net = max(cp.vl["CLUTCH"]["ACCEL_NET"], 0.0)
 
       # Sometimes ACC_BRAKING can be 1 while showing we're applying gas already
@@ -88,7 +87,6 @@ class CarState(CarStateBase):
       can_gear = int(cp.vl["GEAR_PACKET_HYBRID"]["GEAR"])
     else:
       ret.gasPressed = cp.vl["PCM_CRUISE"]["GAS_RELEASED"] == 0  # TODO: these also have GAS_PEDAL, come back and unify
-      self.slope_angle = cp.vl["VSC1S07"]["ASLP"] * CV.DEG_TO_RAD  # filtered pitch from the car, negative is downward
       can_gear = int(cp.vl["GEAR_PACKET"]["GEAR"])
       if not self.CP.enableDsu and not self.CP.flags & ToyotaFlags.DISABLE_RADAR.value:
         ret.stockAeb = bool(cp_acc.vl["PRE_COLLISION"]["PRECOLLISION_ACTIVE"] and cp_acc.vl["PRE_COLLISION"]["FORCE"] < -1e-5)
@@ -232,10 +230,9 @@ class CarState(CarStateBase):
 
       messages += [
         ("GEAR_PACKET", 1),
-        ("VSC1S07", 20),
       ]
 
-    if CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT:
+    if CP.carFingerprint in (TSS2_CAR - SECOC_CAR - {CAR.LEXUS_NX_TSS2, CAR.TOYOTA_ALPHARD_TSS2, CAR.LEXUS_IS_TSS2}):
       messages.append(("CLUTCH", 15))
 
     if CP.carFingerprint in UNSUPPORTED_DSU_CAR:

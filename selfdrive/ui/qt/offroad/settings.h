@@ -29,7 +29,6 @@ signals:
   void closeSettings();
   void offroadTransition(bool offroad);
   void reviewTrainingGuide();
-  void showDriverView();
   void expandToggleDescription(const QString &param);
 
 private:
@@ -46,7 +45,6 @@ public:
 
 signals:
   void reviewTrainingGuide();
-  void showDriverView();
 
 private slots:
   void poweroff();
@@ -117,13 +115,6 @@ class DrivingPanel : public QFrame {
 
 public:
   explicit DrivingPanel(QWidget *parent = nullptr);
-};
-
-class DeveloperPanel : public QFrame {
-  Q_OBJECT
-
-public:
-  explicit DeveloperPanel(QWidget *parent = nullptr);
 };
 
 class TuningPanel : public QFrame {

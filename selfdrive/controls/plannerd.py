@@ -22,7 +22,7 @@ def main():
   lateral_planner = LateralPlanner(CP)
 
   pm = messaging.PubMaster(['longitudinalPlan', 'driverAssistance', 'lateralPlan'])
-  sm = messaging.SubMaster(['carControl', 'carState', 'controlsState', 'radarState', 'modelV2', 'selfdriveState'],
+  sm = messaging.SubMaster(['carControl', 'carState', 'controlsState', 'liveParameters', 'radarState', 'modelV2', 'selfdriveState'],
                            poll='modelV2', ignore_avg_freq=['radarState'])
 
   while True:
@@ -35,7 +35,7 @@ def main():
 
       ldw.update(sm.frame, sm['modelV2'], sm['carState'], sm['carControl'])
       msg = messaging.new_message('driverAssistance')
-      msg.valid = sm.all_checks(['carState', 'carControl', 'modelV2'])
+      msg.valid = sm.all_checks(['carState', 'carControl', 'modelV2', 'liveParameters'])
       msg.driverAssistance.leftLaneDeparture = ldw.left
       msg.driverAssistance.rightLaneDeparture = ldw.right
       pm.send('driverAssistance', msg)

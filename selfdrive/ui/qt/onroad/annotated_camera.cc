@@ -21,6 +21,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget *par
   experimental_btn = new ExperimentalButton(this);
   experimental_btn->hide();
 
+#ifdef QCOM2
   // neokii screen recorder, thx for sharing:)
   record_timer = std::make_shared<QTimer>();
   QObject::connect(record_timer.get(), &QTimer::timeout, [=]() {
@@ -32,6 +33,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget *par
 
   recorder = new ScreenRecoder(this);
   recorder->hide();
+#endif
 }
 
 void AnnotatedCameraWidget::updateState(const UIState &s) {
@@ -155,6 +157,7 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
   hud.updateState(*s);
   hud.draw(p, rect());
 
+#ifdef QCOM2
   // rec_stat and toggle
   if (s->scene.driving_record) {
     if (!s->scene.rec_stat && s->scene.car_state.getVEgo() > 0.8 && s->scene.standstillElapsedTime == 0 && int(s->scene.getGearShifter) == 2) {
@@ -182,6 +185,7 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
       params.putBool("RecordingRunning", s->scene.rec_stat);
     }
   }
+#endif
 
   double cur_draw_t = millis_since_boot();
   double dt = cur_draw_t - prev_draw_t;
