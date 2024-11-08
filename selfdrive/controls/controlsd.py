@@ -189,6 +189,7 @@ class Controls:
         self.desired_curvature = desired_curvature2
     else:
       self.desired_curvature = clip_curvature(CS.vEgo, self.desired_curvature, model_v2.action.desiredCurvature)
+      self.desired_curvature_rate = 0.0
     actuators.curvature = self.desired_curvature
     actuators.steer, actuators.steeringAngleDeg, lac_log = self.LaC.update(CC.latActive, CS, self.VM, lp,
                                                                             self.steer_limited, self.desired_curvature,
