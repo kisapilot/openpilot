@@ -1411,7 +1411,7 @@ class CarController(CarControllerBase):
           self.acc_activated = True
           self.standstill_status_canfd = False
         resume_on = CS.out.cruiseState.standstill and abs(CS.lead_distance - self.last_lead_distance) >= 0.1 and self.standstill_status_canfd
-        standstill = CS.out.cruiseState.standstill and 10.0 > CS.lead_distance > 0
+        standstill = CS.out.cruiseState.standstill and 10.0 > CS.lead_distance > 0 and CS.out.vEgo <= 1
         if standstill and self.last_lead_distance == 0:
           self.last_lead_distance = CS.lead_distance
           self.standstill_status_canfd = True
@@ -1514,6 +1514,8 @@ class CarController(CarControllerBase):
           self.btnsignal = 0
           self.pause_time = 0
           self.refresh_count = 0
+        if self.standstill_status_canfd and CS.out.vEgo > 1:
+          self.standstill_status_canfd = False
       elif (self.frame - self.last_button_frame) * DT_CTRL > self.refresh_time2 and not CS.acc_active:
         self.last_button_frame = self.frame
         if self.acc_activated:
