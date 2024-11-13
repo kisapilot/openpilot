@@ -32,11 +32,13 @@ class LatCtrlToqATOM(LatControlTorque):
 
     self.pid = PIDController(TORQUE.kp, TORQUE.ki,
                              k_f=TORQUE.kf, pos_limit=self.steer_max, neg_limit=-self.steer_max)
-    self.get_steer_feedforward = CI.get_steer_feedforward_function()
+    self.torque_from_lateral_accel = CI.torque_from_lateral_accel()
     self.use_steering_angle = TORQUE.useSteeringAngle
     self.friction = TORQUE.friction
     self.kf = TORQUE.kf
     self.steering_angle_deadzone_deg = TORQUE.steeringAngleDeadzoneDeg
+
+    self.max_lat_accel = TORQUE.latAccelFactor
 
     self.live_tune_enabled = False
     self.lt_timer = 0
