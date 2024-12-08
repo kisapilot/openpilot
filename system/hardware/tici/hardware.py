@@ -299,19 +299,6 @@ class Tici(HardwareBase):
     except Exception:
       return None
 
-  def get_modem_nv(self):
-    timeout = 0.2  # Default timeout is too short
-    files = (
-      '/nv/item_files/modem/mmode/ue_usage_setting',
-      '/nv/item_files/ims/IMS_enable',
-      '/nv/item_files/modem/mmode/sms_only',
-    )
-    try:
-      modem = self.get_modem()
-      return { fn: str(modem.Command(f'AT+QNVFR="{fn}"', math.ceil(timeout), dbus_interface=MM_MODEM, timeout=timeout)) for fn in files}
-    except Exception:
-      return None
-
   def get_modem_temperatures(self):
     timeout = 0.2  # Default timeout is too short
     try:
@@ -341,13 +328,18 @@ class Tici(HardwareBase):
     os.system("sudo poweroff")
 
   def get_thermal_config(self):
-    return ThermalConfig(cpu=(["cpu%d-silver-usr" % i for i in range(4)] +
-                              ["cpu%d-gold-usr" % i for i in range(4)], 1000),
+    intake, exhaust = (None, 1), (None, 1)
+    if self.get_device_type() == "mici":
+      intake = ("intake", 1000)
+      exhaust = ("exhaust", 1000)
+    return ThermalConfig(cpu=([f"cpu{i}-silver-usr" for i in range(4)] +
+                              [f"cpu{i}-gold-usr" for i in range(4)], 1000),
                          gpu=(("gpu0-usr", "gpu1-usr"), 1000),
                          mem=("ddr-usr", 1000),
-                         bat=(None, 1),
                          ambient=("xo-therm-adc", 1000),
-                         pmic=(("pm8998_tz", "pm8005_tz"), 1000))
+                         pmic=(("pm8998_tz", "pm8005_tz"), 1000),
+                         intake=intake,
+                         exhaust=exhaust)
 
   def set_screen_brightness(self, percentage):
     try:
@@ -471,7 +463,24 @@ class Tici(HardwareBase):
       manufacturer = None
 
     cmds = []
-    if manufacturer == 'Cavli Inc.':
+
+    if self.get_device_type() in ("tici", "tizi"):
+      # clear out old blue prime initial APN
+      os.system('mmcli -m any --3gpp-set-initial-eps-bearer-settings="apn="')
+
+      cmds += [
+        # configure modem as data-centric
+        'AT+QNVW=5280,0,"0102000000000000"',
+        'AT+QNVFW="/nv/item_files/ims/IMS_enable",00',
+        'AT+QNVFW="/nv/item_files/modem/mmode/ue_usage_setting",01',
+      ]
+      if self.get_device_type() == "tizi":
+        # SIM hot swap, not routed on tici
+        cmds += [
+          'AT+QSIMDET=1,0',
+          'AT+QSIMSTAT=1',
+        ]
+    elif manufacturer == 'Cavli Inc.':
       cmds += [
         'AT^SIMSWAP=1',     # use SIM slot, instead of internal eSIM
         'AT$QCSIMSLEEP=0',  # disable SIM sleep
@@ -483,20 +492,14 @@ class Tici(HardwareBase):
       ]
     else:
       cmds += [
-        # configure modem as data-centric
-        'AT+QNVW=5280,0,"0102000000000000"',
-        'AT+QNVFW="/nv/item_files/ims/IMS_enable",00',
-        'AT+QNVFW="/nv/item_files/modem/mmode/ue_usage_setting",01',
-      ]
-      if self.get_device_type() == "tizi":
-        cmds += [
-          # SIM hot swap
-          'AT+QSIMDET=1,0',
-          'AT+QSIMSTAT=1',
-        ]
+        # SIM sleep disable
+        'AT$QCSIMSLEEP=0',
+        'AT$QCSIMCFG=SimPowerSave,0',
 
-      # clear out old blue prime initial APN
-      os.system('mmcli -m any --3gpp-set-initial-eps-bearer-settings="apn="')
+        # ethernet config
+        'AT$QCPCFG=usbNet,1',
+      ]
+
     for cmd in cmds:
       try:
         modem.Command(cmd, math.ceil(TIMEOUT), dbus_interface=MM_MODEM, timeout=TIMEOUT)

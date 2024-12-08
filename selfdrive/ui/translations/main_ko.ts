@@ -121,11 +121,11 @@
     <name>DeveloperPanel</name>
     <message>
         <source>Joystick Debug Mode</source>
-        <translation>조이스틱 모드</translation>
+        <translation>조이스틱 디버그 모드</translation>
     </message>
     <message>
         <source>Longitudinal Maneuver Mode</source>
-        <translation>롱컨트롤 조작 모드</translation>
+        <translation>롱컨 기동 모드</translation>
     </message>
 </context>
 <context>

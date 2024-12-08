@@ -6,7 +6,7 @@ from cereal import car
 import cereal.messaging as messaging
 from opendbc.can.parser import CANParser
 from opendbc.can.can_define import CANDefine
-from opendbc.car import create_button_events, structs
+from opendbc.car import Bus, create_button_events, structs
 from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, Buttons, CarControllerParams, \
@@ -27,7 +27,7 @@ BUTTONS_DICT = {Buttons.RES_ACCEL: ButtonType.accelCruise, Buttons.SET_DECEL: Bu
 class CarState(CarStateBase):
   def __init__(self, CP):
     super().__init__(CP)
-    can_define = CANDefine(DBC[CP.carFingerprint]["pt"])
+    can_define = CANDefine(DBC[CP.carFingerprint][Bus.pt])
 
     self.cruise_buttons: deque = deque([Buttons.NONE] * PREV_BUTTON_SAMPLES, maxlen=PREV_BUTTON_SAMPLES)
     self.main_buttons: deque = deque([Buttons.NONE] * PREV_BUTTON_SAMPLES, maxlen=PREV_BUTTON_SAMPLES)
@@ -336,9 +336,12 @@ class CarState(CarStateBase):
     tpms.rr = rr * factor
     return tpms
 
-  def update(self, cp, cp_cam, *_) -> structs.CarState:
+  def update(self, can_parsers) -> structs.CarState:
+    cp = can_parsers[Bus.pt]
+    cp_cam = can_parsers[Bus.cam]
+
     if self.CP.flags & HyundaiFlags.CANFD:
-      return self.update_canfd(cp, cp_cam)
+      return self.update_canfd(can_parsers)
 
     cp_scc = cp_cam if self.CP.sccBus == 2 else cp
 
@@ -606,7 +609,10 @@ class CarState(CarStateBase):
 
     return ret
 
-  def update_canfd(self, cp, cp_cam) -> structs.CarState:
+  def update_canfd(self, can_parsers) -> structs.CarState:
+    cp = can_parsers[Bus.pt]
+    cp_cam = can_parsers[Bus.cam]
+
     ret = structs.CarState()
 
     self.is_metric = cp.vl["CRUISE_BUTTONS_ALT"]["DISTANCE_UNIT"] != 1
@@ -814,11 +820,74 @@ class CarState(CarStateBase):
 
     return ret
 
-  def get_can_parser(self, CP):
-    if CP.flags & HyundaiFlags.CANFD:
-      return self.get_can_parser_canfd(CP)
+  def get_can_parsers_canfd(self, CP):
+    pt_messages = [
+      ("WHEEL_SPEEDS", 100),
+      ("STEERING_SENSORS", 100),
+      ("MDPS", 100),
+      ("TCS", 50),
+      ("CRUISE_BUTTONS_ALT", 50),
+      ("BLINKERS", 4),
+      ("DOORS_SEATBELTS", 4),
+      ("BRAKE", 100),
+      ("ESP_STATUS", 100),
+      ("TPMS", 5),
+    ]
 
-    messages = [
+    if CP.flags & HyundaiFlags.EV:
+      pt_messages += [
+        ("ACCELERATOR", 100),
+        ("MANUAL_SPEED_LIMIT_ASSIST", 10),
+      ]
+    else:
+      pt_messages += [
+        (self.gear_msg_canfd, 100),
+        (self.accelerator_msg_canfd, 100),
+      ]
+
+    if not (CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS):
+      pt_messages += [
+        ("CRUISE_BUTTONS", 50)
+      ]
+
+    if CP.enableBsm:
+      pt_messages += [
+        ("BLINDSPOTS_REAR_CORNERS", 20),
+      ]
+
+    if not (CP.flags & HyundaiFlags.CANFD_CAMERA_SCC.value) and not CP.openpilotLongitudinalControl:
+      pt_messages += [
+        ("SCC_CONTROL", 50),
+      ]
+
+    if CP.adrvAvailable:
+      pt_messages += [
+        ("ADRV_0x200", 20),
+      ]
+
+    cam_messages = []
+    if CP.flags & HyundaiFlags.CANFD_HDA2:
+      block_lfa_msg = "CAM_0x362" if CP.flags & HyundaiFlags.CANFD_HDA2_ALT_STEERING else "CAM_0x2a4"
+      cam_messages += [(block_lfa_msg, 20)]
+      if CP.carFingerprint in ANGLE_CONTROL_CAR:
+        cam_messages += [
+          ("LKAS_ALT", 100),
+        ]
+    elif CP.flags & HyundaiFlags.CANFD_CAMERA_SCC:
+      cam_messages += [
+        ("SCC_CONTROL", 50),
+      ]
+
+    return {
+      Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], pt_messages, CanBus(CP).ECAN),
+      Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], cam_messages, CanBus(CP).CAM),
+    }
+
+  def get_can_parsers(self, CP):
+    if CP.flags & HyundaiFlags.CANFD:
+      return self.get_can_parsers_canfd(CP)
+
+    pt_messages = [
       # address, frequency
       ("MDPS12", 50),
       ("TCS11", 100),
@@ -836,136 +905,69 @@ class CarState(CarStateBase):
     ]
 
     if CP.sccBus == 0 and CP.pcmCruise:
-      messages += [
+      pt_messages += [
         ("SCC11", 50),
         ("SCC12", 50),
       ]
       if CP.flags & HyundaiFlags.USE_FCA.value:
-        messages.append(("FCA11", 50))
+        pt_messages.append(("FCA11", 50))
 
     if CP.enableBsm:
-      messages.append(("LCA11", 50))
+      pt_messages.append(("LCA11", 50))
 
     if CP.flags & (HyundaiFlags.HYBRID | HyundaiFlags.EV):
-      messages.append(("E_EMS11", 50))
+      pt_messages.append(("E_EMS11", 50))
       if CP.flags & HyundaiFlags.EV:
-        messages.append(("EV_Info", 0))
+        pt_messages.append(("EV_Info", 0))
     else:
-      messages += [
+      pt_messages += [
         ("EMS12", 100),
         ("EMS16", 100),
       ]
       if CP.emsAvailable:
-        messages += [
+        pt_messages += [
           ("EMS_366", 100),
         ]
 
     if CP.flags & (HyundaiFlags.HYBRID | HyundaiFlags.EV):
-      messages.append(("ELECT_GEAR", 20))
+      pt_messages.append(("ELECT_GEAR", 20))
       if CP.carFingerprint == CAR.HYUNDAI_NEXO_FE:
-        messages.append(("EMS20", 20))
+        pt_messages.append(("EMS20", 20))
     elif CP.flags & HyundaiFlags.CLUSTER_GEARS:
       pass
     elif CP.flags & HyundaiFlags.TCU_GEARS:
-      messages.append(("TCU12", 100))
+      pt_messages.append(("TCU12", 100))
     else:
-      messages += [
+      pt_messages += [
         ("LVR11", 100),
         ("LVR12", 100),
       ]
 
-    return CANParser(DBC[CP.carFingerprint]["pt"], messages, 0)
-
-  @staticmethod
-  def get_cam_can_parser(CP):
-    if CP.flags & HyundaiFlags.CANFD:
-      return CarState.get_cam_can_parser_canfd(CP)
-
-    messages = [
+    cam_messages = [
       ("LKAS11", 100)
     ]
 
     if CP.openpilotLongitudinalControl and CP.sccBus == 2:
-      messages += [
+      cam_messages += [
         ("SCC11", 50),
         ("SCC12", 50),
       ]
 
       if CP.scc13Available:
-        messages += [
+        cam_messages += [
           ("SCC13", 50),
         ]
 
       if CP.scc14Available:
-        messages += [
+        cam_messages += [
           ("SCC14", 50),
         ]
 
       if CP.flags & HyundaiFlags.USE_FCA.value:
-        messages.append(("FCA11", 50))
+        cam_messages.append(("FCA11", 50))
 
-    return CANParser(DBC[CP.carFingerprint]["pt"], messages, 2)
 
-  def get_can_parser_canfd(self, CP):
-    messages = [
-      ("WHEEL_SPEEDS", 100),
-      ("STEERING_SENSORS", 100),
-      ("MDPS", 100),
-      ("BRAKE", 100),
-      ("ESP_STATUS", 100),
-      ("TCS", 50),
-      ("CRUISE_BUTTONS_ALT", 50),
-      ("TPMS", 5),
-      ("BLINKERS", 4),
-      ("DOORS_SEATBELTS", 4),
-    ]
-
-    if CP.flags & HyundaiFlags.EV:
-      messages += [
-        ("ACCELERATOR", 100),
-        ("MANUAL_SPEED_LIMIT_ASSIST", 10),
-      ]
-    else:
-      messages += [
-        (self.gear_msg_canfd, 100),
-        (self.accelerator_msg_canfd, 100),
-      ]
-
-    if not (CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS):
-      messages += [
-        ("CRUISE_BUTTONS", 50)
-      ]
-
-    if CP.enableBsm:
-      messages += [
-        ("BLINDSPOTS_REAR_CORNERS", 20),
-      ]
-
-    if not (CP.flags & HyundaiFlags.CANFD_CAMERA_SCC.value) and not CP.openpilotLongitudinalControl:
-      messages += [
-        ("SCC_CONTROL", 50),
-      ]
-
-    if CP.adrvAvailable:
-      messages += [
-        ("ADRV_0x200", 20),
-      ]
-
-    return CANParser(DBC[CP.carFingerprint]["pt"], messages, CanBus(CP).ECAN)
-
-  @staticmethod
-  def get_cam_can_parser_canfd(CP):
-    messages = []
-    if CP.flags & HyundaiFlags.CANFD_HDA2:
-      block_lfa_msg = "CAM_0x362" if CP.flags & HyundaiFlags.CANFD_HDA2_ALT_STEERING else "CAM_0x2a4"
-      messages += [(block_lfa_msg, 20)]
-      if CP.carFingerprint in ANGLE_CONTROL_CAR:
-        messages += [
-          ("LKAS_ALT", 100),
-        ]
-    elif CP.flags & HyundaiFlags.CANFD_CAMERA_SCC:
-      messages += [
-        ("SCC_CONTROL", 50),
-      ]
-
-    return CANParser(DBC[CP.carFingerprint]["pt"], messages, CanBus(CP).CAM)
+    return {
+      Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], pt_messages, 0),
+      Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], cam_messages, 2),
+    }

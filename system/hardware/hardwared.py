@@ -87,6 +87,8 @@ def read_thermal(thermal_config):
   dat.deviceState.memoryTempC = read_tz(thermal_config.mem[0]) / thermal_config.mem[1]
   dat.deviceState.ambientTempC = read_tz(thermal_config.ambient[0]) / thermal_config.ambient[1]
   dat.deviceState.pmicTempC = [read_tz(z) / thermal_config.pmic[1] for z in thermal_config.pmic[0]]
+  dat.deviceState.intakeTempC = read_tz(thermal_config.intake[0]) / thermal_config.intake[1]
+  dat.deviceState.exhaustTempC = read_tz(thermal_config.exhaust[0]) / thermal_config.exhaust[1]
   return dat
 
 
@@ -103,7 +105,6 @@ def hw_state_thread(end_event, hw_queue):
   prev_hw_state = None
 
   modem_version = None
-  modem_nv = None
   modem_configured = False
   modem_restarted = False
   modem_missing_count = 0
@@ -120,12 +121,11 @@ def hw_state_thread(end_event, hw_queue):
           modem_temps = prev_hw_state.modem_temps
 
         # Log modem version once
-        if AGNOS and ((modem_version is None) or (modem_nv is None)):
+        if AGNOS and (modem_version is None):
           modem_version = HARDWARE.get_modem_version()
-          modem_nv = HARDWARE.get_modem_nv()
 
-          if (modem_version is not None) and (modem_nv is not None):
-            cloudlog.event("modem version", version=modem_version, nv=modem_nv)
+          if modem_version is not None:
+            cloudlog.event("modem version", version=modem_version)
           else:
             if not modem_restarted:
               # TODO: we may be able to remove this with a MM update
@@ -250,6 +250,7 @@ def hardware_thread(end_event, hw_queue) -> None:
       elif not params.get_bool("IsOpenpilotViewEnabled") and not params.get_bool("IsDriverViewEnabled") and is_openpilot_view_enabled == 1:
         is_openpilot_view_enabled = 0
         onroad_conditions["ignition"] = False
+        cloudlog.error("panda timed out onroad")
 
     # Run at 2Hz, plus either edge of ignition
     ign_edge = (started_ts is not None) != onroad_conditions["ignition"]
