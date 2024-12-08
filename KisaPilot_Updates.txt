@@ -1,3 +1,7 @@
+2024-12-08
+- Up to master-ci(20241208)
+- Model: DragonRider, Alabama
+- Agnos 11.3
 2024-10-01
 - MLSIM Model
 - your own Params from Github(Easy Restore)
