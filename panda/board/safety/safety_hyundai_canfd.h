@@ -144,22 +144,48 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *to_send) {
     .has_steer_req_tolerance = true,
   };
 
+  const SteeringLimits HYUNDAI_CANFD_ANGLE_LIMITS = {
+    .angle_rate_up_lookup = {
+      {0., 5., 15.},
+      {3., 1.5, 0.5}
+    },
+    .angle_rate_down_lookup = {
+      {0., 5., 15.},
+      {4., 2.0, 1.0}
+    },
+  };
+
   bool tx = true;
   int addr = GET_ADDR(to_send);
 
   // steering
   const int steer_addr = (hyundai_canfd_hda2 && !hyundai_longitudinal) ? hyundai_canfd_hda2_get_lkas_addr() : 0x12a;
   if (addr == steer_addr) {
-    int desired_torque = (((GET_BYTE(to_send, 6) & 0xFU) << 7U) | (GET_BYTE(to_send, 5) >> 1U)) - 1024U;
-    bool steer_req = GET_BIT(to_send, 52U);
-    int max_torque = GET_BYTE(to_send, 12U);
+    bool angle_control = ((GET_BYTE(to_send, 9) >> 5) & 0x3U) >= 1;
+    bool lka_angle_active = GET_BIT(to_send, 77U);
 
-    if (!controls_allowed && (max_torque != 0)) {
-      tx = false;
-    }
+    if (angle_control) {
+      // Extract LKAS_ANGLE_CMD (14-bit value, signed conversion, and scaling)
+      int raw_angle_cmd = ((GET_BYTE(to_send, 10) << 6U) | (GET_BYTE(to_send, 11) >> 2U)) & 0x3FFF;
 
-    if (steer_torque_cmd_checks(desired_torque, steer_req, HYUNDAI_CANFD_STEERING_LIMITS)) {
-      tx = false;
+      // Apply signed conversion: If the raw value exceeds 8191, subtract 16384 to handle negative values
+      if (raw_angle_cmd > 8191) {
+        raw_angle_cmd -= 16384;  // Signed conversion to handle negative angles
+      }
+
+      // Apply scale factor (-0.1) to convert the raw value to the desired angle
+      float lkas_angle_cmd = raw_angle_cmd * -0.0625f; // -511 ~ +511
+
+      if (steer_angle_cmd_checks(lkas_angle_cmd, lka_angle_active, HYUNDAI_CANFD_ANGLE_LIMITS)) {
+        tx = false;
+      }
+    } else {
+      int desired_torque = (((GET_BYTE(to_send, 6) & 0xFU) << 7U) | (GET_BYTE(to_send, 5) >> 1U)) - 1024U;
+      bool steer_req = GET_BIT(to_send, 52U);
+
+      if (steer_torque_cmd_checks(desired_torque, steer_req, HYUNDAI_CANFD_STEERING_LIMITS)) {
+        tx = false;
+      }
     }
   }
 

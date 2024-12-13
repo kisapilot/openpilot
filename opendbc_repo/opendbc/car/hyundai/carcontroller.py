@@ -402,7 +402,7 @@ class CarController(CarControllerBase):
       # CS.out.steeringPressed and steeringTorque are based on the
       # STEERING_COL_TORQUE value
 
-      lkas_max_torque = 180
+      lkas_max_torque = CarControllerParams.LKAS_MAX_TORQUE
       if abs(CS.out.steeringTorque) > 200:
         self.driver_steering_angle_above_timer -= 1
         if self.driver_steering_angle_above_timer <= 30:
