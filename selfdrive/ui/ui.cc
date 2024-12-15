@@ -126,7 +126,7 @@ static void update_state(UIState *s) {
     scene.deviceState = sm["deviceState"].getDeviceState();
     scene.cpuPerc = scene.deviceState.getCpuUsagePercent()[0];
     scene.cpuTemp = scene.deviceState.getCpuTempC()[0];
-    scene.ambientTemp = scene.deviceState.getAmbientTempC();
+    scene.gpuTemp = scene.deviceState.getGpuTempC()[0];
     scene.fanSpeed = scene.deviceState.getFanSpeedPercentDesired();
     scene.storageUsage = int(round(100. - scene.deviceState.getFreeSpacePercent()));
     scene.ipAddress = scene.deviceState.getIpAddress();

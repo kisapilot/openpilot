@@ -50,7 +50,7 @@ class Controls:
 
     self.sm = messaging.SubMaster(['liveParameters', 'liveTorqueParameters', 'modelV2', 'selfdriveState',
                                    'liveCalibration', 'livePose', 'longitudinalPlan', 'carState', 'carOutput',
-                                   'driverMonitoringState', 'onroadEvents', 'driverAssistance', 'lateralPlan', 'radarState', 'liveENaviData'], poll='selfdriveState')
+                                   'driverMonitoringState', 'onroadEvents', 'driverAssistance', 'lateralPlan', 'radarState', 'liveENaviData', 'liveMapData'], poll='selfdriveState')
     self.pm = messaging.PubMaster(['carControl', 'controlsState'])
 
     self.steer_limited = False

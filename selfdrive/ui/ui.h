@@ -75,7 +75,7 @@ typedef struct UIScene {
 
   int cpuPerc;
   float cpuTemp;
-  float ambientTemp;
+  float gpuTemp;
   int fanSpeedRpm;
   int storageUsage;
   std::string ipAddress;
