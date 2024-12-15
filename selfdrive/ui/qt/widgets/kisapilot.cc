@@ -12,6 +12,7 @@
 #include <QMenu>
 #include <QDateTime>
 #include <QVBoxLayout>
+#include <QTimer>
 
 #include "common/params.h"
 
@@ -750,6 +751,78 @@ void OpenpilotView::refresh() {
     btn.setEnabled(true);
     btnc.setEnabled(true);
   }
+}
+
+LiveParameterReset::LiveParameterReset() : AbstractControl(tr("Parameter Reset"), tr("Parameter Reset(LiveParams, LiveTorqueParams, Both)"), "") {
+
+  // setup widget
+  hlayout->addStretch(1);
+
+  btna.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+
+  btnb.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+
+  btnc.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+
+  btna.setFixedSize(250, 100);
+  btnb.setFixedSize(250, 100);
+  btnc.setFixedSize(250, 100);
+  hlayout->addWidget(&btna);
+  hlayout->addWidget(&btnb);
+  hlayout->addWidget(&btnc);
+  btna.setText(tr("LiveParam"));
+  btnb.setText(tr("TorqParam"));
+  btnc.setText(tr("BothParam"));
+
+  QObject::connect(&btna, &QPushButton::clicked, [=]() {
+    if (ConfirmationDialog::confirm2(tr("Do you want to reset LiveParameter?"), this)) {
+      params.remove("LiveParameters");
+      params.putBool("OnRoadRefresh", true);
+      QTimer::singleShot(3000, [this]() {
+        params.putBool("OnRoadRefresh", false);
+      });
+    }
+  });
+  QObject::connect(&btnb, &QPushButton::clicked, [=]() {
+    if (ConfirmationDialog::confirm2(tr("Do you want to reset LiveTorqueParameter?"), this)) {
+      params.remove("LiveTorqueParameters");
+      params.putBool("OnRoadRefresh", true);
+      QTimer::singleShot(3000, [this]() {
+        params.putBool("OnRoadRefresh", false);
+      });
+    }
+  });
+  QObject::connect(&btnc, &QPushButton::clicked, [=]() {
+    if (ConfirmationDialog::confirm2(tr("Do you want to reset both Live and Torq Params?"), this)) {
+      params.remove("LiveParameters");
+      params.remove("LiveTorqueParameters");
+      params.putBool("OnRoadRefresh", true);
+      QTimer::singleShot(3000, [this]() {
+        params.putBool("OnRoadRefresh", false);
+      });
+    }
+  });
 }
 
 CarSelectCombo::CarSelectCombo() : AbstractControl("", "", "") 

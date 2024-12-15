@@ -1681,6 +1681,29 @@ This may take up to a minute.</source>
     </message>
 </context>
 <context>
+    <name>LiveParameterReset</name>
+    <message>
+        <source>Parameter Reset</source>
+        <translation>파라미터 초기화화</translation>
+    </message>
+    <message>
+        <source>Parameter Reset(LiveParams, LiveTorqueParams, Both)</source>
+        <translation>파라미터 초기화(라이브 파라미터, 라이브 토크 파라미터, 둘다)</translation>
+    </message>
+    <message>
+        <source>Do you want to reset LiveParameter?</source>
+        <translation>라이브 파라미터를 초기화 하시겠습니까?</translation>
+    </message>
+    <message>
+        <source>Do you want to reset LiveTorqueParameter?</source>
+        <translation>라이브 토크 파라미터를 초기화 하시겠습니까?</translation>
+    </message>
+    <message>
+        <source>Do you want to reset both Live and Torq Params?</source>
+        <translation>라이브 파라미터와 토크 파라미터를 둘다 초기화 하시겠습니까?</translation>
+    </message>
+</context>
+<context>
     <name>CarSelectCombo</name>
     <message>
         <source>Select Your Car</source>

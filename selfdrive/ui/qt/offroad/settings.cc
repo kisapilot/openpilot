@@ -174,7 +174,6 @@ DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent) {
   connect(resetCalibBtn, &ButtonControl::clicked, [&]() {
     if (ConfirmationDialog::confirm(tr("Are you sure you want to reset calibration?"), tr("Reset"), this)) {
       params.remove("CalibrationParams");
-      //params.remove("LiveTorqueParameters");
       params.putBool("OnRoadRefresh", true);
       QTimer::singleShot(3000, [this]() {
         params.putBool("OnRoadRefresh", false);
@@ -182,6 +181,8 @@ DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent) {
     }
   });
   addItem(resetCalibBtn);
+
+  addItem(new LiveParameterReset());
 
   auto retrainingBtn = new ButtonControl(tr("Review Training Guide"), tr("REVIEW"), tr("Review the rules, features, and limitations of openpilot"));
   connect(retrainingBtn, &ButtonControl::clicked, [=]() {

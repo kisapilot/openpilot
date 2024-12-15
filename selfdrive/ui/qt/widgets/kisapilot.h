@@ -1019,6 +1019,20 @@ private:
   void refresh();
 };
 
+class LiveParameterReset : public AbstractControl {
+  Q_OBJECT
+
+public:
+  LiveParameterReset();
+
+private:
+  QPushButton btna;
+  QPushButton btnb;
+  QPushButton btnc;
+
+  Params params;
+};
+
 class CarSelectCombo : public AbstractControl 
 {
   Q_OBJECT
