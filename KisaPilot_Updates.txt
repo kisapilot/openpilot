@@ -1,3 +1,7 @@
+2024-12-15
+- Up to master-ci(20241215)
+- Model: PlayStation, Postal Service, Null Pointer
+- Live Param, Torque Param reset
 2024-12-08
 - Up to master-ci(20241208)
 - Model: DragonRider, Alabama
