@@ -1684,7 +1684,7 @@ This may take up to a minute.</source>
     <name>LiveParameterReset</name>
     <message>
         <source>Parameter Reset</source>
-        <translation>파라미터 초기화화</translation>
+        <translation>라이브 파라미터 초기화</translation>
     </message>
     <message>
         <source>Parameter Reset(LiveParams, LiveTorqueParams, Both)</source>
