@@ -133,10 +133,6 @@ static void cuatro_init(void) {
   // Clock source
   clock_source_init();
 
-  // Beeper
-  set_gpio_alternate(GPIOD, 14, GPIO_AF2_TIM4);
-  beeper_init();
-
   // Sound codec
   cuatro_set_amp_enabled(false);
   set_gpio_alternate(GPIOA, 2, GPIO_AF8_SAI4);    // SAI4_SCK_B
