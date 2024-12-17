@@ -366,14 +366,14 @@ void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
     p.drawText(-40, 0, QString::number(s->scene.cpuPerc, 'f', 0) + "%");
     p.resetMatrix();
 
-    // sys temp
+    // gpu temp
     num_r = num_r + 1;
     sp_yr = sp_yr + j_num;
     p.setPen(whiteColor(200));
     debugText(p, sp_xr, sp_yr, QString("GPU TEMP"), 150, 27);
-    if (s->scene.gpuTemp > 85) {
+    if (s->scene.gpuTemp > 90) {
       p.setPen(redColor(200));
-    } else if (s->scene.gpuTemp > 75) {
+    } else if (s->scene.gpuTemp > 80) {
       p.setPen(orangeColor(200));
     } 
     debugText(p, sp_xr, sp_yr+60, QString::number(s->scene.gpuTemp, 'f', 0) + "°C", 150, 57);
