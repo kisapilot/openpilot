@@ -19,8 +19,8 @@ class CarControllerParams:
   ACCEL_MAX = 2.0 # m/s
 
   # ToDo, seen changing at 0.2 deg/frame down, 0.1 deg/frame up at 100Hz, testing with IONIQ5_PE 2025(The New IONIQ5)
-  ANGLE_RATE_LIMIT_UP = AngleRateLimit(speed_bp=[0., 5., 15.], angle_v=[10., 1.6, .3])
-  ANGLE_RATE_LIMIT_DOWN = AngleRateLimit(speed_bp=[0., 5., 15.], angle_v=[10., 7.0, .8])
+  ANGLE_RATE_LIMIT_UP = AngleRateLimit(speed_bp=[0., 5., 15.], angle_v=[8.0, 1.28, 0.24])
+  ANGLE_RATE_LIMIT_DOWN = AngleRateLimit(speed_bp=[0., 5., 15.], angle_v=[8.0, 5.6, 0.64])
   LKAS_MAX_TORQUE = 180   # max 255, seems related to steer movement speed or power
 
   def __init__(self, CP):

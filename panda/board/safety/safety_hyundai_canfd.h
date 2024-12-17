@@ -148,11 +148,11 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *to_send) {
     .angle_deg_to_can = 10,
     .angle_rate_up_lookup = {
       {0., 5., 15.},
-      {10., 1.6, .3}
+      {8.0, 1.28, 0.24}
     },
     .angle_rate_down_lookup = {
       {0., 5., 15.},
-      {10., 7.0, .8}
+      {8.0, 5.6, 0.64}
     },
   };
 
@@ -175,7 +175,7 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *to_send) {
       }
 
       // Apply scale factor (-0.1) to convert the raw value to the desired angle
-      float lkas_angle_cmd = raw_angle_cmd * -0.061f; // -500 ~ +500
+      float lkas_angle_cmd = raw_angle_cmd * -0.0586f; // -480 ~ +480
 
       if (steer_angle_cmd_checks(lkas_angle_cmd, lka_angle_active, HYUNDAI_CANFD_ANGLE_LIMITS)) {
         tx = false;
