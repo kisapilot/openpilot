@@ -88,8 +88,9 @@ def create_suppress_lfa(packer, CAN, hda2_lfa_block_msg, hda2_alt_steering, enab
   suppress_msg = "CAM_0x362" if hda2_alt_steering else "CAM_0x2a4"
   msg_bytes = 32 if hda2_alt_steering else 24
 
-  values = {f"BYTE{i}": hda2_lfa_block_msg[f"BYTE{i}"] for i in range(3, msg_bytes) if i != 7}
-  values["COUNTER"] = hda2_lfa_block_msg["COUNTER"]
+  values = {f"BYTE{i}": hda2_lfa_block_msg[f"BYTE{i}"] for i in range(5, msg_bytes) if i != 7}
+  values["LEFT_LANE_LINE_PROB"] = hda2_lfa_block_msg["LEFT_LANE_LINE_PROB"] # maybe double lane above 20
+  values["RIGHT_LANE_LINE_PROB"] = hda2_lfa_block_msg["RIGHT_LANE_LINE_PROB"] # maybe double lane above 20
   values["SET_ME_0"] = 0
   values["SET_ME_0_2"] = 0
   values["LEFT_LANE_LINE"] = 0 if enabled else 3
