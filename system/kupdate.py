@@ -253,23 +253,35 @@ def sw_update_thread(end_event, nv_queue):
         elif params.get("RunCustomCommand") == "4":
           if p_order == 0:
             model_name = params.get("DrivingModel")
-            command1 = "wget -P /data/model https://raw.githubusercontent.com/kisapilot/model/main/models/" + model_name + "_driving_policy"
-            command2 = "wget -P /data/model https://raw.githubusercontent.com/kisapilot/model/main/models/" + model_name + "_driving_vision"
+            command1 = "wget -O /data/model/" + model_name + "_driving_policy https://raw.githubusercontent.com/kisapilot/model/main/models/" + model_name + "_driving_policy"
+            command2 = "wget -O /data/model/" + model_name + "_driving_vision https://raw.githubusercontent.com/kisapilot/model/main/models/" + model_name + "_driving_vision"
             command3 = "rm -f /data/openpilot/selfdrive/modeld/models/driving_*"
             command4 = "cp -f /data/model/" + model_name + "_driving_policy /data/openpilot/selfdrive/modeld/models/driving_policy.onnx"
             command5 = "cp -f /data/model/" + model_name + "_driving_vision /data/openpilot/selfdrive/modeld/models/driving_vision.onnx"
             command6 = "sudo reboot"
+            command61 = "ls -l /data/model/" + model_name + "_driving_policy"
+            command62 = "ls -l /data/model/" + model_name + "_driving_vision"
             p_order = 1
             lcount = 0
-            if not os.path.isfile("/data/model/" + model_name):
+            with open("/data/openpilot/selfdrive/modeld/models/ModelList", "r") as f:
+              for line in f:
+                parts = line.strip().split()
+                if parts[2] == model_name:
+                  policy_size = int(parts[0])
+                  vision_size = int(parts[1])
+                  break
+            if not os.path.isfile("/data/model/" + model_name + "_driving_policy") or os.path.getsize("/data/model/" + model_name + "_driving_policy") != policy_size:
               result=subprocess.Popen(command1, shell=True)
             else:
-              result=subprocess.Popen("ls", shell=True)
+              result=subprocess.Popen(command61, shell=True)
           elif p_order == 1:
             rvalue=result.poll()
             if rvalue == 0:
               p_order = 2
-              result=subprocess.Popen(command2, shell=True)
+              if not os.path.isfile("/data/model/" + model_name + "_driving_vision") or os.path.getsize("/data/model/" + model_name + "_driving_vision") != vision_size:
+                result=subprocess.Popen(command2, shell=True)
+              else:
+                result=subprocess.Popen(command62, shell=True)
             else:
               lcount += 1
               if lcount > 300: # killing in 180sec if proc is abnormal or not completed.
@@ -337,7 +349,7 @@ def sw_update_thread(end_event, nv_queue):
                 p_order = 0
                 lcount = 0
                 result.kill()
-        elif params.get("RunCustomCommand") == 5:
+        elif params.get("RunCustomCommand") == "5":
           if p_order == 0:
             command1 = "rm -f /data/openpilot/selfdrive/modeld/models/driving_*"
             command2 = "git -C /data/openpilot/selfdrive//modeld/models checkout driving_policy.onnx"

@@ -243,8 +243,6 @@ CLaneChangeGroup::CLaneChangeGroup(void *p) : CGroupWidget( tr("Lane Change Opti
   pBoxLayout->addWidget(new LaneChangeDelay());
   pBoxLayout->addWidget(new LCTimingFactorUD());
   pBoxLayout->addWidget(new LCTimingFactor());
-  pBoxLayout->addWidget(new LCTimingKeepFactorUD());
-  pBoxLayout->addWidget(new LCTimingKeepFactor());
 }
 
 CDrivingQuality::CDrivingQuality(void *p) : CGroupWidget( tr("Driving Quality Option") ) 
@@ -519,13 +517,13 @@ OpenpilotUserEnv::OpenpilotUserEnv() : ButtonControl(tr("Get Your Params"), "", 
       QString userid = InputDialog::getText(tr("Input your Git ID"), this, "github.com/<your id>/openpilot_user/main/user_params.txt", false, 1, "");
       if (userid.length() > 0) {
         getUserID(userid);
-        QString repoid = InputDialog::getText(tr("Input your repository"), this, "github.com/"+userid, false, 1, "");
+        QString repoid = InputDialog::getText(tr("Input your repository"), this, "github.com/"+userid+"/<openpilot_user>/main/user_params.txt", false, 1, "");
         if (repoid.length() > 0) {
           getRepoID(repoid);
-          QString branchid = InputDialog::getText(tr("Input your branch"), this, "github.com/"+userid+"/"+repoid, false, 1, "");
+          QString branchid = InputDialog::getText(tr("Input your branch"), this, "github.com/"+userid+"/"+repoid+"/<main>/user_params.txt", false, 1, "");
           if (branchid.length() > 0) {
             getBranchID(branchid);
-            QString fileid = InputDialog::getText(tr("Input your file"), this, "github.com/"+userid+"/"+repoid+"/"+branchid, false, 1, "");
+            QString fileid = InputDialog::getText(tr("Input your file"), this, "github.com/"+userid+"/"+repoid+"/"+branchid+"/<user_params.txt>", false, 1, "");
             if (fileid.length() > 0) {
               getFileID(fileid);
               githubbranch = branchid;

@@ -9,7 +9,7 @@ import traceback
 from cereal import log
 import cereal.messaging as messaging
 import openpilot.system.sentry as sentry
-from openpilot.common.params import Params, ParamKeyFlag
+from openpilot.common.params import Params, ParamKeyFlag, ParamKeyType
 from openpilot.common.text_window import TextWindow
 from openpilot.system.hardware import HARDWARE
 from openpilot.system.manager.helpers import unblock_stdout, write_onroad_params, save_bootlog
@@ -43,14 +43,27 @@ def manager_init() -> None:
     if default_value is not None and params.get(k) is None:
       params.put(k, default_value)
 
-  # kisapilot
+  # kisapilot user params
   if os.path.isfile('/data/User_Params.txt'):
-    f = open("/data/User_Params.txt", "r")
-    for t in f.readlines():
-      tt = t.strip("\n").split(':')
-      params.put(tt[0], tt[-1])
-    f.close()
-    os.remove('/data/User_Params.txt')
+    with open("/data/User_Params.txt", "r") as f:
+      for line in f:
+        try:
+          key, val_str = line.strip().split(":")
+          param_type = params.get_type(key)
+          if param_type == ParamKeyType.BOOL:
+            params.put_bool(key, True if val_str == "1" else False)
+          else:
+            if param_type == ParamKeyType.INT:
+              val = int(val_str)
+            elif param_type == ParamKeyType.FLOAT:
+              val = float(val_str)
+            else:
+              val = val_str
+            params.put(key, val)
+        except Exception as e:
+          print(f"Failed to put param '{line.strip()}': {e}")
+
+      os.remove('/data/User_Params.txt')
 
   # Create folders needed for msgq
   try:

@@ -333,10 +333,7 @@ def main(demo=False):
       meta_extra = meta_main
 
     sm.update(0)
-    if USE_LEGACY_LANE_MODEL:
-      desire = sm["lateralPlan"].desire.raw
-    else:
-      desire = DH.desire
+    desire = sm["lateralPlan"].desire.raw if USE_LEGACY_LANE_MODEL else DH.desire
     is_rhd = sm["driverMonitoringState"].isRHD
     frame_id = sm["roadCameraState"].frameId
     v_ego = max(sm["carState"].vEgo, 0.)

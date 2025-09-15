@@ -280,7 +280,7 @@ def hardware_thread(end_event, hw_queue) -> None:
 
     # Run at 2Hz, plus either edge of ignition
     ign_edge = (started_ts is not None) != all(onroad_conditions.values())
-    if (sm.frame % round(SERVICE_LIST['pandaStates'].frequency * DT_HW) != 0) and not ign_edge and is_openpilot_view_enabled == 0:
+    if (sm.frame % round(SERVICE_LIST['pandaStates'].frequency * DT_HW) != 0) and not ign_edge:
       continue
 
     msg = messaging.new_message('deviceState', valid=True)
