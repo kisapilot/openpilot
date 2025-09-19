@@ -240,6 +240,7 @@ class CarInterfaceBase(ABC):
     tune.torque.kf = 1.0
     tune.torque.kp = 1.0
     tune.torque.ki = 0.3
+    tune.torque.kd = 0.0
     tune.torque.friction = params['FRICTION']
     tune.torque.latAccelFactor = params['LAT_ACCEL_FACTOR']
     tune.torque.latAccelOffset = 0.0
@@ -250,6 +251,7 @@ class CarInterfaceBase(ABC):
         tune.torque.kf = 1.0
         tune.torque.kp = 1.0
         tune.torque.ki = 0.3
+        tune.torque.kd = 0.0
         tune.torque.friction = params['FRICTION']
         tune.torque.latAccelFactor = params['LAT_ACCEL_FACTOR']
         tune.torque.latAccelOffset = 0.0
@@ -258,12 +260,14 @@ class CarInterfaceBase(ABC):
         TorqueKf = Params().get("TorqueKf", return_default=True) * 0.1
         TorqueKp = Params().get("TorqueKp", return_default=True) * 0.1
         TorqueKi = Params().get("TorqueKi", return_default=True) * 0.1
+        TorqueKd = Params().get("TorqueKd", return_default=True) * 0.1
         TorqueFriction = Params().get("TorqueFriction", return_default=True) * 0.01
         TorqueLatAccelFactor = Params().get("TorqueMaxLatAccel", return_default=True) * 0.1
         TorqueAngDeadZone = Params().get("TorqueAngDeadZone", return_default=True) * 0.1
         tune.torque.kf = TorqueKf
         tune.torque.kp = TorqueKp
         tune.torque.ki = TorqueKi
+        tune.torque.kd = TorqueKd
         tune.torque.friction = TorqueFriction
         tune.torque.latAccelFactor = TorqueLatAccelFactor
         tune.torque.latAccelOffset = 0.0
@@ -272,12 +276,14 @@ class CarInterfaceBase(ABC):
       TorqueKf = Params().get("TorqueKf", return_default=True) * 0.1
       TorqueKp = Params().get("TorqueKp", return_default=True) * 0.1
       TorqueKi = Params().get("TorqueKi", return_default=True) * 0.1
+      TorqueKd = Params().get("TorqueKd", return_default=True) * 0.1
       TorqueFriction = Params().get("TorqueFriction", return_default=True) * 0.01
       TorqueLatAccelFactor = Params().get("TorqueMaxLatAccel", return_default=True) * 0.1
       TorqueAngDeadZone = Params().get("TorqueAngDeadZone", return_default=True) * 0.1
       tune.torque.kf = TorqueKf
       tune.torque.kp = TorqueKp
       tune.torque.ki = TorqueKi
+      tune.torque.kd = TorqueKd
       tune.torque.friction = TorqueFriction
       tune.torque.latAccelFactor = TorqueLatAccelFactor
       tune.torque.latAccelOffset = 0.0

@@ -26,7 +26,6 @@ public:
     LAT_INDI,
     LAT_LQR,
     LAT_TOROUE,
-    LAT_MULTI,
     LAT_ALL,
   };  
 
@@ -39,10 +38,8 @@ public:
   void  FrameINDI(QVBoxLayout *parent=nullptr);
   void  FrameLQR(QVBoxLayout *parent=nullptr);
   void  FrameTORQUE(QVBoxLayout *parent=nullptr);
-  void  FrameMULTI(QVBoxLayout *parent=nullptr);
 
   
-
 public slots:  
   virtual void refresh(int nID = 0);  
 };
@@ -1645,6 +1642,21 @@ private:
   void refresh();
 };
 
+class TorqueKd : public AbstractControl {
+  Q_OBJECT
+
+public:
+  TorqueKd();
+
+private:
+  QPushButton btnplus;
+  QPushButton btnminus;
+  QLabel label;
+  Params params;
+  
+  void refresh();
+};
+
 class TorqueFriction : public AbstractControl {
   Q_OBJECT
 
@@ -2359,76 +2371,6 @@ private:
   Params params;
 
   void refresh();
-};
-
-class MultipleLatSelect : public AbstractControl {
-  Q_OBJECT
-
-public:
-  MultipleLatSelect();
-
-private:
-  QPushButton btnplus;
-  QPushButton btnminus;
-  QLabel label;
-  Params params;
-  
-  int    m_nMethod;
-
-
-  void refresh();
-};
-
-class MultipleLateralSpeed : public AbstractControl {
-  Q_OBJECT
-
-public:
-  MultipleLateralSpeed();
-
-private:
-  QLabel label1;
-  QPushButton btnplusl;
-  QLabel labell;
-  QPushButton btnminusl;
-  QPushButton btnplusr;
-  QLabel labelr;
-  QPushButton btnminusr;
-  QPushButton btn1;
-  QPushButton btn2;
-  QPushButton btn3;
-  Params params;
-  
-  void refresh1();
-  void refresh2();
-  void refresh3();
-  void refreshl();
-  void refreshr();
-};
-
-class MultipleLateralAngle : public AbstractControl {
-  Q_OBJECT
-
-public:
-  MultipleLateralAngle();
-
-private:
-  QLabel label1;
-  QPushButton btnplusl;
-  QLabel labell;
-  QPushButton btnminusl;
-  QPushButton btnplusr;
-  QLabel labelr;
-  QPushButton btnminusr;
-  QPushButton btn1;
-  QPushButton btn2;
-  QPushButton btn3;
-  Params params;
-  
-  void refresh1();
-  void refresh2();
-  void refresh3();
-  void refreshl();
-  void refreshr();
 };
 
 class StoppingDist : public AbstractControl {

@@ -35,9 +35,6 @@ static void update_state(UIState *s) {
       scene.output_scale = cons_data.getLateralControlState().getLqrState().getOutput();
     } else if (scene.lateralControlMethod == 3) {
       scene.output_scale = cons_data.getLateralControlState().getTorqueState().getOutput();
-    } else if (scene.lateralControlMethod == 4) {
-      scene.output_scale = cons_data.getLateralControlState().getAtomState().getOutput();
-      scene.multi_lat_selected = cons_data.getLateralControlState().getAtomState().getSelected();
     }
 
     scene.alertTextMsg1 = cons_data.getAlertTextMsg1(); //debug1
@@ -388,6 +385,7 @@ void UIState::updateStatus() {
     scene.torqueKp = std::atoi(params.get("TorqueKp").c_str());
     scene.torqueKf = std::atoi(params.get("TorqueKf").c_str());
     scene.torqueKi = std::atoi(params.get("TorqueKi").c_str());
+    scene.torqueKd = std::atoi(params.get("TorqueKd").c_str());
     scene.torqueFriction = std::atoi(params.get("TorqueFriction").c_str());
     scene.torqueMaxLatAccel = std::atoi(params.get("TorqueMaxLatAccel").c_str());
     scene.indiInnerLoopGain = std::atoi(params.get("InnerLoopGain").c_str());

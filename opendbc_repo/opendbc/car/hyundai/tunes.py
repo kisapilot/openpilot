@@ -20,75 +20,16 @@ class LatTunes(Enum):
   PID_L = 14
   PID_M = 15
   TORQUE = 16
-  ATOM = 17
 
 
 ###### LAT ######
 def set_lat_tune(tune, name, max_lat_accel=2.5, FRICTION=.1):
   params = Params()
-  if name == LatTunes.ATOM:
-    tune.init('atom')
-
-    # 1. TORQUE
+  if name == LatTunes.TORQUE:
     TorqueKp = params.get("TorqueKp", return_default=True) * 0.1
     TorqueKf = params.get("TorqueKf", return_default=True) * 0.1
     TorqueKi = params.get("TorqueKi", return_default=True) * 0.1
-    TorqueFriction = params.get("TorqueFriction", return_default=True) * 0.001
-    max_lat_accel = params.get("TorqueMaxLatAccel", return_default=True) * 0.1
-    steer_ang_deadzone = params.get("TorqueAngDeadZone", return_default=True) * 0.1
-
-    tune.atom.torque.kp = TorqueKp        # 1.0
-    tune.atom.torque.kf = TorqueKf        # 1.0
-    tune.atom.torque.ki = TorqueKi        # 0.3
-    tune.atom.torque.friction = TorqueFriction
-    tune.atom.torque.steeringAngleDeadzoneDeg = steer_ang_deadzone
-
-    # 2. LQR
-    Scale = params.get("Scale", return_default=True) * 1.0
-    LqrKi = params.get("LqrKi", return_default=True) * 0.001
-    DcGain = params.get("DcGain", return_default=True) * 0.00001
-
-    tune.atom.lqr.scale = Scale     #1700.0
-    tune.atom.lqr.ki = LqrKi      #0.01
-    tune.atom.lqr.dcGain =  DcGain  #0.0027
-    tune.atom.lqr.a = [0., 1., -0.22619643, 1.21822268]
-    tune.atom.lqr.b = [-1.92006585e-04, 3.95603032e-05]
-    tune.atom.lqr.c = [1., 0.]
-    tune.atom.lqr.k = [-110.73572306, 451.22718255]
-    tune.atom.lqr.l = [0.3233671, 0.3185757]      
-
-    # 3. INDI
-    InnerLoopGain = params.get("InnerLoopGain", return_default=True) * 0.1
-    OuterLoopGain = params.get("OuterLoopGain", return_default=True) * 0.1
-    TimeConstant = params.get("TimeConstant", return_default=True) * 0.1
-    ActuatorEffectiveness = params.get("ActuatorEffectiveness", return_default=True) * 0.1
-
-    tune.atom.indi.innerLoopGainBP = [0.]
-    tune.atom.indi.innerLoopGainV = [InnerLoopGain] # 4.0, third tune. Highest value that still gives smooth control. Effects turning into curves.
-    tune.atom.indi.outerLoopGainBP = [0.]
-    tune.atom.indi.outerLoopGainV = [OuterLoopGain] # 3.0, forth tune. Highest value that still gives smooth control. Effects lane centering.
-    tune.atom.indi.timeConstantBP = [0.]
-    tune.atom.indi.timeConstantV = [TimeConstant] # 1.0, second tune. Lowest value with smooth actuation. Avoid the noise of actuator gears thrashing.
-    tune.atom.indi.actuatorEffectivenessBP = [0.]
-    tune.atom.indi.actuatorEffectivenessV = [ActuatorEffectiveness] # 1.0, first tune. Lowest value without oversteering. May vary with speed.
-
-    # 4. PID
-    PidKp = params.get("PidKp", return_default=True) * 0.01
-    PidKi = params.get("PidKi", return_default=True) * 0.001
-    PidKf = params.get("PidKf", return_default=True) * 0.00001
-    PidKd = params.get("PidKd", return_default=True) * 0.01
-
-    tune.atom.pid.kpBP = [0., 9.]
-    tune.atom.pid.kpV = [0.1, PidKp]
-    tune.atom.pid.kiBP = [0., 9.]
-    tune.atom.pid.kiV = [0.01, PidKi]
-    tune.atom.pid.kf = PidKf
-    tune.atom.pid.kd = PidKd
-
-  elif name == LatTunes.TORQUE:
-    TorqueKp = params.get("TorqueKp", return_default=True) * 0.1
-    TorqueKf = params.get("TorqueKf", return_default=True) * 0.1
-    TorqueKi = params.get("TorqueKi", return_default=True) * 0.1
+    TorqueKd = params.get("TorqueKd", return_default=True) * 0.1
     TorqueFriction = params.get("TorqueFriction", return_default=True) * 0.001
     max_lat_accel = params.get("TorqueMaxLatAccel", return_default=True) * 0.1
     steer_ang_deadzone = params.get("TorqueAngDeadZone", return_default=True) * 0.1
@@ -96,6 +37,7 @@ def set_lat_tune(tune, name, max_lat_accel=2.5, FRICTION=.1):
     tune.torque.kp = TorqueKp # 1.0
     tune.torque.kf = TorqueKf # 1.0
     tune.torque.ki = TorqueKi # 0.3
+    tune.torque.kd = TorqueKd # 0.0
     tune.torque.friction = TorqueFriction
     tune.torque.steeringAngleDeadzoneDeg = steer_ang_deadzone
   elif name == LatTunes.LQR:

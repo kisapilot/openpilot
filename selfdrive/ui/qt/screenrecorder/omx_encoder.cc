@@ -386,7 +386,7 @@ OmxEncoder::OmxEncoder(const char* path, int width, int height, int fps, int bit
 
   if (h265) {
     // setup HEVC
-  #ifndef QCOM2
+  #ifndef __TICI__
     OMX_VIDEO_PARAM_HEVCTYPE hevc_type = {0};
     OMX_INDEXTYPE index_type = (OMX_INDEXTYPE) OMX_IndexParamVideoHevc;
   #else
@@ -489,7 +489,7 @@ void OmxEncoder::handle_out_buf(OmxEncoder *e, OMX_BUFFERHEADERTYPE *out_buf) {
     }
     e->codec_config_len = out_buf->nFilledLen;
     memcpy(e->codec_config, buf_data, out_buf->nFilledLen);
-#ifdef QCOM2
+#ifdef __TICI__
     out_buf->nTimeStamp = 0;
 #endif
   }
@@ -539,7 +539,7 @@ void OmxEncoder::handle_out_buf(OmxEncoder *e, OMX_BUFFERHEADERTYPE *out_buf) {
   }
 
   // give omx back the buffer
-#ifdef QCOM2
+#ifdef __TICI__
   if (out_buf->nFlags & OMX_BUFFERFLAG_EOS) {
     out_buf->nTimeStamp = 0;
   }
@@ -661,7 +661,7 @@ void OmxEncoder::encoder_open(const char* filename) {
   } else {
     this->of = fopen(this->vid_path, "wb");
     assert(this->of);
-#ifndef QCOM2
+#ifndef __TICI__
     if (this->codec_config_len > 0) {
       fwrite(this->codec_config, this->codec_config_len, 1, this->of);
     }

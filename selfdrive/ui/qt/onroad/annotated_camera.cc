@@ -21,7 +21,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget *par
   experimental_btn = new ExperimentalButton(this);
   experimental_btn->hide();
 
-#ifdef QCOM2
+#ifdef __TICI__
   // neokii screen recorder, thx for sharing:)
   record_timer = std::make_shared<QTimer>();
   QObject::connect(record_timer.get(), &QTimer::timeout, [=]() {
@@ -157,7 +157,7 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
   hud.updateState(*s);
   hud.draw(p, rect());
 
-#ifdef QCOM2
+#ifdef __TICI__
   // rec_stat and toggle
   if (s->scene.driving_record) {
     if (!s->scene.rec_stat && s->scene.car_state.getVEgo() > 0.8 && s->scene.standstillElapsedTime == 0 && int(s->scene.getGearShifter) == 2) {

@@ -26,6 +26,7 @@ PidKf:7
 TorqueKp:10
 TorqueKf:10
 TorqueKi:3
+TorqueKd:0
 TorqueFriction:80
 TorqueMaxLatAccel:30
 TorqueAngDeadZone:10
@@ -122,11 +123,6 @@ UseStockDecelOnSS:0
 AnimatedRPM:1
 AnimatedRPMMax:3600
 NoSmartMDPS:0
-MultipleLateralUse:2
-MultipleLateralOpS:3,3,0
-MultipleLateralSpd:60,90
-MultipleLateralOpA:3,3,0
-MultipleLateralAng:20,35
 StoppingDist:35
 SpeedCameraOffset:0
 StopAtStopSign:0

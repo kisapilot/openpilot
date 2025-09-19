@@ -1,4 +1,9 @@
-KisaPilot 0.10.0
+KisaPilot Version 0.10.1
+========================
+* Up to __nightly(2025-10-12)
+* ~ North Nevada model, AGNOS 13.1
+
+KisaPilot Version 0.10.0
 ========================
 * Up to __nightly(2025-09-06)
 * ~ Firehose model, AGNOS 13

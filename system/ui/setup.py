@@ -299,20 +299,20 @@ class Setup(Widget):
 
   def render_custom_software_warning(self, rect: rl.Rectangle):
     warn_rect = rl.Rectangle(rect.x, rect.y, rect.width, 1500)
-    offset = self._custom_software_warning_body_scroll_panel.handle_scroll(rect, warn_rect)
+    offset = self._custom_software_warning_body_scroll_panel.update(rect, warn_rect)
 
     button_width = (rect.width - MARGIN * 3) / 2
     button_y = rect.height - MARGIN - BUTTON_HEIGHT
 
     rl.begin_scissor_mode(int(rect.x), int(rect.y), int(rect.width), int(button_y - BODY_FONT_SIZE))
-    y_offset = rect.y + offset.y
+    y_offset = rect.y + offset
     self._custom_software_warning_title_label.render(rl.Rectangle(rect.x + 50, y_offset + 150, rect.width - 265, TITLE_FONT_SIZE))
     self._custom_software_warning_body_label.render(rl.Rectangle(rect.x + 50, y_offset + 200 , rect.width - 50, BODY_FONT_SIZE * 3))
     rl.end_scissor_mode()
 
     self._custom_software_warning_back_button.render(rl.Rectangle(rect.x + MARGIN, button_y, button_width, BUTTON_HEIGHT))
     self._custom_software_warning_continue_button.render(rl.Rectangle(rect.x + MARGIN * 2 + button_width, button_y, button_width, BUTTON_HEIGHT))
-    if offset.y < (rect.height - warn_rect.height):
+    if offset < (rect.height - warn_rect.height):
       self._custom_software_warning_continue_button.set_enabled(True)
       self._custom_software_warning_continue_button.set_text("Continue")
 
@@ -343,7 +343,7 @@ class Setup(Widget):
       shutil.copyfile(INSTALLER_SOURCE_PATH, INSTALLER_DESTINATION_PATH)
 
       # give time for installer UI to take over
-      time.sleep(1)
+      time.sleep(0.1)
       gui_app.request_close()
     else:
       self.state = SetupState.NETWORK_SETUP
@@ -406,7 +406,7 @@ class Setup(Widget):
         f.write(self.download_url)
 
       # give time for installer UI to take over
-      time.sleep(5)
+      time.sleep(0.1)
       gui_app.request_close()
 
     except Exception:
@@ -423,7 +423,9 @@ def main():
   try:
     gui_app.init_window("Setup", 20)
     setup = Setup()
-    for _ in gui_app.render():
+    for showing_dialog in gui_app.render():
+      if showing_dialog:
+        continue
       setup.render(rl.Rectangle(0, 0, gui_app.width, gui_app.height))
     setup.close()
   except Exception as e:

@@ -8,8 +8,8 @@ from openpilot.selfdrive.controls.lib.latcontrol import LatControl
 from openpilot.common.params import Params
 
 class LatControlLQR(LatControl):
-  def __init__(self, CP, CI):
-    super().__init__(CP, CI)
+  def __init__(self, CP, CI, dt):
+    super().__init__(CP, CI, dt)
     self.mpc_frame = 0
     self.params = Params()
 
@@ -49,7 +49,7 @@ class LatControlLQR(LatControl):
         
       self.mpc_frame = 0
 
-  def update(self, active, CS, VM, params, steer_limited_by_safety, desired_curvature, curvature_limited, desired_curvature_rate):
+  def update(self, active, CS, VM, params, steer_limited_by_safety, desired_curvature, curvature_limited, lat_delay, desired_curvature_rate):
     self.ll_timer += 1
     if self.ll_timer > 100:
       self.ll_timer = 0

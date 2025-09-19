@@ -206,101 +206,16 @@ void HomeWindow::mousePressTORQ(QMouseEvent* e, int nDir) {
     QString value = QString::number(uiState()->scene.torqueKi);
     Params().put("TorqueKi", value.toStdString());
   } else if (nMenuPos == 3) {
+    uiState()->scene.torqueKd += nDir;
+    clip(uiState()->scene.torqueKd, 1, max_lat_accel);
+    QString value = QString::number(uiState()->scene.torqueKd);
+    Params().put("TorqueKd", value.toStdString());
+  } else if (nMenuPos == 4) {
     uiState()->scene.torqueMaxLatAccel += nDir;
     clip(uiState()->scene.torqueMaxLatAccel, 1, 50);
     QString value = QString::number(uiState()->scene.torqueMaxLatAccel);
     Params().put("TorqueMaxLatAccel", value.toStdString());
-  } else if (nMenuPos == 4) {
-    uiState()->scene.torqueFriction += 5*nDir;
-    clip(uiState()->scene.torqueFriction, 0, 300);
-    QString value = QString::number(uiState()->scene.torqueFriction);
-    Params().put("TorqueFriction", value.toStdString());
-  }
-}
-
-void HomeWindow::mousePressMULTI(QMouseEvent* e, int nDir) {
-  int nMenuPos = uiState()->scene.live_tune_panel_list - uiState()->scene.list_count;
-  int max_lat_accel = uiState()->scene.torqueMaxLatAccel;
-  if (nMenuPos == 0) {
-    uiState()->scene.pidKp += nDir;
-    // 50
-    clip(uiState()->scene.pidKp, 1, 50);
-    QString value = QString::number(uiState()->scene.pidKp);
-    Params().put("PidKp", value.toStdString());
-  } else if (nMenuPos == 1) {
-    uiState()->scene.pidKi += nDir;
-    clip(uiState()->scene.pidKi, 1, 100);
-    // 100
-    QString value = QString::number(uiState()->scene.pidKi);
-    Params().put("PidKi", value.toStdString());
-  } else if (nMenuPos == 2) {
-    uiState()->scene.pidKd += 5*nDir;
-    // 300
-    clip(uiState()->scene.pidKd, 0, 300);
-    QString value = QString::number(uiState()->scene.pidKd);
-    Params().put("PidKd", value.toStdString());
-  } else if (nMenuPos == 3) {
-    uiState()->scene.pidKf += nDir;
-    clip(uiState()->scene.pidKf, 1, 50);
-    // 50
-    QString value = QString::number(uiState()->scene.pidKf);
-    Params().put("PidKf", value.toStdString());
-  } else if (nMenuPos == 4) {
-    uiState()->scene.indiInnerLoopGain += nDir;
-    clip(uiState()->scene.indiInnerLoopGain, 1, 200);
-    QString value = QString::number(uiState()->scene.indiInnerLoopGain);
-    Params().put("InnerLoopGain", value.toStdString());
   } else if (nMenuPos == 5) {
-    uiState()->scene.indiOuterLoopGain += nDir;
-    clip(uiState()->scene.indiOuterLoopGain, 1, 200);
-    QString value = QString::number(uiState()->scene.indiOuterLoopGain);
-    Params().put("OuterLoopGain", value.toStdString());
-  } else if (nMenuPos == 6) {
-    uiState()->scene.indiTimeConstant += nDir;
-    clip(uiState()->scene.indiTimeConstant, 1, 200);
-    QString value = QString::number(uiState()->scene.indiTimeConstant);
-    Params().put("TimeConstant", value.toStdString());
-  } else if (nMenuPos == 7) {
-    uiState()->scene.indiActuatorEffectiveness += nDir;
-    clip(uiState()->scene.indiActuatorEffectiveness, 1, 200);
-    QString value = QString::number(uiState()->scene.indiActuatorEffectiveness);
-    Params().put("ActuatorEffectiveness", value.toStdString());
-  } else if (nMenuPos == 8) {
-    uiState()->scene.lqrScale += 50*nDir;
-    clip(uiState()->scene.lqrScale, 50, 5000);
-    QString value = QString::number(uiState()->scene.lqrScale);
-    Params().put("Scale", value.toStdString());
-  } else if (nMenuPos == 9) {
-    uiState()->scene.lqrKi += nDir;
-    clip(uiState()->scene.lqrKi, 1, 100);
-    QString value = QString::number(uiState()->scene.lqrKi);
-    Params().put("LqrKi", value.toStdString());
-  } else if (nMenuPos == 10) {
-    uiState()->scene.lqrDcGain += 5*nDir;
-    clip(uiState()->scene.lqrDcGain, 5, 500);
-    QString value = QString::number(uiState()->scene.lqrDcGain);
-    Params().put("DcGain", value.toStdString());
-  } else if (nMenuPos == 11) {
-    uiState()->scene.torqueKp += nDir;
-    clip(uiState()->scene.torqueKp, 1, max_lat_accel);
-    QString value = QString::number(uiState()->scene.torqueKp);
-    Params().put("TorqueKp", value.toStdString());
-  } else if (nMenuPos == 12) {
-    uiState()->scene.torqueKf += nDir;
-    clip(uiState()->scene.torqueKf, 1, max_lat_accel);
-    QString value = QString::number(uiState()->scene.torqueKf);
-    Params().put("TorqueKf", value.toStdString());
-  } else if (nMenuPos == 13) {
-    uiState()->scene.torqueKi += nDir;
-    clip(uiState()->scene.torqueKi, 1, max_lat_accel);
-    QString value = QString::number(uiState()->scene.torqueKi);
-    Params().put("TorqueKi", value.toStdString());
-  } else if (nMenuPos == 14) {
-    uiState()->scene.torqueMaxLatAccel += nDir;
-    clip(uiState()->scene.torqueMaxLatAccel, 1, 50);
-    QString value = QString::number(uiState()->scene.torqueMaxLatAccel);
-    Params().put("TorqueMaxLatAccel", value.toStdString());
-  } else if (nMenuPos == 15) {
     uiState()->scene.torqueFriction += 5*nDir;
     clip(uiState()->scene.torqueFriction, 0, 300);
     QString value = QString::number(uiState()->scene.torqueFriction);
@@ -423,20 +338,17 @@ void HomeWindow::mousePressEvent(QMouseEvent* e)
       int nLoop = 2;
 
       if (uiState()->scene.live_tune_panel_list >= 0) return;
-      if (uiState()->scene.lateralControlMethod == 2) {  // 2. LQR
+      if (uiState()->scene.lateralControlMethod == 2) { // 2. LQR
         nLoop = 2;
       } else if (uiState()->scene.lateralControlMethod == 3) { // 3. TORQ
-        nLoop = 4;
-      } else if (uiState()->scene.lateralControlMethod < 2) {
+        nLoop = 5;
+      } else if (uiState()->scene.lateralControlMethod < 2) { // 0. PID,  1. INDI
         nLoop = 3;
       } else if (uiState()->scene.lateralControlMethod == 4) {
-        nLoop = 15;
-      } else if (uiState()->scene.lateralControlMethod == 5) {
         nLoop = -1;
       }
 
       uiState()->scene.live_tune_panel_list = uiState()->scene.list_count + nLoop;
-      //clip( uiState()->scene.live_tune_panel_list, 1, 0 );
       return;
     } else if (livetunepanel_right_above_btn.contains(e->pos())) {
       uiState()->scene.live_tune_panel_list += 1;
@@ -448,8 +360,6 @@ void HomeWindow::mousePressEvent(QMouseEvent* e)
         nLoop = nLoop + 5;
       } else if (uiState()->scene.lateralControlMethod < 2) { // 0. PID,  1. INDI
         nLoop = nLoop + 4;
-      } else if (uiState()->scene.lateralControlMethod == 4) { // 4. MULTI
-        nLoop = nLoop + 16;
       }
 
       if(uiState()->scene.live_tune_panel_list < nLoop) return;
@@ -467,8 +377,6 @@ void HomeWindow::mousePressEvent(QMouseEvent* e)
         mousePressLQR(e, nBtnDir);
       } else if (uiState()->scene.lateralControlMethod == 3) {  // 3. TORQ
         mousePressTORQ(e, nBtnDir);
-      } else if (uiState()->scene.lateralControlMethod == 4) {  // 4. MULTI
-        mousePressMULTI(e, nBtnDir);
       }
       return;
     }

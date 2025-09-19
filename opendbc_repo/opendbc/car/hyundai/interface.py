@@ -211,8 +211,6 @@ class CarInterface(CarInterfaceBase):
       elif lat_control_method == 3:
         #set_lat_tune(ret.lateralTuning, LatTunes.TORQUE)
         CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
-      elif lat_control_method == 4:
-        set_lat_tune(ret.lateralTuning, LatTunes.ATOM)    # Hybrid tune
 
     if (ret.openpilotLongitudinalControl and not kisaLongAlt) or params.get_bool("AlphaLongitudinalEnabled"):
       ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.LONG.value

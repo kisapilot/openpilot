@@ -906,31 +906,31 @@ struct ControlsState @0x97ff69c53601abf1 {
   forceDecel @51 :Bool;
 
   # atom
-  alertTextMsg1  @68 :Text;
-  alertTextMsg2  @69 :Text;
-  alertTextMsg3  @70 :Text;
+  alertTextMsg1  @67 :Text;
+  alertTextMsg2  @68 :Text;
+  alertTextMsg3  @69 :Text;
 
-  lateralControlMethod  @71 :UInt8;
-  limitSpeedCamera @72 :Float32 = 0;
-  limitSpeedCameraDist @73 :Float32 = 0;
-  steerRatio @74 :Float32;
-  mapSign @75 :Text;
-  mapSignCam @76 :Float32;
-  dynamicTRMode @77 :UInt8;
-  dynamicTRValue @78 :Float32;
-  accel @79 :Float32;
-  safetySpeed @80 :Float32;
-  steeringAngleDesiredDeg @81 :Float32;
-  gapBySpeedOn @82 :Bool;
-  expModeTemp @83 :Bool;
-  btnPressing @84 :UInt8;
-  autoResvCruisekph @85 :Float32;
-  resSpeed @86 :Float32;
-  setLoadspeedTempStop @87 :Bool;
-  standStill @88 :Bool;
-  standStillTimer @89 :Float32;
-  vFuture @90: Float32;
-  vFutureA @91: Float32;
+  lateralControlMethod  @70 :UInt8;
+  limitSpeedCamera @71 :Float32 = 0;
+  limitSpeedCameraDist @72 :Float32 = 0;
+  steerRatio @73 :Float32;
+  mapSign @74 :Text;
+  mapSignCam @75 :Float32;
+  dynamicTRMode @76 :UInt8;
+  dynamicTRValue @77 :Float32;
+  accel @78 :Float32;
+  safetySpeed @79 :Float32;
+  steeringAngleDesiredDeg @80 :Float32;
+  gapBySpeedOn @81 :Bool;
+  expModeTemp @82 :Bool;
+  btnPressing @83 :UInt8;
+  autoResvCruisekph @84 :Float32;
+  resSpeed @85 :Float32;
+  setLoadspeedTempStop @86 :Bool;
+  standStill @87 :Bool;
+  standStillTimer @88 :Float32;
+  vFuture @89: Float32;
+  vFutureA @90: Float32;
 
   lateralControlState :union {
     indiState @52 :LateralINDIState;
@@ -939,7 +939,6 @@ struct ControlsState @0x97ff69c53601abf1 {
     angleState @58 :LateralAngleState;
     debugState @59 :LateralDebugState;
     torqueState @60 :LateralTorqueState;
-    atomState @67  :LateralATOMState;
     curvatureState @65 :LateralCurvatureState;
   }
 
@@ -985,37 +984,6 @@ struct ControlsState @0x97ff69c53601abf1 {
     actualLateralAccel @9 :Float32;
     desiredLateralAccel @10 :Float32;
    }
-
-  struct LateralATOMState {
-    active @0 :Bool;
-    steeringAngleDeg @1 :Float32;
-    i @2 :Float32;
-    output @3 :Float32;
-    lqrOutput @4 :Float32;
-    saturated @5 :Bool;
-    steeringAngleDesiredDeg @6 :Float32;
-    error @7 :Float32;
-    errorRate @8 :Float32;
-    p1 @9 :Float32;
-    i1 @10 :Float32;
-    d1 @11 :Float32;
-    f1 @12 :Float32;
-    selected @13 :Float32;
-    steeringRateDeg @14 :Float32;
-    angleError @15 :Float32;
-    p2 @16 :Float32;
-    i2 @17 :Float32;
-    f2 @18 :Float32;
-    steeringAccelDeg @19 :Float32;
-    rateSetPoint @20 :Float32;
-    accelSetPoint @21 :Float32;
-    accelError @22 :Float32;
-    delayedOutput @23 :Float32;
-    delta @24 :Float32;
-    steeringRateDesiredDeg @25 :Float32;
-    actualLateralAccel @26 :Float32;
-    desiredLateralAccel @27 :Float32;
-  }
 
   struct LateralLQRState {
     active @0 :Bool;
@@ -2284,13 +2252,10 @@ struct Joystick {
 struct DriverStateV2 {
   frameId @0 :UInt32;
   modelExecutionTime @1 :Float32;
-  dspExecutionTimeDEPRECATED @2 :Float32;
   gpuExecutionTime @8 :Float32;
   rawPredictions @3 :Data;
 
-  poorVisionProb @4 :Float32;
   wheelOnRightProb @5 :Float32;
-
   leftDriverData @6 :DriverData;
   rightDriverData @7 :DriverData;
 
@@ -2305,10 +2270,13 @@ struct DriverStateV2 {
     leftBlinkProb @7 :Float32;
     rightBlinkProb @8 :Float32;
     sunglassesProb @9 :Float32;
-    occludedProb @10 :Float32;
-    readyProb @11 :List(Float32);
     notReadyProb @12 :List(Float32);
+    occludedProbDEPRECATED @10 :Float32;
+    readyProbDEPRECATED @11 :List(Float32);
   }
+
+  dspExecutionTimeDEPRECATED @2 :Float32;
+  poorVisionProbDEPRECATED @4 :Float32;
 }
 
 struct DriverStateDEPRECATED @0xb83c6cc593ed0a00 {

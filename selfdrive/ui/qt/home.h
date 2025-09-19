@@ -74,7 +74,6 @@ private:
   void mousePressINDI(QMouseEvent* e, int nDir);
   void mousePressLQR(QMouseEvent* e, int nDir);
   void mousePressTORQ(QMouseEvent* e, int nDir);
-  void mousePressMULTI(QMouseEvent* e, int nDir);
 
 private slots:
   void updateState(const UIState &s);

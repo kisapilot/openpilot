@@ -6,7 +6,7 @@ from cereal import car, log
 import cereal.messaging as messaging
 from openpilot.common.constants import CV
 from openpilot.common.params import Params
-from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper, DT_CTRL
+from openpilot.common.realtime import config_realtime_process, DT_CTRL, Priority, Ratekeeper
 from openpilot.common.swaglog import cloudlog
 
 from opendbc.car.car_helpers import interfaces
@@ -18,8 +18,8 @@ from openpilot.selfdrive.controls.lib.latcontrol_indi import LatControlINDI
 from openpilot.selfdrive.controls.lib.latcontrol_lqr import LatControlLQR
 from openpilot.selfdrive.controls.lib.latcontrol_angle import LatControlAngle, STEER_ANGLE_SATURATION_THRESHOLD
 from openpilot.selfdrive.controls.lib.latcontrol_torque import LatControlTorque
-from openpilot.selfdrive.controls.lib.latcontrol_atom import LatControlATOM
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
+from openpilot.selfdrive.modeld.modeld import LAT_SMOOTH_SECONDS
 from openpilot.selfdrive.locationd.helpers import PoseCalibrator, Pose
 
 import numpy as np
@@ -48,14 +48,15 @@ class Controls:
 
     self.CI = interfaces[self.CP.carFingerprint](self.CP)
 
-    self.sm = messaging.SubMaster(['liveParameters', 'liveTorqueParameters', 'modelV2', 'selfdriveState',
+    self.sm = messaging.SubMaster(['liveDelay', 'liveParameters', 'liveTorqueParameters', 'modelV2', 'selfdriveState',
                                    'liveCalibration', 'livePose', 'longitudinalPlan', 'carState', 'carOutput',
-                                   'driverMonitoringState', 'onroadEvents', 'driverAssistance', 'liveDelay', 'lateralPlan', 'radarState', 'liveENaviData', 'liveMapData'], poll='selfdriveState')
+                                   'driverMonitoringState', 'onroadEvents', 'driverAssistance', 'lateralPlan', 'radarState', 'liveENaviData', 'liveMapData'], poll='selfdriveState')
     self.pm = messaging.PubMaster(['carControl', 'controlsState'])
 
     self.steer_limited_by_safety = False
     self.curvature = 0.0
     self.desired_curvature = 0.0
+    self.desired_curvature_rate = 0.0
 
     # read params
     self.is_metric = self.params.get_bool("IsMetric")
@@ -70,23 +71,20 @@ class Controls:
 
     self.lateral_control_method = -1
     if self.CP.steerControlType == car.CarParams.SteerControlType.angle:
-      self.LaC = LatControlAngle(self.CP, self.CI)
-      self.lateral_control_method = 5
+      self.LaC = LatControlAngle(self.CP, self.CI, DT_CTRL)
+      self.lateral_control_method = 4
     elif self.CP.lateralTuning.which() == 'pid':
-      self.LaC = LatControlPID(self.CP, self.CI)
+      self.LaC = LatControlPID(self.CP, self.CI, DT_CTRL)
       self.lateral_control_method = 0
     elif self.CP.lateralTuning.which() == 'indi':
-      self.LaC = LatControlINDI(self.CP, self.CI)
+      self.LaC = LatControlINDI(self.CP, self.CI, DT_CTRL)
       self.lateral_control_method = 1
     elif self.CP.lateralTuning.which() == 'lqr':
-      self.LaC = LatControlLQR(self.CP, self.CI)
+      self.LaC = LatControlLQR(self.CP, self.CI, DT_CTRL)
       self.lateral_control_method = 2
     elif self.CP.lateralTuning.which() == 'torque':
-      self.LaC = LatControlTorque(self.CP, self.CI)
+      self.LaC = LatControlTorque(self.CP, self.CI, DT_CTRL)
       self.lateral_control_method = 3
-    elif self.CP.lateralTuning.which() == 'atom':
-      self.LaC = LatControlATOM(self.CP, self.CI)
-      self.lateral_control_method = 4
 
     self.new_steerRatio = self.params.get("SteerRatioAdj", return_default=True) * 0.01
     self.steerRatio_to_send = 0
@@ -200,13 +198,16 @@ class Controls:
       if lat_plan.laneChangeState != LaneChangeState.off:
         self.desired_curvature = desired_curvature2
     else: # Model
+      # Reset desired curvature to current to avoid violating the limits on engage
       new_desired_curvature = model_v2.action.desiredCurvature if CC.latActive else self.curvature
       self.desired_curvature, curvature_limited = clip_curvature(CS.vEgo, self.desired_curvature, new_desired_curvature, lp.roll)
-      self.desired_curvature_rate = 0.0
-    actuators.curvature = float(self.desired_curvature)
+
+    lat_delay = self.sm["liveDelay"].lateralDelay + LAT_SMOOTH_SECONDS
+
+    actuators.curvature = self.desired_curvature
     steer, steeringAngleDeg, lac_log = self.LaC.update(CC.latActive, CS, self.VM, lp,
                                                        self.steer_limited_by_safety, self.desired_curvature,
-                                                       curvature_limited, self.desired_curvature_rate)  # TODO what if not available
+                                                       curvature_limited, lat_delay, self.desired_curvature_rate)
     actuators.torque = float(steer)
     actuators.steeringAngleDeg = float(steeringAngleDeg)
     self.desired_angle_deg = actuators.steeringAngleDeg
@@ -294,8 +295,8 @@ class Controls:
     cs.curvature = self.curvature
     cs.longitudinalPlanMonoTime = self.sm.logMonoTime['longitudinalPlan']
     cs.lateralPlanMonoTime = self.sm.logMonoTime['lateralPlan'] if self.legacy_lane_mode else self.sm.logMonoTime['modelV2']
-    cs.desiredCurvature = float(self.desired_curvature)
-    cs.desiredCurvatureRate = float(self.desired_curvature_rate)
+    cs.desiredCurvature = self.desired_curvature
+    cs.desiredCurvatureRate = self.desired_curvature_rate
     cs.longControlState = self.LoC.long_control_state
     cs.upAccelCmd = float(self.LoC.pid.p)
     cs.uiAccelCmd = float(self.LoC.pid.i)
@@ -376,8 +377,6 @@ class Controls:
       cs.lateralControlState.indiState = lac_log
     elif lat_tuning == 'torque':
       cs.lateralControlState.torqueState = lac_log
-    elif lat_tuning == 'atom':
-      cs.lateralControlState.atomState = lac_log
 
     if lat_tuning == 'torque':
       cs.steeringAngleDesiredDeg = lac_log.desiredLateralAccel

@@ -128,7 +128,7 @@ typedef struct UIScene {
   int pidKp, pidKi, pidKd, pidKf;
   int indiInnerLoopGain, indiOuterLoopGain, indiTimeConstant, indiActuatorEffectiveness;
   int lqrScale, lqrKi, lqrDcGain;
-  int torqueKp, torqueKf, torqueKi, torqueFriction, torqueMaxLatAccel;
+  int torqueKp, torqueKf, torqueKi, torqueKd, torqueFriction, torqueMaxLatAccel;
   bool live_tune_panel_enable;
   int bottom_text_view;
   int live_tune_panel_list = 0;
@@ -161,7 +161,6 @@ typedef struct UIScene {
   int max_animated_rpm;
   int gear_step;
   float charge_meter;
-  float multi_lat_selected;
   int do_not_disturb_mode;
   bool depart_chime_at_resume;
   int comma_stock_ui;

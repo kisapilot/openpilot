@@ -591,7 +591,6 @@ struct CarParams {
     indi @27 :LateralINDITuning;
     lqr @40 :LateralLQRTuning;
     torque @67 :LateralTorqueTuning;
-    atom @78 :LateralATOMTuning;
   }
 
   steerLimitAlert @28 :Bool;
@@ -631,32 +630,32 @@ struct CarParams {
     safetyParam2DEPRECATED @2 :UInt32;
   }
 
-  experimentalLong @79 :Bool;
-  experimentalLongAlt @80 :Bool;
-  smoothSteer @81 :SmoothSteerData;
-  mdpsBus @82: Int8;
-  sasBus @83: Int8;
-  sccBus @84: Int8;
-  fcaBus @85: Int8;
-  bsmAvailable @86: Bool;
-  lfaAvailable @87: Bool;
-  lvrAvailable @88: Bool;
-  evgearAvailable @89: Bool;
-  emsAvailable @90: Bool;
-  autoHoldAvailable @91 :Bool;
-  scc13Available @92 :Bool;
-  scc14Available @93 :Bool;
-  lfaHdaAvailable @94 :Bool;
-  navAvailable @95 :Bool;
-  isCanFD @96 :Bool;
-  adrvAvailable @97 :Bool;
-  brakeAvailable @98 :Bool;
-  tpmsAvailable @99 :Bool;
-  isAngleControl @100 :Bool;
-  evInfo @101 :Bool;
-  adrvControl @102 :Bool;
-  capacitiveSteeringWheel @103 :Bool;
-  capacitiveSteeringWheelAlt @104 :Bool;
+  experimentalLong @78 :Bool;
+  experimentalLongAlt @79 :Bool;
+  smoothSteer @80 :SmoothSteerData;
+  mdpsBus @81: Int8;
+  sasBus @82: Int8;
+  sccBus @83: Int8;
+  fcaBus @84: Int8;
+  bsmAvailable @85: Bool;
+  lfaAvailable @86: Bool;
+  lvrAvailable @87: Bool;
+  evgearAvailable @88: Bool;
+  emsAvailable @89: Bool;
+  autoHoldAvailable @90 :Bool;
+  scc13Available @91 :Bool;
+  scc14Available @92 :Bool;
+  lfaHdaAvailable @93 :Bool;
+  navAvailable @94 :Bool;
+  isCanFD @95 :Bool;
+  adrvAvailable @96 :Bool;
+  brakeAvailable @97 :Bool;
+  tpmsAvailable @98 :Bool;
+  isAngleControl @99 :Bool;
+  evInfo @100 :Bool;
+  adrvControl @101 :Bool;
+  capacitiveSteeringWheel @102 :Bool;
+  capacitiveSteeringWheelAlt @103 :Bool;
 
   struct SmoothSteerData
   {
@@ -672,13 +671,6 @@ struct CarParams {
     torqueV @1 :List(Int32);
   }
 
-  struct LateralATOMTuning {
-    lqr @0 :LateralLQRTuning;
-    torque @1 :LateralTorqueTuning;
-    indi @2 :LateralINDITuning;
-    pid @3 :LateralPIDTuning;
-  }
-
   struct LateralPIDTuning {
     kpBP @0 :List(Float32);
     kpV @1 :List(Float32);
@@ -691,6 +683,7 @@ struct CarParams {
   struct LateralTorqueTuning {
     kp @1 :Float32;
     ki @2 :Float32;
+    kd @8 : Float32;
     friction @3 :Float32;
     kf @4 :Float32;
     steeringAngleDeadzoneDeg @5 :Float32;

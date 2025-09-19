@@ -133,30 +133,16 @@ void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
 
     if (!s->scene.low_ui_profile) {
       QString szLaCMethod = "";
-      QString szLaCMethodCur = "";
       switch(s->scene.lateralControlMethod) {
         case 0: szLaCMethod = "PID"; break;
         case 1: szLaCMethod = "INDI"; break;
         case 2: szLaCMethod = "LQR"; break;
         case 3: szLaCMethod = "TORQUE"; break;
-        case 4: szLaCMethod = "MULTI"; break;
-      }
-      switch((int)s->scene.multi_lat_selected) {
-        case 0: szLaCMethodCur = "PID"; break;
-        case 1: szLaCMethodCur = "INDI"; break;
-        case 2: szLaCMethodCur = "LQR"; break;
-        case 3: szLaCMethodCur = "TORQUE"; break;
       }
       if (!s->scene.animated_rpm) {
         if (szLaCMethod != "") drawText(p, ui_viz_rx_center, UI_BORDER_SIZE+305, szLaCMethod);
-        if (s->scene.lateralControlMethod == 4) {
-          if( szLaCMethodCur != "") drawText(p, ui_viz_rx_center, UI_BORDER_SIZE+345, szLaCMethodCur);
-        }
       } else {
-        if(szLaCMethod != "") drawText(p, ui_viz_rx_center, UI_BORDER_SIZE+340, szLaCMethod);
-        if (s->scene.lateralControlMethod == 4) {
-          if(szLaCMethodCur != "") drawText(p, ui_viz_rx_center, UI_BORDER_SIZE+375, szLaCMethodCur);
-        }
+        if (szLaCMethod != "") drawText(p, ui_viz_rx_center, UI_BORDER_SIZE+340, szLaCMethod);
       }
     }
     if (s->scene.navi_select == 1 || s->scene.navi_select == 3) {
@@ -841,59 +827,12 @@ void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
         szTuneParam.sprintf("%0.1f", s->scene.torqueKi*0.1);
         szTuneName = "TORQUE: Ki";
       } else if ( list_menu == 3 ) {
+        szTuneParam.sprintf("%0.1f", s->scene.torqueKd*0.1);
+        szTuneName = "TORQUE: Kd";
+      } else if ( list_menu == 4 ) {
         szTuneParam.sprintf("%0.1f", s->scene.torqueMaxLatAccel*0.1);
         szTuneName = "TORQUE: MaxL";
-      } else if ( list_menu == 4 ) {
-        szTuneParam.sprintf("%0.3f", s->scene.torqueFriction*0.001);
-        szTuneName = "TORQUE: Fric";
-      }
-    } else if (lateralControlMethod == 4) {     // 4.MULTI
-      if ( list_menu == 0 ) {
-        szTuneParam.sprintf("%0.2f", s->scene.pidKp*0.01);
-        szTuneName = "Pid: Kp";
-      } else if (list_menu == 1 ) {
-        szTuneParam.sprintf("%0.3f", s->scene.pidKi*0.001);
-        szTuneName = "Pid: Ki";
-      } else if (list_menu == 2 ) {
-        szTuneParam.sprintf("%0.2f", s->scene.pidKd*0.01);
-        szTuneName = "Pid: Kd";
-      } else if (list_menu == 3 ) {
-        szTuneParam.sprintf("%0.5f", s->scene.pidKf*0.00001);
-        szTuneName = "Pid: Kf";
-      } else if ( list_menu == 4 ) {
-        szTuneParam.sprintf("%0.1f", s->scene.indiInnerLoopGain*0.1);
-        szTuneName = "INDI: ILGain";
       } else if ( list_menu == 5 ) {
-        szTuneParam.sprintf("%0.1f", s->scene.indiOuterLoopGain*0.1);
-        szTuneName = "INDI: OLGain";
-      } else if ( list_menu == 6 ) {
-        szTuneParam.sprintf("%0.1f", s->scene.indiTimeConstant*0.1);
-        szTuneName = "INDI: TConst";
-      } else if ( list_menu == 7 ) {
-        szTuneParam.sprintf("%0.1f", s->scene.indiActuatorEffectiveness*0.1);
-        szTuneName = "INDI: ActEffct";
-      } else if ( list_menu == 8 ) {
-        szTuneParam.sprintf("%0.0f", s->scene.lqrScale*1.0);
-        szTuneName = "LQR: Scale";
-      } else if ( list_menu == 9) {
-        szTuneParam.sprintf("%0.3f", s->scene.lqrKi*0.001);
-        szTuneName = "LQR: Ki";
-      } else if ( list_menu == 10 ) {
-        szTuneParam.sprintf("%0.5f", s->scene.lqrDcGain*0.00001);
-        szTuneName = "LQR: DcGain";
-      } else if ( list_menu == 11 ) {
-        szTuneParam.sprintf("%0.1f", s->scene.torqueKp*0.1);
-        szTuneName = "TORQUE: Kp";
-      } else if ( list_menu == 12 ) {
-        szTuneParam.sprintf("%0.1f", s->scene.torqueKf*0.1);
-        szTuneName = "TORQUE: Kf";
-      } else if ( list_menu == 13 ) {
-        szTuneParam.sprintf("%0.1f", s->scene.torqueKi*0.1);
-        szTuneName = "TORQUE: Ki";
-      } else if ( list_menu == 14 ) {
-        szTuneParam.sprintf("%0.1f", s->scene.torqueMaxLatAccel*0.1);
-        szTuneName = "TORQUE: MaxL";
-      } else if ( list_menu == 15 ) {
         szTuneParam.sprintf("%0.3f", s->scene.torqueFriction*0.001);
         szTuneName = "TORQUE: Fric";
       }

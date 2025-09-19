@@ -9,7 +9,7 @@
 #include "selfdrive/ui/qt/widgets/cameraview.h"
 
 #include <QTimer>
-#ifdef QCOM2
+#ifdef __TICI__
   #include "selfdrive/ui/qt/screenrecorder/screenrecorder.h"
 #endif
 
@@ -33,7 +33,7 @@ private:
   int skip_frame_count = 0;
   bool wide_cam_requested = false;
 
-#ifdef QCOM2
+#ifdef __TICI__
   // neokii screen recorder. thx for sharing your source. 
   ScreenRecoder* recorder;
   std::shared_ptr<QTimer> record_timer;

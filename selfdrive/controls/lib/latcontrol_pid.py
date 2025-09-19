@@ -7,8 +7,8 @@ from openpilot.common.pid import PIDController
 from openpilot.common.params import Params
 
 class LatControlPID(LatControl):
-  def __init__(self, CP, CI):
-    super().__init__(CP, CI)
+  def __init__(self, CP, CI, dt):
+    super().__init__(CP, CI, dt)
     self.pid = PIDController((CP.lateralTuning.pid.kpBP, CP.lateralTuning.pid.kpV),
                              (CP.lateralTuning.pid.kiBP, CP.lateralTuning.pid.kiV),
                              k_f=CP.lateralTuning.pid.kf, k_d=CP.lateralTuning.pid.kd,
@@ -38,7 +38,7 @@ class LatControlPID(LatControl):
       self.mpc_frame = 0
 
 
-  def update(self, active, CS, VM, params, steer_limited_by_safety, desired_curvature, curvature_limited, desired_curvature_rate):
+  def update(self, active, CS, VM, params, steer_limited_by_safety, desired_curvature, curvature_limited, lat_delay, desired_curvature_rate):
     self.lp_timer += 1
     if self.lp_timer > 100:
       self.lp_timer = 0

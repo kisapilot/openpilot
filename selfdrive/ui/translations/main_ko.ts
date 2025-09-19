@@ -2368,6 +2368,17 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     </message>
 </context>
 <context>
+    <name>TorqueKd</name>
+    <message>
+        <source>Kd</source>
+        <translation>Kd</translation>
+    </message>
+    <message>
+        <source>Adjust Kd</source>
+        <translation>Kd 조정</translation>
+    </message>
+</context>
+<context>
     <name>TorqueFriction</name>
     <message>
         <source>Friction</source>
@@ -2902,31 +2913,6 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     <message>
         <source>SET</source>
         <translation>설정</translation>
-    </message>
-</context>
-<context>
-    <name>MultipleLatSelect</name>
-    <message>
-        <source>Multi LateralControl</source>
-        <translation>멀티 조향 제어</translation>
-    </message>
-    <message>
-        <source>Multiple Lateral Tune by Speed/Angle.</source>
-        <translation>속도/각도별 멀티 조향 튜닝.</translation>
-    </message>
-</context>
-<context>
-    <name>MultipleLateralSpeed</name>
-    <message>
-        <source>SPD: </source>
-        <translation>속도: </translation>
-    </message>
-</context>
-<context>
-    <name>MultipleLateralAngle</name>
-    <message>
-        <source>ANG: </source>
-        <translation>각도: </translation>
     </message>
 </context>
 <context>

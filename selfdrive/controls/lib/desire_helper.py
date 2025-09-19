@@ -72,7 +72,6 @@ class DesireHelper:
           controlsstate.lateralControlState.indiState,
           controlsstate.lateralControlState.lqrState,
           controlsstate.lateralControlState.torqueState,
-          controlsstate.lateralControlState.atomState,
         ]
         self.output_scale = states[controlsstate.lateralControlMethod].output
     except:
@@ -98,7 +97,7 @@ class DesireHelper:
 
     lane_direction = -1 if carstate.leftBlinker else 1 if carstate.rightBlinker else 2
     colored_lc_block = (carstate.leftLaneColor == 2 and lane_direction == -1) or (carstate.rightLaneColor == 2 and lane_direction == 1)
-    cancel_condition = ((abs(self.output_scale) >= 0.8 ) or (carstate.steeringTorque > 270 and controlsstate.lateralControlMethod == 5)) and self.lane_change_timer > 0.3
+    cancel_condition = ((abs(self.output_scale) >= 0.8 ) or (carstate.steeringTorque > 270 and controlsstate.lateralControlMethod == 4)) and self.lane_change_timer > 0.3
 
     if self.lane_change_state == LaneChangeState.off and (road_edge_stat == lane_direction or colored_lc_block):
       self.lane_change_direction = LaneChangeDirection.none

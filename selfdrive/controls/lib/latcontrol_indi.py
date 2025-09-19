@@ -9,8 +9,8 @@ from openpilot.common.params import Params
 
 
 class LatControlINDI(LatControl):
-  def __init__(self, CP, CI):
-    super().__init__(CP, CI)
+  def __init__(self, CP, CI, dt):
+    super().__init__(CP, CI, dt)
     self.angle_steers_des = 0.
 
     A = np.array([[1.0, DT_CTRL, 0.0],
@@ -74,7 +74,7 @@ class LatControlINDI(LatControl):
         
       self.mpc_frame = 0
 
-  def update(self, active, CS, VM, params, steer_limited_by_safety, desired_curvature, curvature_limited, desired_curvature_rate):
+  def update(self, active, CS, VM, params, steer_limited_by_safety, desired_curvature, curvature_limited, lat_delay, desired_curvature_rate):
     self.speed = CS.vEgo
 
     self.li_timer += 1
