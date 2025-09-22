@@ -5,6 +5,8 @@ from opendbc.car.crc import CRC16_XMODEM
 from opendbc.car.hyundai.values import HyundaiFlags, Buttons, CANFD_CAR
 from random import randint
 
+_state = {"wait_timer": 0}
+
 def hyundai_crc8(data: bytes) -> int: #carrot
   poly = 0x2F
   crc = 0xFF
