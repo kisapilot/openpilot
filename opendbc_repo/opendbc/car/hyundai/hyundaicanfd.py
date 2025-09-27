@@ -219,7 +219,7 @@ def create_suppress_lfa(packer, CAN, lfa_block_msg, lka_steering_alt, enabled):
 
 def create_buttons(packer, CP, CAN, CS, btn, reset = None, lda_btn = None, regen = None, r_pad = None, l_pad = None):
   if CS.cruise_buttons[-1] != Buttons.NONE or CS.main_buttons[-1] or CS.lfa_buttons[-1]:
-    _state['wait_timer'] = 10 if CP.carFingerprint not in CANFD_CAR else 12
+    _state['wait_timer'] = 20 if CP.carFingerprint not in CANFD_CAR else 30
     return []
   elif _state['wait_timer'] > 0:
     _state['wait_timer'] -= 1
