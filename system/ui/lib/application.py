@@ -2,8 +2,12 @@ import atexit
 import cffi
 import os
 import time
+import signal
+import sys
 import pyray as rl
 import threading
+import platform
+from contextlib import contextmanager
 from collections.abc import Callable
 from collections import deque
 from dataclasses import dataclass
@@ -11,43 +15,105 @@ from enum import StrEnum
 from typing import NamedTuple
 from importlib.resources import as_file, files
 from openpilot.common.swaglog import cloudlog
-from openpilot.system.hardware import HARDWARE, PC, TICI
+from openpilot.system.hardware import HARDWARE, PC
+from openpilot.system.ui.lib.multilang import multilang
 from openpilot.common.realtime import Ratekeeper
 
-_DEFAULT_FPS = int(os.getenv("FPS", 20 if TICI else 60))
+try:
+    from openpilot.common.params import Params
+except ImportError:
+    Params = None
+import subprocess
+from pathlib import Path
+from datetime import datetime, timedelta
+from queue import Queue, Full, Empty
+
+_DEFAULT_FPS = int(os.getenv("FPS", {'tizi': 20}.get(HARDWARE.get_device_type(), 60)))
 FPS_LOG_INTERVAL = 5  # Seconds between logging FPS drops
 FPS_DROP_THRESHOLD = 0.9  # FPS drop threshold for triggering a warning
 FPS_CRITICAL_THRESHOLD = 0.5  # Critical threshold for triggering strict actions
 MOUSE_THREAD_RATE = 140  # touch controller runs at 140Hz
 MAX_TOUCH_SLOTS = 2
+TOUCH_HISTORY_TIMEOUT = 3.0  # Seconds before touch points fade out
 
+BIG_UI = os.getenv("BIG", "0") == "1"
 ENABLE_VSYNC = os.getenv("ENABLE_VSYNC", "0") == "1"
 SHOW_FPS = os.getenv("SHOW_FPS") == "1"
 SHOW_TOUCHES = os.getenv("SHOW_TOUCHES") == "1"
 STRICT_MODE = os.getenv("STRICT_MODE") == "1"
 SCALE = float(os.getenv("SCALE", "1.0"))
+GRID_SIZE = int(os.getenv("GRID", "0"))
+PROFILE_RENDER = int(os.getenv("PROFILE_RENDER", "0"))
+PROFILE_STATS = int(os.getenv("PROFILE_STATS", "100"))  # Number of functions to show in profile output
+
+GL_VERSION = """
+#version 300 es
+precision highp float;
+"""
+if platform.system() == "Darwin":
+  GL_VERSION = """
+    #version 330 core
+  """
+
+BURN_IN_MODE = "BURN_IN" in os.environ
+BURN_IN_VERTEX_SHADER = GL_VERSION + """
+in vec3 vertexPosition;
+in vec2 vertexTexCoord;
+uniform mat4 mvp;
+out vec2 fragTexCoord;
+void main() {
+  fragTexCoord = vertexTexCoord;
+  gl_Position = mvp * vec4(vertexPosition, 1.0);
+}
+"""
+BURN_IN_FRAGMENT_SHADER = GL_VERSION + """
+in vec2 fragTexCoord;
+uniform sampler2D texture0;
+out vec4 fragColor;
+void main() {
+  vec4 sampled = texture(texture0, fragTexCoord);
+  float intensity = sampled.b;
+  // Map blue intensity to green -> yellow -> red to highlight burn-in risk.
+  vec3 start = vec3(0.0, 1.0, 0.0);
+  vec3 middle = vec3(1.0, 1.0, 0.0);
+  vec3 end = vec3(1.0, 0.0, 0.0);
+  vec3 gradient = mix(start, middle, clamp(intensity * 2.0, 0.0, 1.0));
+  gradient = mix(gradient, end, clamp((intensity - 0.5) * 2.0, 0.0, 1.0));
+  fragColor = vec4(gradient, sampled.a);
+}
+"""
 
 DEFAULT_TEXT_SIZE = 60
-DEFAULT_TEXT_COLOR = rl.WHITE
+DEFAULT_TEXT_COLOR = rl.Color(255, 255, 255, int(255 * 0.9))
 
 # Qt draws fonts accounting for ascent/descent differently, so compensate to match old styles
 # The real scales for the fonts below range from 1.212 to 1.266
-FONT_SCALE = 1.242
+FONT_SCALE = 1.242 if BIG_UI else 1.16
 
 ASSETS_DIR = files("openpilot.selfdrive").joinpath("assets")
 FONT_DIR = ASSETS_DIR.joinpath("fonts")
 
+UI_REC = True
 
 class FontWeight(StrEnum):
-  THIN = "Inter-Thin.ttf"
-  EXTRA_LIGHT = "Inter-ExtraLight.ttf"
-  LIGHT = "Inter-Light.ttf"
-  NORMAL = "Inter-Regular.ttf"
-  MEDIUM = "Inter-Medium.ttf"
-  SEMI_BOLD = "Inter-SemiBold.ttf"
-  BOLD = "Inter-Bold.ttf"
-  EXTRA_BOLD = "Inter-ExtraBold.ttf"
-  BLACK = "Inter-Black.ttf"
+  LIGHT = "Inter-Light.fnt"
+  NORMAL = "Inter-Regular.fnt" if BIG_UI else "Inter-Medium.fnt"
+  MEDIUM = "Inter-Medium.fnt"
+  BOLD = "Inter-Bold.fnt"
+  SEMI_BOLD = "Inter-SemiBold.fnt"
+  UNIFONT = "unifont.fnt"
+
+  # Small UI fonts
+  DISPLAY_REGULAR = "Inter-Regular.fnt"
+  ROMAN = "Inter-Regular.fnt"
+  DISPLAY = "Inter-Bold.fnt"
+
+
+def font_fallback(font: rl.Font) -> rl.Font:
+  """Fall back to unifont for languages that require it."""
+  if multilang.requires_unifont():
+    return gui_app.font(FontWeight.UNIFONT)
+  return font
 
 
 @dataclass
@@ -59,6 +125,12 @@ class ModalOverlay:
 class MousePos(NamedTuple):
   x: float
   y: float
+
+
+class MousePosWithTime(NamedTuple):
+  x: float
+  y: float
+  t: float
 
 
 class MouseEvent(NamedTuple):
@@ -125,26 +197,273 @@ class MouseState:
 
 
 class GuiApplication:
-  def __init__(self, width: int, height: int):
+  def __init__(self, width: int | None = None, height: int | None = None):
     self._fonts: dict[FontWeight, rl.Font] = {}
-    self._width = width
-    self._height = height
-    self._scale = SCALE
+    self._width = width if width is not None else GuiApplication._default_width()
+    self._height = height if height is not None else GuiApplication._default_height()
+
+    if PC and os.getenv("SCALE") is None:
+      self._scale = self._calculate_auto_scale()
+    else:
+      self._scale = SCALE
+
     self._scaled_width = int(self._width * self._scale)
     self._scaled_height = int(self._height * self._scale)
+
     self._render_texture: rl.RenderTexture | None = None
+    self._burn_in_shader: rl.Shader | None = None
+
     self._textures: dict[str, rl.Texture] = {}
     self._target_fps: int = _DEFAULT_FPS
     self._last_fps_log_time: float = time.monotonic()
+    self._frame = 0
     self._window_close_requested = False
     self._trace_log_callback = None
     self._modal_overlay = ModalOverlay()
+    self._modal_overlay_shown = False
+    self._modal_overlay_tick: Callable[[], None] | None = None
 
     self._mouse = MouseState(self._scale)
     self._mouse_events: list[MouseEvent] = []
+    self._last_mouse_event: MouseEvent = MouseEvent(MousePos(0, 0), 0, False, False, False, 0.0)
+
+    self._should_render = True
 
     # Debug variables
-    self._mouse_history: deque[MousePos] = deque(maxlen=MOUSE_THREAD_RATE)
+    self._mouse_history: deque[MousePosWithTime] = deque(maxlen=MOUSE_THREAD_RATE)
+    self._show_touches = SHOW_TOUCHES
+    self._show_fps = SHOW_FPS
+    self._grid_size = GRID_SIZE
+    self._profile_render_frames = PROFILE_RENDER
+    self._render_profiler = None
+    self._render_profile_start_time = None
+
+    # Kisa Rec
+    self._params = Params() if Params else None
+    self._scaled_width += self._scaled_width % 2
+    self._scaled_height += self._scaled_height % 2
+    self._kisa_recorder: subprocess.Popen | None = None
+    self._kisa_record_start_time: datetime | None = None
+    self._kisa_record_file: Path | None = None
+    self._kisa_record_interval = timedelta(minutes=self._params.get("RecordingTimePerVideo", return_default=True)) if Params else None
+    self._kisa_max_record_files = self._params.get("RecordingMaxFiles", return_default=True) if Params else None
+    self._video_dir = Path("/data/media/0/videos")
+    self._video_dir.mkdir(parents=True, exist_ok=True)
+    self.RecordingRunning: bool = False
+    self._last_recording_check = 0.0
+    self._input_fps = 10 # input fps
+    queue_max_frames = self._input_fps * 5
+    self._kisa_record_queue: Queue[bytes] = Queue(maxsize=queue_max_frames)
+    self._writer_thread: threading.Thread | None = None
+    self._kisa_record_fail_count: int = 0
+    self._kisa_record_fail_threshold: int = 10
+    self._kisa_record_texture: rl.RenderTexture | None = None
+    self._target_width = int(800)
+    self._target_height = int(self._target_width / 2)
+
+  def _start_recording(self):
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    self._kisa_record_file = self._video_dir / f"{timestamp}.mp4"
+    self._kisa_record_start_time = datetime.now()
+
+    try:
+      if self._kisa_max_record_files > 0:
+        self._enforce_record_file_limit()
+    except Exception as e:
+      cloudlog.warning(f"_start_recording: enforce file limit failed: {e}")
+
+    ffmpeg_cmd = [
+        'ffmpeg', '-v', 'warning',
+        '-f', 'rawvideo', '-pix_fmt', 'rgba',
+        '-s', f'{self._target_width}x{self._target_height}',
+        '-framerate', str(self._input_fps),
+        '-r', str(self._input_fps),
+        '-i', 'pipe:0',
+        '-vf', 'vflip,format=yuv420p',
+        '-c:v', 'libx264',
+        '-preset', 'ultrafast',
+        '-crf', '31',
+        '-y',
+        '-f', 'mp4',
+        str(self._kisa_record_file)
+    ]
+    # ffmpeg_cmd = [
+    #     "ffmpeg", "-v", "warning",
+    #     "-f", "rawvideo",
+    #     "-pix_fmt", "rgba",
+    #     "-s", f"{self._target_width}x{self._target_height}",
+    #     "-framerate", str(self._input_fps),
+    #     "-thread_queue_size", "512",
+    #     "-r", str(self._input_fps),
+    #     "-i", "pipe:0",
+    #     "-vf", "format=nv12",
+    #     "-c:v", "hevc_v4l2m2m",
+    #     "-b:v", "5000k",
+    #     "-maxrate", "5000k",
+    #     "-bufsize", "10000k",
+    #     "-g", str(self._input_fps*2),
+    #     "-bf", "0",
+    #     "-vsync", "2",
+    #     "-y",
+    #     "-f", "mp4",
+    #     str(self._kisa_record_file)
+    # ]
+
+    print(f"Start recording → {self._kisa_record_file}")
+    self._kisa_recorder = subprocess.Popen(ffmpeg_cmd, stdin=subprocess.PIPE)
+    self._kisa_record_fail_count = 0
+
+    with self._kisa_record_queue.mutex:
+      self._kisa_record_queue.queue.clear()
+
+    # writer worker - consumes frames from the queue and writes to ffmpeg
+    def writer_worker():
+      cloudlog.info("record writer thread started")
+      while True:
+        if self._kisa_recorder is None:
+          break
+        if self._kisa_recorder.poll() is not None and self._kisa_record_queue.empty():
+          break
+        try:
+          frame = self._kisa_record_queue.get(timeout=0.5)
+        except Empty:
+          continue
+        try:
+          if self._kisa_recorder and self._kisa_recorder.stdin:
+            try:
+              self._kisa_recorder.stdin.write(frame)
+            except Exception as e:
+              cloudlog.error(f"writer_worker: ffmpeg write error: {e}")
+              try:
+                self._stop_recording()
+              except Exception:
+                pass
+              break
+        finally:
+          try:
+            self._kisa_record_queue.task_done()
+          except Exception:
+            pass
+
+      cloudlog.info("record writer thread exiting")
+
+    self._writer_thread = threading.Thread(target=writer_worker, daemon=True)
+    self._writer_thread.start()
+
+  def _stop_recording(self):
+    if self._kisa_recorder is not None:
+      try:
+        if self._kisa_recorder.stdin:
+          try:
+            self._kisa_recorder.stdin.flush()
+            self._kisa_recorder.stdin.close()
+          except Exception:
+            pass
+
+        self._kisa_recorder.wait(timeout=5)
+      except subprocess.TimeoutExpired:
+        try:
+          self._kisa_recorder.terminate()
+          self._kisa_recorder.wait()
+        except Exception:
+          pass
+      finally:
+        self._kisa_recorder = None
+
+    if self._writer_thread is not None and self._writer_thread.is_alive():
+      self._writer_thread.join(timeout=2)
+    self._writer_thread = None
+
+    with self._kisa_record_queue.mutex:
+      self._kisa_record_queue.queue.clear()
+    
+    if self._kisa_record_file and self._kisa_record_start_time:
+      duration = (datetime.now() - self._kisa_record_start_time).total_seconds()
+      print(f"Recording finished ({duration:.1f}s)")
+      print(f"Saved to: {self._kisa_record_file}")
+    else:
+      print("Recording finished")
+
+  def _update_recording(self):
+    running = self._params.get_bool("RecordingRunning") if Params else None
+
+    if running is not None:
+      if running:
+        if self._kisa_recorder is None:
+          self._start_recording()
+      else:
+        if self._kisa_recorder is not None:
+          self._stop_recording()
+
+  def _rollover_recording_if_needed(self):
+    if self._kisa_record_start_time and datetime.now() - self._kisa_record_start_time >= self._kisa_record_interval:
+      cloudlog.info("Rolling over recording to new file")
+      self._stop_recording()
+      self._start_recording()
+
+  def _write_frame(self, frame_bytes: bytes):
+    if self._kisa_recorder is None:
+      return
+
+    if self._writer_thread is not None and self._writer_thread.is_alive():
+      try:
+        self._kisa_record_queue.put_nowait(frame_bytes)
+      except Full:
+        try:
+          _ = self._kisa_record_queue.get_nowait()
+          self._kisa_record_queue.task_done()
+          self._kisa_record_queue.put_nowait(frame_bytes)
+        except Exception:
+          cloudlog.warning("record queue full - dropped frame in _write_frame")
+    else:
+      try:
+        if self._kisa_record_start_time and datetime.now() - self._kisa_record_start_time >= self._kisa_record_interval:
+          self._stop_recording()
+          self._start_recording()
+        self._kisa_recorder.stdin.write(frame_bytes)
+        self._kisa_recorder.stdin.flush()
+      except Exception:
+        self._stop_recording()
+
+  def _enforce_record_file_limit(self):
+    try:
+      if not self._video_dir.exists():
+        return
+
+      files = [p for p in self._video_dir.iterdir() if p.is_file() and p.suffix.lower() == ".mp4"]
+      files.sort(key=lambda p: p.stat().st_mtime)
+
+      cur = self._kisa_record_file
+      keep = max(0, int(self._kisa_max_record_files))
+
+      to_delete = len(files) - keep
+      if to_delete <= 0:
+        return
+
+      deleted = 0
+      for p in files:
+        if cur is not None and p.resolve() == cur.resolve():
+          continue
+        try:
+          p.unlink()
+          cloudlog.info(f"Removed old recording file: {p}")
+          deleted += 1
+        except Exception as e:
+          cloudlog.warning(f"Failed to remove old recording file {p}: {e}")
+        if deleted >= to_delete:
+          break
+    except Exception as e:
+      cloudlog.warning(f"_enforce_record_file_limit error: {e}")
+
+  @property
+  def frame(self):
+    return self._frame
+
+  def set_show_touches(self, show: bool):
+    self._show_touches = show
+
+  def set_show_fps(self, show: bool):
+    self._show_fps = show
 
   @property
   def target_fps(self):
@@ -154,78 +473,140 @@ class GuiApplication:
     self._window_close_requested = True
 
   def init_window(self, title: str, fps: int = _DEFAULT_FPS):
-    atexit.register(self.close)  # Automatically call close() on exit
+    with self._startup_profile_context():
+      def _close(sig, frame):
+        self.close()
+        sys.exit(0)
+      signal.signal(signal.SIGINT, _close)
+      atexit.register(self.close)
 
-    HARDWARE.set_display_power(True)
-    HARDWARE.set_screen_brightness(65)
+      self._set_log_callback()
+      rl.set_trace_log_level(rl.TraceLogLevel.LOG_WARNING)
 
-    self._set_log_callback()
-    rl.set_trace_log_level(rl.TraceLogLevel.LOG_WARNING)
+      flags = rl.ConfigFlags.FLAG_MSAA_4X_HINT
+      if ENABLE_VSYNC:
+        flags |= rl.ConfigFlags.FLAG_VSYNC_HINT
+      rl.set_config_flags(flags)
 
-    flags = rl.ConfigFlags.FLAG_MSAA_4X_HINT
-    if ENABLE_VSYNC:
-      flags |= rl.ConfigFlags.FLAG_VSYNC_HINT
-    rl.set_config_flags(flags)
+      rl.init_window(self._scaled_width, self._scaled_height, title)
+      needs_render_texture = self._scale != 1.0 or BURN_IN_MODE or UI_REC
+      if self._scale != 1.0:
+        rl.set_mouse_scale(1 / self._scale, 1 / self._scale)
+      if needs_render_texture:
+        self._render_texture = rl.load_render_texture(self._width, self._height)
+        rl.set_texture_filter(self._render_texture.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+        self._kisa_record_texture = rl.load_render_texture(self._target_width, self._target_height)
+        rl.set_texture_filter(self._kisa_record_texture.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
 
-    rl.init_window(self._scaled_width, self._scaled_height, title)
-    if self._scale != 1.0:
-      rl.set_mouse_scale(1 / self._scale, 1 / self._scale)
-      self._render_texture = rl.load_render_texture(self._width, self._height)
-      rl.set_texture_filter(self._render_texture.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
-    rl.set_target_fps(fps)
+      rl.set_target_fps(fps)
 
-    self._target_fps = fps
-    self._set_styles()
-    self._load_fonts()
-    self._patch_text_functions()
+      self._target_fps = fps
+      self._set_styles()
+      self._load_fonts()
+      self._patch_text_functions()
+      if BURN_IN_MODE and self._burn_in_shader is None:
+        self._burn_in_shader = rl.load_shader_from_memory(BURN_IN_VERTEX_SHADER, BURN_IN_FRAGMENT_SHADER)
 
-    if not PC:
-      self._mouse.start()
+      if not PC:
+        self._mouse.start()
+
+  @contextmanager
+  def _startup_profile_context(self):
+    if "PROFILE_STARTUP" not in os.environ:
+      yield
+      return
+
+    import cProfile
+    import io
+    import pstats
+
+    profiler = cProfile.Profile()
+    start_time = time.monotonic()
+    profiler.enable()
+
+    # do the init
+    yield
+
+    profiler.disable()
+    elapsed_ms = (time.monotonic() - start_time) * 1e3
+
+    stats_stream = io.StringIO()
+    pstats.Stats(profiler, stream=stats_stream).sort_stats("cumtime").print_stats(25)
+    print("\n=== Startup profile ===")
+    print(stats_stream.getvalue().rstrip())
+
+    green = "\033[92m"
+    reset = "\033[0m"
+    print(f"{green}UI window ready in {elapsed_ms:.1f} ms{reset}")
+    sys.exit(0)
 
   def set_modal_overlay(self, overlay, callback: Callable | None = None):
     if self._modal_overlay.overlay is not None:
+      if hasattr(self._modal_overlay.overlay, 'hide_event'):
+        self._modal_overlay.overlay.hide_event()
+
       if self._modal_overlay.callback is not None:
         self._modal_overlay.callback(-1)
 
     self._modal_overlay = ModalOverlay(overlay=overlay, callback=callback)
 
-  def texture(self, asset_path: str, width: int, height: int, alpha_premultiply=False, keep_aspect_ratio=True):
+  def set_modal_overlay_tick(self, tick_function: Callable | None):
+    self._modal_overlay_tick = tick_function
+
+  def set_should_render(self, should_render: bool):
+    self._should_render = should_render
+
+  def texture(self, asset_path: str, width: int | None = None, height: int | None = None,
+              alpha_premultiply=False, keep_aspect_ratio=True):
     cache_key = f"{asset_path}_{width}_{height}_{alpha_premultiply}{keep_aspect_ratio}"
     if cache_key in self._textures:
       return self._textures[cache_key]
 
     with as_file(ASSETS_DIR.joinpath(asset_path)) as fspath:
-      texture_obj = self._load_texture_from_image(fspath.as_posix(), width, height, alpha_premultiply, keep_aspect_ratio)
+      image_obj = self._load_image_from_path(fspath.as_posix(), width, height, alpha_premultiply, keep_aspect_ratio)
+      texture_obj = self._load_texture_from_image(image_obj)
     self._textures[cache_key] = texture_obj
     return texture_obj
 
-  def _load_texture_from_image(self, image_path: str, width: int, height: int, alpha_premultiply=False, keep_aspect_ratio=True):
-    """Load and resize a texture, storing it for later automatic unloading."""
+  def _load_image_from_path(self, image_path: str, width: int | None = None, height: int | None = None,
+                            alpha_premultiply: bool = False, keep_aspect_ratio: bool = True) -> rl.Image:
+    """Load and resize an image, storing it for later automatic unloading."""
     image = rl.load_image(image_path)
 
     if alpha_premultiply:
       rl.image_alpha_premultiply(image)
 
-    # Resize with aspect ratio preservation if requested
-    if keep_aspect_ratio:
-      orig_width = image.width
-      orig_height = image.height
+    if width is not None and height is not None:
+      same_dimensions = image.width == width and image.height == height
 
-      scale_width = width / orig_width
-      scale_height = height / orig_height
+      # Resize with aspect ratio preservation if requested
+      if not same_dimensions:
+        if keep_aspect_ratio:
+          orig_width = image.width
+          orig_height = image.height
 
-      # Calculate new dimensions
-      scale = min(scale_width, scale_height)
-      new_width = int(orig_width * scale)
-      new_height = int(orig_height * scale)
+          scale_width = width / orig_width
+          scale_height = height / orig_height
 
-      rl.image_resize(image, new_width, new_height)
+          # Calculate new dimensions
+          scale = min(scale_width, scale_height)
+          new_width = int(orig_width * scale)
+          new_height = int(orig_height * scale)
+
+          rl.image_resize(image, new_width, new_height)
+        else:
+          rl.image_resize(image, width, height)
     else:
-      rl.image_resize(image, width, height)
+      assert keep_aspect_ratio, "Cannot resize without specifying width and height"
+    return image
 
+  def _load_texture_from_image(self, image: rl.Image) -> rl.Texture:
+    """Send image to GPU and unload original image."""
     texture = rl.load_texture_from_image(image)
     # Set texture filtering to smooth the result
     rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+    # prevent artifacts from wrapping coordinates
+    rl.set_texture_wrap(texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
 
     rl.unload_image(image)
     return texture
@@ -246,8 +627,18 @@ class GuiApplication:
       rl.unload_render_texture(self._render_texture)
       self._render_texture = None
 
+    if self._kisa_record_texture is not None:
+      rl.unload_render_texture(self._kisa_record_texture)
+      self._kisa_record_texture = None
+
+    if self._burn_in_shader:
+      rl.unload_shader(self._burn_in_shader)
+      self._burn_in_shader = None
+
     if not PC:
       self._mouse.stop()
+
+    self._stop_recording()
 
     rl.close_window()
 
@@ -255,15 +646,43 @@ class GuiApplication:
   def mouse_events(self) -> list[MouseEvent]:
     return self._mouse_events
 
+  @property
+  def last_mouse_event(self) -> MouseEvent:
+    return self._last_mouse_event
+
   def render(self):
     try:
+      if self._profile_render_frames > 0:
+        import cProfile
+        self._render_profiler = cProfile.Profile()
+        self._render_profile_start_time = time.monotonic()
+        self._render_profiler.enable()
+
       while not (self._window_close_requested or rl.window_should_close()):
+        now = time.monotonic()
+        if now - self._last_recording_check >= 1.0:
+          try:
+            self._update_recording()
+          except Exception as e:
+            cloudlog.warning(f"record update error: {e}")
+            self._last_recording_check = now
+
         if PC:
           # Thread is not used on PC, need to manually add mouse events
           self._mouse._handle_mouse_event()
 
         # Store all mouse events for the current frame
         self._mouse_events = self._mouse.get_events()
+        if len(self._mouse_events) > 0:
+          self._last_mouse_event = self._mouse_events[-1]
+
+        # Skip rendering when screen is off
+        if not self._should_render:
+          if PC:
+            rl.poll_input_events()
+          time.sleep(1 / self._target_fps)
+          yield False
+          continue
 
         if self._render_texture:
           rl.begin_texture_mode(self._render_texture)
@@ -273,23 +692,13 @@ class GuiApplication:
           rl.clear_background(rl.BLACK)
 
         # Handle modal overlay rendering and input processing
-        if self._modal_overlay.overlay:
-          if hasattr(self._modal_overlay.overlay, 'render'):
-            result = self._modal_overlay.overlay.render(rl.Rectangle(0, 0, self.width, self.height))
-          elif callable(self._modal_overlay.overlay):
-            result = self._modal_overlay.overlay()
-          else:
-            raise Exception
-
-          if result >= 0:
-            # Clear the overlay and execute the callback
-            original_modal = self._modal_overlay
-            self._modal_overlay = ModalOverlay()
-            if original_modal.callback is not None:
-              original_modal.callback(result)
-          yield True
-        else:
+        if self._handle_modal_overlay():
+          # Allow a Widget to still run a function while overlay is shown
+          if self._modal_overlay_tick is not None:
+            self._modal_overlay_tick()
           yield False
+        else:
+          yield True
 
         if self._render_texture:
           rl.end_texture_mode()
@@ -297,31 +706,76 @@ class GuiApplication:
           rl.clear_background(rl.BLACK)
           src_rect = rl.Rectangle(0, 0, float(self._width), -float(self._height))
           dst_rect = rl.Rectangle(0, 0, float(self._scaled_width), float(self._scaled_height))
-          rl.draw_texture_pro(self._render_texture.texture, src_rect, dst_rect, rl.Vector2(0, 0), 0.0, rl.WHITE)
+          texture = self._render_texture.texture
+          if texture:
+            if BURN_IN_MODE and self._burn_in_shader:
+              rl.begin_shader_mode(self._burn_in_shader)
+              rl.draw_texture_pro(texture, src_rect, dst_rect, rl.Vector2(0, 0), 0.0, rl.WHITE)
+              rl.end_shader_mode()
+            else:
+              rl.draw_texture_pro(texture, src_rect, dst_rect, rl.Vector2(0, 0), 0.0, rl.WHITE)
 
-        if SHOW_FPS:
+        if self._show_fps:
           rl.draw_fps(10, 10)
 
-        if SHOW_TOUCHES:
-          for mouse_event in self._mouse_events:
-            if mouse_event.left_pressed:
-              self._mouse_history.clear()
-            self._mouse_history.append(mouse_event.pos)
+        if self._show_touches:
+          self._draw_touch_points()
 
-          if self._mouse_history:
-            mouse_pos = self._mouse_history[-1]
-            rl.draw_circle(int(mouse_pos.x), int(mouse_pos.y), 15, rl.RED)
-            for idx, mouse_pos in enumerate(self._mouse_history):
-              perc = idx / len(self._mouse_history)
-              color = rl.Color(min(int(255 * (1.5 - perc)), 255), int(min(255 * (perc + 0.5), 255)), 50, 255)
-              rl.draw_circle(int(mouse_pos.x), int(mouse_pos.y), 5, color)
+        if self._grid_size > 0:
+          self._draw_grid()
 
         rl.end_drawing()
+
+        # kisapilot
+        if self._kisa_recorder is not None:
+          if self._frame % (20 // self._input_fps) == 0:
+            try:
+              rl.begin_texture_mode(self._kisa_record_texture)
+              src_rect = rl.Rectangle(0, 0, float(self._width), -float(self._height))
+              dst_rect = rl.Rectangle(0, 0, float(self._target_width), float(self._target_height))
+              rl.draw_texture_pro(self._render_texture.texture, src_rect, dst_rect, rl.Vector2(0, 0), 0.0, rl.WHITE)
+              rl.end_texture_mode()
+              image = rl.load_image_from_texture(self._kisa_record_texture.texture)
+
+              data_size = image.width * image.height * 4
+              data = bytes(rl.ffi.buffer(image.data, data_size))
+              rl.unload_image(image)
+
+              self._rollover_recording_if_needed()
+
+              if self._writer_thread is not None and self._writer_thread.is_alive():
+                try:
+                  self._kisa_record_queue.put_nowait(data)
+                except Full:
+                  try:
+                    _ = self._kisa_record_queue.get_nowait()
+                    self._kisa_record_queue.task_done()
+                    self._kisa_record_queue.put_nowait(data)
+                  except Exception:
+                    self._kisa_record_fail_count += 1
+                    cloudlog.warning("record queue full — dropped frame")
+                else:
+                  self._kisa_record_fail_count = 0
+              else:
+                self._write_frame(data)
+
+            except Exception as e:
+              cloudlog.warning(f"record capture error: {e}")
+              self._kisa_record_fail_count += 1
+              if self._kisa_record_fail_count >= self._kisa_record_fail_threshold:
+                cloudlog.error("Too many record capture failures, stopping recording.")
+                self._stop_recording()
+
+
         self._monitor_fps()
+        self._frame += 1
+
+        if self._profile_render_frames > 0 and self._frame >= self._profile_render_frames:
+          self._output_render_profile()
     except KeyboardInterrupt:
       pass
 
-  def font(self, font_weight: FontWeight = FontWeight.NORMAL):
+  def font(self, font_weight: FontWeight = FontWeight.NORMAL) -> rl.Font:
     return self._fonts[font_weight]
 
   @property
@@ -332,26 +786,41 @@ class GuiApplication:
   def height(self):
     return self._height
 
+  def _handle_modal_overlay(self) -> bool:
+    if self._modal_overlay.overlay:
+      if hasattr(self._modal_overlay.overlay, 'render'):
+        result = self._modal_overlay.overlay.render(rl.Rectangle(0, 0, self.width, self.height))
+      elif callable(self._modal_overlay.overlay):
+        result = self._modal_overlay.overlay()
+      else:
+        raise Exception
+
+      # Send show event to Widget
+      if not self._modal_overlay_shown and hasattr(self._modal_overlay.overlay, 'show_event'):
+        self._modal_overlay.overlay.show_event()
+        self._modal_overlay_shown = True
+
+      if result >= 0:
+        # Clear the overlay and execute the callback
+        original_modal = self._modal_overlay
+        self._modal_overlay = ModalOverlay()
+        if hasattr(original_modal.overlay, 'hide_event'):
+          original_modal.overlay.hide_event()
+        if original_modal.callback is not None:
+          original_modal.callback(result)
+      return True
+    else:
+      self._modal_overlay_shown = False
+      return False
+
   def _load_fonts(self):
-    # Create a character set from our keyboard layouts
-    from openpilot.system.ui.widgets.keyboard import KEYBOARD_LAYOUTS
-
-    all_chars = set()
-    for layout in KEYBOARD_LAYOUTS.values():
-      all_chars.update(key for row in layout for key in row)
-    all_chars = "".join(all_chars)
-    all_chars += "–✓×°§•"
-
-    codepoint_count = rl.ffi.new("int *", 1)
-    codepoints = rl.load_codepoints(all_chars, codepoint_count)
-
     for font_weight_file in FontWeight:
-      with as_file(FONT_DIR.joinpath(font_weight_file)) as fspath:
-        font = rl.load_font_ex(fspath.as_posix(), 200, codepoints, codepoint_count[0])
-        rl.set_texture_filter(font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+      with as_file(FONT_DIR) as fspath:
+        fnt_path = fspath / font_weight_file
+        font = rl.load_font(fnt_path.as_posix())
+        if font_weight_file != FontWeight.UNIFONT:
+          rl.set_texture_filter(font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
         self._fonts[font_weight_file] = font
-
-    rl.unload_codepoints(codepoints)
     rl.gui_set_font(self._fonts[FontWeight.NORMAL])
 
   def _set_styles(self):
@@ -367,6 +836,7 @@ class GuiApplication:
       rl._orig_draw_text_ex = rl.draw_text_ex
 
     def _draw_text_ex_scaled(font, text, position, font_size, spacing, tint):
+      font = font_fallback(font)
       return rl._orig_draw_text_ex(font, text, position, font_size * FONT_SCALE, spacing, tint)
 
     rl.draw_text_ex = _draw_text_ex_scaled
@@ -424,7 +894,84 @@ class GuiApplication:
     # Strict mode: terminate UI if FPS drops too much
     if STRICT_MODE and fps < self._target_fps * FPS_CRITICAL_THRESHOLD:
       cloudlog.error(f"FPS dropped critically below {fps}. Shutting down UI.")
+      self._stop_recording()
       os._exit(1)
 
+  def _draw_touch_points(self):
+    current_time = time.monotonic()
 
-gui_app = GuiApplication(2160, 1080)
+    for mouse_event in self._mouse_events:
+      if mouse_event.left_pressed:
+        self._mouse_history.clear()
+      self._mouse_history.append(MousePosWithTime(mouse_event.pos.x * self._scale, mouse_event.pos.y * self._scale, current_time))
+
+    # Remove old touch points that exceed the timeout
+    while self._mouse_history and (current_time - self._mouse_history[0].t) > TOUCH_HISTORY_TIMEOUT:
+      self._mouse_history.popleft()
+
+    if self._mouse_history:
+      mouse_pos = self._mouse_history[-1]
+      rl.draw_circle(int(mouse_pos.x), int(mouse_pos.y), 15, rl.RED)
+      for idx, mouse_pos in enumerate(self._mouse_history):
+        perc = idx / len(self._mouse_history)
+        color = rl.Color(min(int(255 * (1.5 - perc)), 255), int(min(255 * (perc + 0.5), 255)), 50, 255)
+        rl.draw_circle(int(mouse_pos.x), int(mouse_pos.y), 5, color)
+
+  def _draw_grid(self):
+    grid_color = rl.Color(60, 60, 60, 255)
+    # Draw vertical lines
+    x = 0
+    while x <= self._scaled_width:
+      rl.draw_line(x, 0, x, self._scaled_height, grid_color)
+      x += self._grid_size
+    # Draw horizontal lines
+    y = 0
+    while y <= self._scaled_height:
+      rl.draw_line(0, y, self._scaled_width, y, grid_color)
+      y += self._grid_size
+
+  def _output_render_profile(self):
+    import io
+    import pstats
+
+    self._render_profiler.disable()
+    elapsed_ms = (time.monotonic() - self._render_profile_start_time) * 1e3
+    avg_frame_time = elapsed_ms / self._frame if self._frame > 0 else 0
+
+    stats_stream = io.StringIO()
+    pstats.Stats(self._render_profiler, stream=stats_stream).sort_stats("cumtime").print_stats(PROFILE_STATS)
+    print("\n=== Render loop profile ===")
+    print(stats_stream.getvalue().rstrip())
+
+    green = "\033[92m"
+    reset = "\033[0m"
+    print(f"\n{green}Rendered {self._frame} frames in {elapsed_ms:.1f} ms{reset}")
+    print(f"{green}Average frame time: {avg_frame_time:.2f} ms ({1000/avg_frame_time:.1f} FPS){reset}")
+    sys.exit(0)
+
+  def _calculate_auto_scale(self) -> float:
+     # Create temporary window to query monitor info
+    rl.init_window(1, 1, "")
+    w, h = rl.get_monitor_width(0), rl.get_monitor_height(0)
+    rl.close_window()
+
+    if w == 0 or h == 0 or (w >= self._width and h >= self._height):
+      return 1.0
+
+    # Apply 0.95 factor for window decorations/taskbar margin
+    return max(0.3, min(w / self._width, h / self._height) * 0.95)
+
+  @staticmethod
+  def _default_width() -> int:
+    return 2160 if GuiApplication.big_ui() else 536
+
+  @staticmethod
+  def _default_height() -> int:
+    return 1080 if GuiApplication.big_ui() else 240
+
+  @staticmethod
+  def big_ui() -> bool:
+    return HARDWARE.get_device_type() in ('tici', 'tizi') or BIG_UI
+
+
+gui_app = GuiApplication()

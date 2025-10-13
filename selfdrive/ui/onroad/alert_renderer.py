@@ -5,9 +5,10 @@ from cereal import messaging, log
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.hardware import TICI
 from openpilot.system.ui.lib.application import gui_app, FontWeight
+from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.widgets import Widget
-from openpilot.system.ui.widgets.label import gui_text_box
+from openpilot.system.ui.widgets.label import Label
 
 AlertSize = log.SelfdriveState.AlertSize
 AlertStatus = log.SelfdriveState.AlertStatus
@@ -34,6 +35,7 @@ ALERT_COLORS = {
   AlertStatus.normal: rl.Color(0x15, 0x15, 0x15, 0xF1),      # #151515 with alpha 0xF1
   AlertStatus.userPrompt: rl.Color(0xDA, 0x6F, 0x25, 0xF1),  # #DA6F25 with alpha 0xF1
   AlertStatus.critical: rl.Color(0xC9, 0x22, 0x31, 0xF1),    # #C92231 with alpha 0xF1
+  AlertStatus.clear: rl.Color(0x22, 0x8B, 0x22, 0xF1),       # #228B22 with alpha 0xF1
 }
 
 
@@ -47,22 +49,22 @@ class Alert:
 
 # Pre-defined alert instances
 ALERT_STARTUP_PENDING = Alert(
-  text1="openpilot Unavailable",
-  text2="Waiting to start",
+  text1=tr("openpilot Unavailable"),
+  text2=tr("Waiting to start"),
   size=AlertSize.mid,
   status=AlertStatus.normal,
 )
 
 ALERT_CRITICAL_TIMEOUT = Alert(
-  text1="TAKE CONTROL IMMEDIATELY",
-  text2="System Unresponsive",
+  text1=tr("TAKE CONTROL IMMEDIATELY"),
+  text2=tr("System Unresponsive"),
   size=AlertSize.full,
   status=AlertStatus.critical,
 )
 
 ALERT_CRITICAL_REBOOT = Alert(
-  text1="System Unresponsive",
-  text2="Reboot Device",
+  text1=tr("System Unresponsive"),
+  text2=tr("Reboot Device"),
   size=AlertSize.mid,
   status=AlertStatus.normal,
 )
@@ -73,6 +75,12 @@ class AlertRenderer(Widget):
     super().__init__()
     self.font_regular: rl.Font = gui_app.font(FontWeight.NORMAL)
     self.font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
+
+    # font size is set dynamically
+    self._full_text1_label = Label("", font_size=0, font_weight=FontWeight.BOLD, text_alignment=rl.GuiTextAlignment.TEXT_ALIGN_CENTER,
+                                   text_alignment_vertical=rl.GuiTextAlignmentVertical.TEXT_ALIGN_TOP)
+    self._full_text2_label = Label("", font_size=ALERT_FONT_BIG, text_alignment=rl.GuiTextAlignment.TEXT_ALIGN_CENTER,
+                                   text_alignment_vertical=rl.GuiTextAlignmentVertical.TEXT_ALIGN_TOP)
 
   def get_alert(self, sm: messaging.SubMaster) -> Alert | None:
     """Generate the current alert based on selfdrive state."""
@@ -86,7 +94,7 @@ class AlertRenderer(Widget):
       # 1. Never received selfdriveState since going onroad
       waiting_for_startup = recv_frame < ui_state.started_frame
       if waiting_for_startup and time_since_onroad > 5:
-        return ALERT_STARTUP_PENDING
+        return ALERT_STARTUP_PENDING if not ui_state.params.get_bool("IsOpenpilotViewEnabled") else None
 
       # 2. Lost communication with selfdriveState after receiving it
       if TICI and not waiting_for_startup:
@@ -107,10 +115,10 @@ class AlertRenderer(Widget):
     # Return current alert
     return Alert(text1=ss.alertText1, text2=ss.alertText2, size=ss.alertSize.raw, status=ss.alertStatus.raw)
 
-  def _render(self, rect: rl.Rectangle) -> bool:
+  def _render(self, rect: rl.Rectangle):
     alert = self.get_alert(ui_state.sm)
     if not alert:
-      return False
+      return
 
     alert_rect = self._get_alert_rect(rect, alert.size)
     self._draw_background(alert_rect, alert)
@@ -122,15 +130,14 @@ class AlertRenderer(Widget):
       alert_rect.height - 2 * ALERT_PADDING
     )
     self._draw_text(text_rect, alert)
-    return True
 
   def _get_alert_rect(self, rect: rl.Rectangle, size: int) -> rl.Rectangle:
     if size == AlertSize.full:
       return rect
 
     h = ALERT_HEIGHTS.get(size, rect.height)
-    return rl.Rectangle(rect.x + ALERT_MARGIN, rect.y + rect.height - h + ALERT_MARGIN,
-                        rect.width - ALERT_MARGIN * 2, h - ALERT_MARGIN * 2)
+    return rl.Rectangle(rect.x + ALERT_MARGIN + 240, rect.y + rect.height - h + ALERT_MARGIN,
+                        rect.width - ALERT_MARGIN * 2 - 480, h - ALERT_MARGIN * 2)
 
   def _draw_background(self, rect: rl.Rectangle, alert: Alert) -> None:
     color = ALERT_COLORS.get(alert.status, ALERT_COLORS[AlertStatus.normal])
@@ -154,16 +161,16 @@ class AlertRenderer(Widget):
       is_long = len(alert.text1) > 15
       font_size1 = 132 if is_long else 177
 
-      align_center = rl.GuiTextAlignment.TEXT_ALIGN_CENTER
-      align_top = rl.GuiTextAlignmentVertical.TEXT_ALIGN_TOP
-
-      top_offset = 240 if is_long else 270
+      top_offset = 200 if is_long or '\n' in alert.text1 else 270
       title_rect = rl.Rectangle(rect.x, rect.y + top_offset, rect.width, 600)
-      gui_text_box(title_rect, alert.text1, font_size1, alignment=align_center, alignment_vertical=align_top, font_weight=FontWeight.BOLD)
+      self._full_text1_label.set_font_size(font_size1)
+      self._full_text1_label.set_text(alert.text1)
+      self._full_text1_label.render(title_rect)
 
       bottom_offset = 361 if is_long else 420
       subtitle_rect = rl.Rectangle(rect.x, rect.y + rect.height - bottom_offset, rect.width, 300)
-      gui_text_box(subtitle_rect, alert.text2, ALERT_FONT_BIG, alignment=align_center, alignment_vertical=align_top)
+      self._full_text2_label.set_text(alert.text2)
+      self._full_text2_label.render(subtitle_rect)
 
   def _draw_centered(self, text, rect, font, font_size, center_y=True, color=rl.WHITE) -> None:
     text_size = measure_text_cached(font, text, font_size)

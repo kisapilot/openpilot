@@ -1,11 +1,10 @@
-import platform
 import pyray as rl
 import numpy as np
 from dataclasses import dataclass
 from typing import Any, Optional, cast
-from openpilot.system.ui.lib.application import gui_app
+from openpilot.system.ui.lib.application import gui_app, GL_VERSION
 
-MAX_GRADIENT_COLORS = 15  # includes stops as well
+MAX_GRADIENT_COLORS = 20  # includes stops as well
 
 
 @dataclass
@@ -29,16 +28,7 @@ class Gradient:
       self.stops = [i / max(1, color_count - 1) for i in range(color_count)]
 
 
-VERSION = """
-#version 300 es
-precision highp float;
-"""
-if platform.system() == "Darwin":
-  VERSION = """
-    #version 330 core
-  """
-
-FRAGMENT_SHADER = VERSION + """
+FRAGMENT_SHADER = GL_VERSION + """
 in vec2 fragTexCoord;
 out vec4 finalColor;
 
@@ -48,8 +38,8 @@ uniform vec4 fillColor;
 uniform int useGradient;
 uniform vec2 gradientStart;  // e.g. vec2(0, 0)
 uniform vec2 gradientEnd;    // e.g. vec2(0, screenHeight)
-uniform vec4 gradientColors[15];
-uniform float gradientStops[15];
+uniform vec4 gradientColors[20];
+uniform float gradientStops[20];
 uniform int gradientColorCount;
 
 vec4 getGradientColor(vec2 p) {
@@ -83,7 +73,7 @@ void main() {
 """
 
 # Default vertex shader
-VERTEX_SHADER = VERSION + """
+VERTEX_SHADER = GL_VERSION + """
 in vec3 vertexPosition;
 in vec2 vertexTexCoord;
 out vec2 fragTexCoord;
@@ -162,7 +152,7 @@ class ShaderState:
     self.initialized = False
 
 
-def _configure_shader_color(state: ShaderState, color: Optional[rl.Color],  # noqa: UP045
+def _configure_shader_color(state: ShaderState, color: Optional[rl.Color],
                             gradient: Gradient | None, origin_rect: rl.Rectangle):
   assert (color is not None) != (gradient is not None), "Either color or gradient must be provided"
 
@@ -201,7 +191,9 @@ def triangulate(pts: np.ndarray) -> list[tuple[float, float]]:
 
   # TODO: consider deduping close screenspace points
   # interleave points to produce a triangle strip
-  assert len(pts) % 2 == 0, "Interleaving expects even number of points"
+  # assert len(pts) % 2 == 0, "Interleaving expects even number of points"
+  if len(pts) % 2 != 0:
+    pts = pts[:-1]
 
   tri_strip = []
   for i in range(len(pts) // 2):
@@ -212,7 +204,7 @@ def triangulate(pts: np.ndarray) -> list[tuple[float, float]]:
 
 
 def draw_polygon(origin_rect: rl.Rectangle, points: np.ndarray,
-                 color: Optional[rl.Color] = None, gradient: Gradient | None = None):  # noqa: UP045
+                 color: Optional[rl.Color] = None, gradient: Gradient | None = None):
 
   """
   Draw a ribbon polygon (two chains) with a triangle strip and gradient.

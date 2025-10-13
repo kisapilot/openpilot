@@ -48,7 +48,6 @@ class MapD():
     self._query_thread = None
     self._lock = threading.RLock()
     self.ms_to_spd = 3.6 if Params().get_bool("IsMetric") else 2.236936
-    self.roadname_and_offset = Params().get("RoadList", return_default=True).strip().splitlines()[0].split(',')
 
   def udpate_state(self, sm):
     sock = 'selfdriveState'
@@ -235,11 +234,6 @@ class MapD():
 
     if current_road_name is not None:
       map_data_msg.liveMapData.currentRoadName = str(current_road_name)
-      if current_road_name in self.roadname_and_offset:
-        r_index = self.roadname_and_offset.index(current_road_name)
-        map_data_msg.liveMapData.roadCameraOffset = float(self.roadname_and_offset[r_index+1])
-      else:
-        map_data_msg.liveMapData.roadCameraOffset = 0.0
     else:
       map_data_msg.liveMapData.currentRoadName = ""
 

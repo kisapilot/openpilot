@@ -17,9 +17,9 @@ LaneChangeState = log.LateralPlan.LaneChangeState
 
 TRAJECTORY_SIZE = 33
 
-CAMERA_OFFSET = Params().get("CameraOffsetAdj", return_default=True) * 0.001 if Params().get("CameraOffsetAdj", return_default=True) is not None else 0.04 # default 0.04
+CAMERA_OFFSET = Params().get("CameraOffsetAdj", return_default=True) if Params().get("CameraOffsetAdj", return_default=True) is not None else 0.04 # default 0.04
 CAMERA_OFFSET_A = CAMERA_OFFSET + 0.15
-PATH_OFFSET = Params().get("PathOffsetAdj", return_default=True) * 0.001 if Params().get("PathOffsetAdj", return_default=True) is not None else 0.0 # default 0.0
+PATH_OFFSET = CAMERA_OFFSET - 0.04
 
 PATH_COST = 1.0
 LATERAL_MOTION_COST = 0.11
@@ -60,9 +60,6 @@ class LateralPlanner:
     self.lat_mpc = LateralMpc()
     self.reset_mpc(np.zeros(4))
 
-
-    self.laneless_mode = Params().get("LanelessMode", return_default=True)
-    self.laneless_mode_status = False
     self.laneless_mode_status_buffer = False
 
     self.v_cruise_kph = 0
@@ -76,32 +73,23 @@ class LateralPlanner:
     self.ll_x = np.zeros((TRAJECTORY_SIZE,))
     self.lll_y = np.zeros((TRAJECTORY_SIZE,))
     self.rll_y = np.zeros((TRAJECTORY_SIZE,))
-    self.lane_width_estimate = FirstOrderFilter(self.params.get("LaneWidth", return_default=True) * 0.1, 9.95, DT_MDL)
+    self.lane_width_estimate = FirstOrderFilter(self.params.get("LaneWidth", return_default=True), 9.95, DT_MDL)
     self.lane_width_certainty = FirstOrderFilter(1.0, 0.95, DT_MDL)
-    self.lane_width = self.params.get("LaneWidth", return_default=True) * 0.1
+    self.lane_width = self.params.get("LaneWidth", return_default=True)
     self.spd_lane_width_spd = list(map(float, self.params.get("SpdLaneWidthSpd", return_default=True).split(',')))
     self.spd_lane_width_set = list(map(float, self.params.get("SpdLaneWidthSet", return_default=True).split(',')))
     self.lll_prob = self.rll_prob = self.d_prob = self.lll_std = self.rll_std = 0.
     self.camera_offset = CAMERA_OFFSET
-    self.path_offset = PATH_OFFSET
+    self.path_offset = self.camera_offset - 0.04
     self.path_offset2 = 0.0
     self.left_curv_offset = self.params.get("LeftCurvOffsetAdj", return_default=True)
     self.right_curv_offset = self.params.get("RightCurvOffsetAdj", return_default=True)
-    self.drive_routine_on_co = self.params.get_bool("RoutineDriveOn")
-    if self.drive_routine_on_co:
-      option_list = list(self.params.get("RoutineDriveOption"))
-      if '0' in option_list:
-        self.drive_routine_on_co = True
-      else:
-        self.drive_routine_on_co = False
-    self.drive_close_to_edge = self.params.get_bool("CloseToRoadEdge")
-    self.left_edge_offset = self.params.get("LeftEdgeOffset", return_default=True) * 0.01
-    self.right_edge_offset = self.params.get("RightEdgeOffset", return_default=True) * 0.01
+    self.left_edge_offset = self.params.get("LeftEdgeOffset", return_default=True)
+    self.right_edge_offset = self.params.get("RightEdgeOffset", return_default=True)
     self.speed_offset = self.params.get_bool("SpeedCameraOffset")
     self.road_edge_offset = 0.0
     self.timer = 0
     self.timer2 = 0
-    self.timer3 = 0
     self.sm = messaging.SubMaster(['liveMapData'])
     self.total_camera_offset = self.camera_offset
     self.is_mph = not self.params.get_bool("IsMetric")
@@ -112,13 +100,7 @@ class LateralPlanner:
   def parse_model(self, md, sm, v_ego):
     curvature = sm['controlsState'].curvature
     mode_select = sm['carState'].cruiseState.modeSel
-    if self.drive_routine_on_co:
-      self.sm.update(0)
-      current_road_offset = self.sm['liveMapData'].roadCameraOffset
-    else:
-      current_road_offset = 0.0
 
-    Curv = round(curvature, 4)
     # right lane is minus
     lane_differ = round(self.lll_y[0] + self.rll_y[0], 2)
     lean_offset = 0
@@ -151,10 +133,10 @@ class LateralPlanner:
     if self.timer > 1.0:
       self.timer = 0.0
       self.speed_offset = self.params.get_bool("SpeedCameraOffset")
-      if self.params.get_bool("KisaLiveTunePanelEnable"):
-        self.camera_offset = self.params.get("CameraOffsetAdj", return_default=True) * 0.001
+      self.camera_offset = self.params.get("CameraOffsetAdj", return_default=True)
+      self.path_offset = self.camera_offset - 0.04
 
-    if self.drive_close_to_edge: # kisapilot
+    if self.left_edge_offset != 0.0 or self.right_edge_offset != 0.0: # kisapilot
       left_edge_prob = np.clip(1.0 - md.roadEdgeStds[0], 0.0, 1.0)
       left_nearside_prob = md.laneLineProbs[0]
       left_close_prob = md.laneLineProbs[1]
@@ -166,9 +148,9 @@ class LateralPlanner:
       self.left_lane_to_left_edge_width = abs(self.lll_y[0] - md.roadEdges[0].y[0])
       lane_to_edge_threshold = 2.6
 
-      self.timer3 += DT_MDL
-      if self.timer3 > 1.0:
-        self.timer3 = 0.0
+      self.timer2 += DT_MDL
+      if self.timer2 > 1.0:
+        self.timer2 = 0.0
         if right_nearside_prob < 0.2 and left_nearside_prob < 0.2:
           if self.road_edge_offset != 0.0:
             if self.road_edge_offset > 0.0:
@@ -221,7 +203,7 @@ class LateralPlanner:
     # logic is opposite compared to before
     # for self.total_camera_offset, low value to move for car left side, high value to move for car right side.
     # little confused to make sure. let me know if this is incorrect.
-    self.total_camera_offset = self.camera_offset + lean_offset + current_road_offset + self.road_edge_offset + speed_offset
+    self.total_camera_offset = self.camera_offset + lean_offset + self.road_edge_offset + speed_offset
 
     lane_lines = md.laneLines
     if len(lane_lines) == 4 and len(lane_lines[0].t) == TRAJECTORY_SIZE:
@@ -241,11 +223,6 @@ class LateralPlanner:
       self.r_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeRight]
 
   def get_d_path(self, v_ego, path_t, path_xyz):
-    self.timer2 += DT_MDL
-    if self.timer2 > 1.0:
-      self.timer2 = 0.0
-      if self.params.get_bool("KisaLiveTunePanelEnable"):
-        self.path_offset = self.params.get("PathOffsetAdj", return_default=True) * 0.001
     # Reduce reliance on lanelines that are too far apart or
     # will be in a few seconds
     path_xyz[:, 1] += (self.path_offset+self.path_offset2)
@@ -319,10 +296,6 @@ class LateralPlanner:
     self.lat_mpc.reset(x0=self.x0)
 
   def update(self, sm):
-    self.second += DT_MDL
-    if self.second > 1.0:
-      self.laneless_mode = Params().get("LanelessMode", return_default=True)
-      self.second = 0.0
 
     self.v_cruise_kph = sm['carState'].vCruise
 
@@ -359,43 +332,35 @@ class LateralPlanner:
                               LATERAL_ACCEL_COST, LATERAL_JERK_COST,
                               STEERING_RATE_COST)
 
-      if self.laneless_mode == 0:
-        d_path_xyz = self.get_d_path(v_ego, self.t_idxs, self.path_xyz)
-        self.laneless_mode_status = False
-        y_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(d_path_xyz, axis=1), d_path_xyz[:, 1])
-        heading_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw)
-        yaw_rate_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw_rate)
-      elif self.laneless_mode == 1:
-        self.laneless_mode_status = True
-        y_pts = self.path_xyz[:LAT_MPC_N+1, 1]
-        heading_pts = self.plan_yaw[:LAT_MPC_N+1]
-        yaw_rate_pts = self.plan_yaw_rate[:LAT_MPC_N+1]
-      elif self.laneless_mode == 2 and ((self.lll_prob + self.rll_prob)/2 < 0.3) and self.DH.lane_change_state == LaneChangeState.off:
-        self.laneless_mode_status = True
-        self.laneless_mode_status_buffer = True
-        y_pts = self.path_xyz[:LAT_MPC_N+1, 1]
-        heading_pts = self.plan_yaw[:LAT_MPC_N+1]
-        yaw_rate_pts = self.plan_yaw_rate[:LAT_MPC_N+1]
-      elif self.laneless_mode == 2 and ((self.lll_prob + self.rll_prob)/2 > 0.5) and \
-        self.laneless_mode_status_buffer and self.DH.lane_change_state == LaneChangeState.off:
-        d_path_xyz = self.get_d_path(v_ego, self.t_idxs, self.path_xyz)
-        self.laneless_mode_status = False
-        self.laneless_mode_status_buffer = False
-        y_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(d_path_xyz, axis=1), d_path_xyz[:, 1])
-        heading_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw)
-        yaw_rate_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw_rate)
-      elif self.laneless_mode == 2 and self.laneless_mode_status_buffer == True and self.DH.lane_change_state == LaneChangeState.off:
-        self.laneless_mode_status = True
-        y_pts = self.path_xyz[:LAT_MPC_N+1, 1]
-        heading_pts = self.plan_yaw[:LAT_MPC_N+1]
-        yaw_rate_pts = self.plan_yaw_rate[:LAT_MPC_N+1]
+      if self.legacy_lane_mode == 1:
+        if ((self.lll_prob + self.rll_prob)/2 < 0.3) and self.DH.lane_change_state == LaneChangeState.off:
+          self.laneless_mode_status_buffer = True
+          y_pts = self.path_xyz[:LAT_MPC_N+1, 1]
+          heading_pts = self.plan_yaw[:LAT_MPC_N+1]
+          yaw_rate_pts = self.plan_yaw_rate[:LAT_MPC_N+1]
+        elif ((self.lll_prob + self.rll_prob)/2 > 0.5) and self.laneless_mode_status_buffer and self.DH.lane_change_state == LaneChangeState.off:
+          d_path_xyz = self.get_d_path(v_ego, self.t_idxs, self.path_xyz)
+          self.laneless_mode_status_buffer = False
+          y_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(d_path_xyz, axis=1), d_path_xyz[:, 1])
+          heading_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw)
+          yaw_rate_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw_rate)
+        elif self.laneless_mode_status_buffer and self.DH.lane_change_state == LaneChangeState.off:
+          y_pts = self.path_xyz[:LAT_MPC_N+1, 1]
+          heading_pts = self.plan_yaw[:LAT_MPC_N+1]
+          yaw_rate_pts = self.plan_yaw_rate[:LAT_MPC_N+1]
+        else:
+          d_path_xyz = self.get_d_path(v_ego, self.t_idxs, self.path_xyz)
+          self.laneless_mode_status_buffer = False
+          y_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(d_path_xyz, axis=1), d_path_xyz[:, 1])
+          heading_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw)
+          yaw_rate_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw_rate)
       else:
-        d_path_xyz = self.get_d_path(v_ego, self.t_idxs, self.path_xyz)
-        self.laneless_mode_status = False
-        self.laneless_mode_status_buffer = False
-        y_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(d_path_xyz, axis=1), d_path_xyz[:, 1])
-        heading_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw)
-        yaw_rate_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw_rate)
+          d_path_xyz = self.get_d_path(v_ego, self.t_idxs, self.path_xyz)
+          self.laneless_mode_status_buffer = False
+          y_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(d_path_xyz, axis=1), d_path_xyz[:, 1])
+          heading_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw)
+          yaw_rate_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw_rate)
+
       self.y_pts = y_pts
 
       assert len(y_pts) == LAT_MPC_N + 1
@@ -460,7 +425,6 @@ class LateralPlanner:
     lateralPlan.outputScale = float(self.DH.output_scale)
     lateralPlan.vCruiseSet = float(self.v_cruise_kph)
     lateralPlan.vCurvature = float(sm['controlsState'].curvature)
-    lateralPlan.lanelessMode = bool(self.laneless_mode_status)
     lateralPlan.totalCameraOffset = float(self.total_camera_offset)
     lateralPlan.rightLanetoRightEdgeWidth = float(self.right_lane_to_right_edge_width)
     lateralPlan.leftLanetoLeftEdgeWidth = float(self.left_lane_to_left_edge_width)

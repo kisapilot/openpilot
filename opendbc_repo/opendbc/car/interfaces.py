@@ -18,6 +18,8 @@ from opendbc.car.values import PLATFORMS
 from opendbc.can import CANParser
 
 from openpilot.common.params import Params
+from openpilot.common.filter_simple import FirstOrderFilter
+from collections import deque
 
 GearShifter = structs.CarState.GearShifter
 ButtonType = structs.CarState.ButtonEvent.Type
@@ -48,8 +50,8 @@ LateralAccelFromTorqueCallbackType = Callable[[float, structs.CarParams.LateralT
 
 UseLiveTorque = Params().get_bool("KisaLiveTorque") if Params().get_bool("KisaLiveTorque") is not None else False
 NoMdpsMod = Params().get_bool("NoSmartMDPS") if Params().get_bool("NoSmartMDPS") is not None else False
-TireStiffnessFactor = Params().get("TireStiffnessFactorAdj", return_default=True) * 0.01 if Params().get("TireStiffnessFactorAdj", return_default=True) is not None else 1.0
-CAR_CANDIDATE = Params().get("CarModel", return_default=True)
+TireStiffnessFactor = Params().get("TireStiffnessFactorAdj", return_default=True) if Params().get("TireStiffnessFactorAdj", return_default=True) is not None else 1.0
+CAR_CANDIDATE = Params().get("CarName", return_default=True)
 
 @cache
 def get_torque_params():
@@ -74,8 +76,8 @@ def get_torque_params():
       out = override[sub_candidate]
     elif sub_candidate in params:
       out = params[sub_candidate]
-    # else:
-    #   raise NotImplementedError(f"Did not find torque params for {sub_candidate}")
+    else:
+      raise NotImplementedError(f"Did not find torque params for {sub_candidate}")
 
     torque_params[sub_candidate] = {key: out[i] for i, key in enumerate(params['legend'])}
     if candidate in sub:
@@ -83,15 +85,159 @@ def get_torque_params():
 
   return torque_params
 
+class MyTrack:
+  def __init__(self, track_id: int, radar_point, dt: float):
+    self.track_id = track_id
+    self.cnt = 0
+    self.dRel = radar_point.dRel
+    self.vRel = radar_point.vRel
+    self.yRel = radar_point.yRel
+    self.yvRel = radar_point.yvRel
+    self.vLead = radar_point.vLead
+    self.v_lead_filtered_last = self.vLead
+    self.aLead = 0.0
+    self.jLead = 0.0
+    self.dt = dt
+    self.vLead_avg = FirstOrderFilter(self.vLead, 0.1, self.dt)
+    self.aLead_avg = FirstOrderFilter(self.aLead, 0.15, self.dt)
+    self.jLead_avg = FirstOrderFilter(self.jLead, 0.4, self.dt)
+    self.yRel_avg = FirstOrderFilter(self.yRel, 0.1, self.dt)
+    self.yvRel_avg = FirstOrderFilter(self.yvRel, 0.1, self.dt)
+    self.cnt = 0
+
+  def init_point(self, radar_point):
+    self.dRel = radar_point.dRel
+    self.vRel = radar_point.vRel
+    self.yRel = radar_point.yRel
+    self.yvRel = radar_point.yvRel
+    self.vLead = radar_point.vLead
+    self.v_lead_filtered_last = self.vLead
+    self.aLead = 0.0
+    self.jLead = 0.0
+    self.vLead_avg.x = self.vLead
+    self.aLead_avg.x = self.aLead
+    self.jLead_avg.x = self.jLead
+    self.yRel_avg.x = self.yRel
+    self.yvRel_avg.x = self.yvRel
+        
+  def update(self, radar_point, a_ego):
+    if not radar_point.measured:
+      if self.cnt > 0:
+        self.init_point(radar_point)
+      self.cnt = 0
+    elif self.cnt < 1:
+      self.init_point(radar_point)
+      self.cnt += 1
+    else:      
+      self.vLead = radar_point.vLead
+      self.yRel = self.yRel_avg.update(radar_point.yRel)
+      self.yvRel = self.yvRel_avg.update(radar_point.yvRel)
+
+      if True:
+        v_lead_filtered = self.vLead_avg.update(self.vLead)
+        pseudo_stop = abs(v_lead_filtered) < 0.3 and abs(self.vLead - v_lead_filtered) < 0.05
+        a_raw = (v_lead_filtered - self.v_lead_filtered_last) / self.dt
+        self.v_lead_filtered_last = v_lead_filtered
+
+        self.noisy = abs(a_raw - self.aLead) > 3.0
+        if self.noisy:
+          self.cnt = 0
+        
+        a_lead = self.aLead_avg.update(np.clip(a_raw, -10.0, 5.0) if not pseudo_stop else 0.0)
+
+        j_lead = (a_lead - self.aLead) / self.dt
+        self.aLead = a_lead
+        self.jLead = self.jLead_avg.update(j_lead if self.cnt > 2 else 0.0)
+      else:
+        a_lead = radar_point.aRel + a_ego
+        j_lead = (a_lead - self.aLead) / self.dt
+        self.aLead = a_lead
+        self.jLead = self.jLead_avg.update(j_lead if self.cnt > 2 else 0.0)
+
+      # Store latest values
+      self.dRel = radar_point.dRel
+      self.vRel = radar_point.vRel
+
+      self.cnt += 1
+
 # generic car and radar interfaces
-
-
 class RadarInterfaceBase(ABC):
   def __init__(self, CP: structs.CarParams):
     self.CP = CP
     self.rcp = None
+    self.tracks: dict[int, MyTrack] = {}
     self.pts: dict[int, structs.RadarData.RadarPoint] = {}
     self.frame = 0
+    delay = CP.radarDelay
+    self.v_ego_hist = deque([0.0], maxlen=int(round(delay / DT_CTRL)) + 1)
+    self.v_ego = 0.0
+    self.a_ego_hist = deque([0.0], maxlen=int(round(delay / DT_CTRL)) + 1)
+    self.a_ego = 0.0
+    self.last_timestamp = None
+    self.dt = None
+
+    self.init_samples = []
+    self.init_done = False
+
+  def estimate_dt(self, rcv_time):
+    if self.CP.radarTimeStep > 0.0:
+      self.dt = self.CP.radarTimeStep
+      self.init_done = True
+      print(f"Using radar dt: {self.dt} sec")
+    elif len(self.init_samples) > 100:
+      estimated_dt = np.mean(np.diff(self.init_samples[50:]))
+      self.dt = estimated_dt
+      self.init_done = True
+      print(f"Estimated radar dt: {self.dt} sec")
+    else:
+      self.init_samples.append(rcv_time)
+
+     
+  def update_carrot(self, v_ego, a_ego, rcv_time, can_packets: list[tuple[int, list[CanData]]]) -> structs.RadarDataT | None:
+    self.v_ego_hist.append(v_ego)
+    self.v_ego = self.v_ego_hist[0]
+    self.a_ego_hist.append(a_ego)
+    self.a_ego = self.a_ego_hist[0]
+    ret = self.update(can_packets)
+
+    if ret is not None:
+      if not self.init_done:
+        self.estimate_dt(rcv_time)
+        return None
+
+      new_tracks = {}
+      for addr, radar_point in self.pts.items():
+        track_id = radar_point.trackId
+        if track_id not in self.tracks:
+          new_tracks[track_id] = MyTrack(track_id, radar_point, self.dt)
+        else:
+          new_tracks[track_id] = self.tracks[track_id]
+        new_tracks[track_id].update(radar_point, self.a_ego)
+
+        if new_tracks[track_id].cnt < 6:
+          radar_point.aLead = 0
+          radar_point.jLead = 0
+          radar_point.yRel = float(new_tracks[track_id].yRel)
+          radar_point.yvRel = float(new_tracks[track_id].yvRel)
+        else:
+          radar_point.aLead = float(new_tracks[track_id].aLead)
+          radar_point.jLead = float(new_tracks[track_id].jLead)
+          radar_point.yRel = float(new_tracks[track_id].yRel)
+          radar_point.yvRel = float(new_tracks[track_id].yvRel)
+                
+      self.tracks = new_tracks
+      """
+      if self.last_timestamp is not None:
+        print(f"dt1 = {rcv_time - self.last_timestamp:.6f}")
+      if self.last_timestamp is not None and (rcv_time - self.last_timestamp) < 0.045:  # 0.05 - 0.005
+        if self.last_timestamp is not None:
+          print(f"dt3 = {rcv_time - self.last_timestamp:.6f}")
+        return None
+      if self.last_timestamp is not None:
+        print(f"dt2 = {rcv_time - self.last_timestamp:.6f}")
+      self.last_timestamp = rcv_time
+      """
+    return ret
 
   def update(self, can_packets: list[tuple[int, list[CanData]]]) -> structs.RadarDataT | None:
     self.frame += 1
@@ -104,6 +250,8 @@ class CarInterfaceBase(ABC):
   CarState: 'CarStateBase'
   CarController: 'CarControllerBase'
   RadarInterface: 'RadarInterfaceBase' = RadarInterfaceBase
+
+  DRIVABLE_GEARS: tuple[structs.CarState.GearShifter, ...] = ()
 
   def __init__(self, CP: structs.CarParams):
     self.CP = CP
@@ -202,10 +350,10 @@ class CarInterfaceBase(ABC):
     ret.carFingerprint = candidate
 
     # Car docs fields
-    if get_torque_params() is not None:
+    try:
       ret.maxLateralAccel = get_torque_params()[candidate]['MAX_LAT_ACCEL_MEASURED']
-    else:
-      ret.maxLateralAccel = Params().get("TorqueMaxLatAccel", return_default=True) * 0.1
+    except:
+      ret.maxLateralAccel = Params().get("TorqueMaxLatAccel", return_default=True)
     ret.autoResumeSng = True  # describes whether car can resume from a stop automatically
 
     # standard ALC params
@@ -222,7 +370,6 @@ class CarInterfaceBase(ABC):
     ret.stoppingDecelRate = 0.8 # brake_travel/s while trying to stop
     ret.vEgoStopping = 0.5
     ret.vEgoStarting = 0.5
-    ret.longitudinalTuning.kf = 1.
     ret.longitudinalTuning.kpBP = [0.]
     ret.longitudinalTuning.kpV = [0.]
     ret.longitudinalTuning.kiBP = [0.]
@@ -237,10 +384,8 @@ class CarInterfaceBase(ABC):
     params = get_torque_params()[candidate]
 
     tune.init('torque')
-    tune.torque.kf = 1.0
     tune.torque.kp = 1.0
     tune.torque.ki = 0.3
-    tune.torque.kd = 0.0
     tune.torque.friction = params['FRICTION']
     tune.torque.latAccelFactor = params['LAT_ACCEL_FACTOR']
     tune.torque.latAccelOffset = 0.0
@@ -248,42 +393,32 @@ class CarInterfaceBase(ABC):
 
     if params is not None:
       if UseLiveTorque:
-        tune.torque.kf = 1.0
         tune.torque.kp = 1.0
         tune.torque.ki = 0.3
-        tune.torque.kd = 0.0
         tune.torque.friction = params['FRICTION']
         tune.torque.latAccelFactor = params['LAT_ACCEL_FACTOR']
         tune.torque.latAccelOffset = 0.0
         tune.torque.steeringAngleDeadzoneDeg = steering_angle_deadzone_deg
       else:
-        TorqueKf = Params().get("TorqueKf", return_default=True) * 0.1
-        TorqueKp = Params().get("TorqueKp", return_default=True) * 0.1
-        TorqueKi = Params().get("TorqueKi", return_default=True) * 0.1
-        TorqueKd = Params().get("TorqueKd", return_default=True) * 0.1
-        TorqueFriction = Params().get("TorqueFriction", return_default=True) * 0.01
-        TorqueLatAccelFactor = Params().get("TorqueMaxLatAccel", return_default=True) * 0.1
-        TorqueAngDeadZone = Params().get("TorqueAngDeadZone", return_default=True) * 0.1
-        tune.torque.kf = TorqueKf
+        TorqueKp = Params().get("TorqueKp", return_default=True)
+        TorqueKi = Params().get("TorqueKi", return_default=True)
+        TorqueFriction = Params().get("TorqueFriction", return_default=True)
+        TorqueLatAccelFactor = Params().get("TorqueMaxLatAccel", return_default=True)
+        TorqueAngDeadZone = Params().get("TorqueAngDeadZone", return_default=True)
         tune.torque.kp = TorqueKp
         tune.torque.ki = TorqueKi
-        tune.torque.kd = TorqueKd
         tune.torque.friction = TorqueFriction
         tune.torque.latAccelFactor = TorqueLatAccelFactor
         tune.torque.latAccelOffset = 0.0
         tune.torque.steeringAngleDeadzoneDeg = TorqueAngDeadZone        
     else:
-      TorqueKf = Params().get("TorqueKf", return_default=True) * 0.1
-      TorqueKp = Params().get("TorqueKp", return_default=True) * 0.1
-      TorqueKi = Params().get("TorqueKi", return_default=True) * 0.1
-      TorqueKd = Params().get("TorqueKd", return_default=True) * 0.1
-      TorqueFriction = Params().get("TorqueFriction", return_default=True) * 0.01
-      TorqueLatAccelFactor = Params().get("TorqueMaxLatAccel", return_default=True) * 0.1
-      TorqueAngDeadZone = Params().get("TorqueAngDeadZone", return_default=True) * 0.1
-      tune.torque.kf = TorqueKf
+      TorqueKp = Params().get("TorqueKp", return_default=True)
+      TorqueKi = Params().get("TorqueKi", return_default=True)
+      TorqueFriction = Params().get("TorqueFriction", return_default=True)
+      TorqueLatAccelFactor = Params().get("TorqueMaxLatAccel", return_default=True)
+      TorqueAngDeadZone = Params().get("TorqueAngDeadZone", return_default=True)
       tune.torque.kp = TorqueKp
       tune.torque.ki = TorqueKi
-      tune.torque.kd = TorqueKd
       tune.torque.friction = TorqueFriction
       tune.torque.latAccelFactor = TorqueLatAccelFactor
       tune.torque.latAccelOffset = 0.0

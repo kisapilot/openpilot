@@ -5,6 +5,7 @@ from openpilot.selfdrive.ui.onroad.cameraview import CameraView
 from openpilot.selfdrive.ui.onroad.driver_state import DriverStateRenderer
 from openpilot.selfdrive.ui.ui_state import ui_state, device
 from openpilot.system.ui.lib.application import gui_app, FontWeight
+from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.widgets.label import gui_label
 
 
@@ -13,16 +14,20 @@ class DriverCameraDialog(CameraView):
     super().__init__("camerad", VisionStreamType.VISION_STREAM_DRIVER)
     self.driver_state_renderer = DriverStateRenderer()
     # TODO: this can grow unbounded, should be given some thought
-    device.add_interactive_timeout_callback(self.stop_dmonitoringmodeld)
+    device.add_interactive_timeout_callback(lambda: gui_app.set_modal_overlay(None))
     ui_state.params.put_bool("IsDriverViewEnabled", True)
 
-  def stop_dmonitoringmodeld(self):
+  def hide_event(self):
+    super().hide_event()
     ui_state.params.put_bool("IsDriverViewEnabled", False)
-    gui_app.set_modal_overlay(None)
+    self.close()
 
   def _handle_mouse_release(self, _):
     super()._handle_mouse_release(_)
-    self.stop_dmonitoringmodeld()
+    gui_app.set_modal_overlay(None)
+
+  def __del__(self):
+    self.close()
 
   def _render(self, rect):
     super()._render(rect)
@@ -30,7 +35,7 @@ class DriverCameraDialog(CameraView):
     if not self.frame:
       gui_label(
         rect,
-        "camera starting",
+        tr("camera starting"),
         font_size=100,
         font_weight=FontWeight.BOLD,
         alignment=rl.GuiTextAlignment.TEXT_ALIGN_CENTER,

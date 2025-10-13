@@ -1,19 +1,28 @@
 #!/usr/bin/env python3
 import re
 import sys
+import subprocess
+import time
 import pyray as rl
 from openpilot.system.hardware import HARDWARE, PC
-from openpilot.system.ui.lib.application import gui_app
+from openpilot.system.ui.lib.application import BIG_UI, gui_app
 from openpilot.system.ui.lib.scroll_panel import GuiScrollPanel
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.button import Button, ButtonStyle
 
-MARGIN = 50
-SPACING = 40
-FONT_SIZE = 72
-LINE_HEIGHT = 80
-BUTTON_SIZE = rl.Vector2(310, 160)
+if BIG_UI:
+  MARGIN = 50
+  SPACING = 40
+  FONT_SIZE = 72
+  LINE_HEIGHT = 80
+  BUTTON_SIZE = rl.Vector2(310, 160)
+else:
+  MARGIN = 20
+  SPACING = 30
+  FONT_SIZE = 25
+  LINE_HEIGHT = 25
+  BUTTON_SIZE = rl.Vector2(150, 80)
 
 DEMO_TEXT = """This is a sample text that will be wrapped and scrolled if necessary.
             The text is long enough to demonstrate scrolling and word wrapping.""" * 30
@@ -31,7 +40,7 @@ def wrap_text(text, font_size, max_width):
       continue
     indent = re.match(r"^\s*", paragraph).group()
     current_line = indent
-    words = re.split(r"(\s+)", paragraph[len(indent):])
+    words = re.split(r"(\s+|-)", paragraph[len(indent):])
     while len(words):
       word = words.pop(0)
       test_line = current_line + word + (words.pop(0) if words else "")
@@ -57,7 +66,7 @@ class TextWindow(Widget):
     self._scroll_panel._offset_filter_y.x = -max(self._content_rect.height - self._textarea_rect.height, 0)
 
     button_text = "Exit" if PC else "Reboot"
-    self._button = Button(button_text, click_callback=self._on_button_clicked, button_style=ButtonStyle.TRANSPARENT_WHITE_BORDER)
+    self._button = Button(button_text, click_callback=self._on_button_clicked, button_style=ButtonStyle.TRANSPARENT_WHITE_BORDER, font_size=FONT_SIZE)
 
   @staticmethod
   def _on_button_clicked():
@@ -80,6 +89,27 @@ class TextWindow(Widget):
 
 
 if __name__ == "__main__":
+  try:
+    subprocess.run(
+      ["pkill", "-f", "kisa_agent.py"],
+      stdout=subprocess.DEVNULL,
+      stderr=subprocess.DEVNULL
+    )
+  except Exception as e:
+    print("Failed to stop kisa_agent:", e)
+
+  time.sleep(0.5)
+
+  try:
+    subprocess.Popen(
+      ["python3", "/data/openpilot/selfdrive/kisapilot/kisa_agent.py"],
+      stdout=subprocess.DEVNULL,
+      stderr=subprocess.DEVNULL,
+      start_new_session=True,
+    )
+  except Exception as e:
+    print("Failed to restart kisa_agent:", e)
+
   text = sys.argv[1] if len(sys.argv) > 1 else DEMO_TEXT
   gui_app.init_window("Text Viewer")
   text_window = TextWindow(text)

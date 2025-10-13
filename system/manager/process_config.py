@@ -63,9 +63,8 @@ def and_(*fns):
 
 EnableLogger = Params().get_bool('KisaEnableLogger')
 EnableUploader = Params().get_bool('KisaEnableUploader')
-EnableOSM = Params().get_bool('OSMEnable') or Params().get_bool('OSMSpeedLimitEnable') or Params().get("CurvDecelOption", return_default=True) in (1, 3)
+EnableOSM = Params().get_bool('OSMSpeedLimitEnable') or Params().get("CurvDecelOption", return_default=True) in (1, 3)
 EnableExternalNavi = Params().get("KISANaviSelect", return_default=True) in (1, 2)
-EnableExternalNaviUDP = Params().get("KISANaviSelect", return_default=True) in (3, 4)
 
 procs = [
   DaemonProcess("manage_athenad", "system.athena.manage_athenad", "AthenadPid"),
@@ -86,9 +85,8 @@ procs = [
   PythonProcess("dmonitoringmodeld", "selfdrive.modeld.dmonitoringmodeld", driverview, enabled=(WEBCAM or not PC)),
 
   PythonProcess("sensord", "system.sensord.sensord", only_onroad, enabled=not PC),
-  # NativeProcess("ui", "selfdrive/ui", ["./ui"], always_run, enabled=False, watchdog_max_dt=(5 if not PC else None)),
-  PythonProcess("ui", "selfdrive.ui.ui", always_run, watchdog_max_dt=(5 if not PC else None)),
-  PythonProcess("soundd", "selfdrive.ui.soundd", only_onroad),
+  PythonProcess("ui", "selfdrive.ui.ui", always_run),
+  PythonProcess("soundd", "selfdrive.ui.soundd", driverview),
   PythonProcess("locationd", "selfdrive.locationd.locationd", only_onroad),
   NativeProcess("_pandad", "selfdrive/pandad", ["./pandad"], always_run, enabled=False),
   PythonProcess("calibrationd", "selfdrive.locationd.calibrationd", only_onroad),
@@ -115,13 +113,14 @@ procs = [
   PythonProcess("statsd", "system.statsd", always_run),
   PythonProcess("feedbackd", "selfdrive.ui.feedback.feedbackd", only_onroad),
 
-  PythonProcess("kupdate", "system.kupdate", always_run),
-
   # debug procs
   NativeProcess("bridge", "cereal/messaging", ["./bridge"], notcar),
   PythonProcess("webrtcd", "system.webrtc.webrtcd", notcar),
   PythonProcess("webjoystick", "tools.bodyteleop.web", notcar),
   PythonProcess("joystick", "tools.joystick.joystick_control", and_(joystick, iscar)),
+
+  PythonProcess("fleet_manager", "selfdrive.frogpilot.fleetmanager.fleet_manager", always_run, enabled=not PC),
+  PythonProcess("kisa_agent", "selfdrive.kisapilot.kisa_agent", always_run, enabled=not PC),
 ]
 
 if EnableLogger:
@@ -137,14 +136,10 @@ if EnableOSM:
   procs += [
     PythonProcess("mapd", "selfdrive.mapd.mapd", only_onroad),
   ]
+
 if EnableExternalNavi:
   procs += [
-    PythonProcess("navid", "selfdrive.enavi.navi_external", only_onroad),
-  ]
-
-if EnableExternalNaviUDP:
-  procs += [
-    PythonProcess("naviudpd", "selfdrive.enavi.navi_external_udp", only_onroad),
+    PythonProcess("kisa_navi", "selfdrive.kisapilot.navi_external", only_onroad),
   ]
 
 managed_processes = {p.name: p for p in procs}

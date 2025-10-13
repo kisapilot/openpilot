@@ -48,7 +48,6 @@ class VCruiseHelper:
     self.variable_cruise = self.params.get_bool("KisaVariableCruise")
 
     self.osm_waze_spdlimit_offset = self.params.get("KisaSpeedLimitOffset", return_default=True)
-    self.osm_waze_spdlimit_offset_option = self.params.get("KisaSpeedLimitOffsetOption", return_default=True)
     self.osm_speedlimit_enabled = self.params.get_bool("OSMSpeedLimitEnable")
     self.osm_waze_speedlimit = 255
     self.pause_spdlimit = False
@@ -80,6 +79,8 @@ class VCruiseHelper:
     self.prev_acc_set_btn = False
     self.prev_acc_reset_btn = False
     self.prev_main_btn = False
+
+    self.long_time_btn = False
 
   @property
   def v_cruise_initialized(self):
@@ -122,16 +123,19 @@ class VCruiseHelper:
               self.cruise_road_limit_spd_switch_prev = navi.roadLimitSpeed
               self.cruise_road_limit_spd_switch = False
             elif (self.cruise_road_limit_spd_enabled and cstate.setLoadspeedTempStop) and (CS.cruiseButtons == Buttons.SET_DECEL or self.first_acc):
-              if 1 < int(navi.roadLimitSpeed) < 150:
+              if self.long_time_btn:
+                self.cruise_road_limit_spd_switch = False
+                self.long_time_btn = False
+              elif 1 < int(navi.roadLimitSpeed) < 150:
                 self.cruise_road_limit_spd_switch = True
               else:
                 self.cruise_road_limit_spd_switch = False
             self.v_cruise_kph = cruise_set_spd
             self.v_cruise_cluster_kph = self.v_cruise_kph
             self.v_cruise_kph_last = self.v_cruise_kph
-            if self.osm_speedlimit_enabled or self.navi_selection in (2, 4):
+            if self.osm_speedlimit_enabled or self.navi_selection == 2:
               self.osm_waze_off_spdlimit_init = True
-              if self.navi_selection in (2, 4):
+              if self.navi_selection == 2:
                 self.osm_waze_speedlimit = round(navi.wazeRoadSpeedLimit)
               elif self.osm_speedlimit_enabled:
                 self.osm_waze_speedlimit = round(osm.speedLimit)
@@ -146,8 +150,8 @@ class VCruiseHelper:
             self.v_cruise_kph = int(navi.roadLimitSpeed) + self.cruise_road_limit_spd_offset
             self.v_cruise_cluster_kph = self.v_cruise_kph
             self.v_cruise_kph_last = self.v_cruise_kph
-          elif self.variable_cruise and CS.cruiseState.modeSel != 0 and (self.osm_speedlimit_enabled or self.navi_selection in (2, 4)) and self.osm_waze_off_spdlimit_init:
-            if self.navi_selection in (2, 4):
+          elif self.variable_cruise and CS.cruiseState.modeSel != 0 and (self.osm_speedlimit_enabled or self.navi_selection == 2) and self.osm_waze_off_spdlimit_init:
+            if self.navi_selection == 2:
               osm_waze_speedlimit_ = round(navi.wazeRoadSpeedLimit)
               osm_waze_speedlimitdist_ = round(navi.wazeAlertDistance)
             elif self.osm_speedlimit_enabled:
@@ -156,11 +160,9 @@ class VCruiseHelper:
             else:
               osm_waze_speedlimit_ = round(osm.speedLimit)
               osm_waze_speedlimitdist_ = 0
-            if self.osm_waze_spdlimit_offset_option == 0:
+            if self.osm_waze_spdlimit_offset > 0:
               osm_waze_speedlimit = osm_waze_speedlimit_ + round(osm_waze_speedlimit_*0.01*self.osm_waze_spdlimit_offset)
-            elif self.osm_waze_spdlimit_offset_option == 1:
-              osm_waze_speedlimit = osm_waze_speedlimit_ + self.osm_waze_spdlimit_offset
-            elif self.osm_waze_spdlimit_offset_option in (2,3):
+            elif self.osm_waze_spdlimit_offset == -1:
               osm_waze_speedlimit = int(np.interp(osm_waze_speedlimit_, self.osm_waze_custom_spdlimit_c, self.osm_waze_custom_spdlimit_t))
             if CS.cruiseButtons == Buttons.GAP_DIST:
               self.osm_waze_speedlimit = 255
@@ -170,14 +172,14 @@ class VCruiseHelper:
             elif self.osm_waze_speedlimit == osm_waze_speedlimit_:
               self.pause_spdlimit = True
             elif osm_waze_speedlimit != self.v_cruise_kph:
-              if self.navi_selection in (2, 4) and navi.wazeRoadSpeedLimit > 9:
+              if self.navi_selection == 2 and navi.wazeRoadSpeedLimit > 9:
                 self.v_cruise_kph = osm_waze_speedlimit
                 self.v_cruise_kph_last = self.v_cruise_kph
                 self.v_cruise_cluster_kph = self.v_cruise_kph
               elif self.osm_speedlimit_enabled and osm.speedLimit > 9:
                 self.v_cruise_kph = osm_waze_speedlimit
                 self.v_cruise_kph_last = self.v_cruise_kph
-          elif self.variable_cruise and CS.cruiseState.modeSel != 0 and not (self.osm_speedlimit_enabled or self.navi_selection in (2, 4)):
+          elif self.variable_cruise and CS.cruiseState.modeSel != 0 and not (self.osm_speedlimit_enabled or self.navi_selection == 2):
             if navi.safetyDistance > 600: # temporary pause to limit spd in safety section
               self.second2 += DT_MDL
               if CS.cruiseButtons == Buttons.GAP_DIST: # push gap 3 times quickly, this is toggle.
@@ -204,21 +206,19 @@ class VCruiseHelper:
         self.v_cruise_cluster_kph = V_CRUISE_UNSET
       else:
         # to display maxspeed synced as roadspeedlimit on scc standby
-        if self.variable_cruise and CS.cruiseState.modeSel != 0 and (self.osm_speedlimit_enabled or self.navi_selection in (2, 4)):
-          if self.navi_selection in (2, 4):
+        if self.variable_cruise and CS.cruiseState.modeSel != 0 and (self.osm_speedlimit_enabled or self.navi_selection == 2):
+          if self.navi_selection == 2:
             osm_waze_speedlimit_ = round(navi.wazeRoadSpeedLimit)
           elif self.osm_speedlimit_enabled:
             osm_waze_speedlimit_ = round(osm.speedLimit)
           else:
             osm_waze_speedlimit_ = round(osm.speedLimit)
-          if self.osm_waze_spdlimit_offset_option == 0:
+          if self.osm_waze_spdlimit_offset > 0:
             osm_waze_speedlimit = osm_waze_speedlimit_ + round(osm_waze_speedlimit_*0.01*self.osm_waze_spdlimit_offset)
-          elif self.osm_waze_spdlimit_offset_option == 1:
-            osm_waze_speedlimit = osm_waze_speedlimit_ + self.osm_waze_spdlimit_offset
-          elif self.osm_waze_spdlimit_offset_option in (2,3):
+          elif self.osm_waze_spdlimit_offset == -1:
             osm_waze_speedlimit = int(np.interp(osm_waze_speedlimit_, self.osm_waze_custom_spdlimit_c, self.osm_waze_custom_spdlimit_t))
           if osm_waze_speedlimit != self.v_cruise_kph:
-            if self.navi_selection in (2, 4) and navi.wazeRoadSpeedLimit > 9:
+            if self.navi_selection == 2 and navi.wazeRoadSpeedLimit > 9:
               self.v_cruise_kph = osm_waze_speedlimit
               self.v_cruise_kph_last = self.v_cruise_kph
               self.v_cruise_cluster_kph = self.v_cruise_kph
@@ -319,6 +319,7 @@ class VCruiseHelper:
     # long press should set scc speed with cluster scc number
     if self.cruise_buttons_time >= 60:
       self.cruise_set_speed_kph = CS.vSetDis
+      self.long_time_btn = True
       return self.cruise_set_speed_kph
 
     if self.prev_cruise_btn == CS.cruiseButtons:
@@ -381,6 +382,7 @@ class VCruiseHelper:
     # long press should set scc speed with cluster scc number
     if self.cruise_buttons_time >= 70:
       self.cruise_set_speed_kph = CS.vSetDis
+      self.long_time_btn = True
       return self.cruise_set_speed_kph
 
     if CS.cruiseAccStatus and not CS.cruiseButtons and not self.prev_main_btn:

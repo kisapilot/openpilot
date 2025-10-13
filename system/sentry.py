@@ -44,7 +44,7 @@ def set_tag(key: str, value: str) -> None:
   sentry_sdk.set_tag(key, value)
 
 def save_exception(exc_text):
-  if not ("mapd.py" in exc_text or "creation_delay" in exc_text):
+  if not PC:
     if not os.path.exists('/data/log'):
       os.makedirs('/data/log')
     log_file = '/data/log/error.txt'

@@ -54,14 +54,14 @@ class LongControl:
     self.long_control_state = LongCtrlState.off
     self.pid = PIDController((CP.longitudinalTuning.kpBP, CP.longitudinalTuning.kpV),
                              (CP.longitudinalTuning.kiBP, CP.longitudinalTuning.kiV),
-                             k_f=CP.longitudinalTuning.kf, rate=1 / DT_CTRL)
+                             rate=1 / DT_CTRL)
     self.last_output_accel = 0.0
 
     self.long_stat = ""
     self.long_plan_source = ""
 
-    self.long_log = Params().get_bool("LongLogDisplay")
-    self.stopping_dist = Params().get("StoppingDist", return_default=True) * 0.1
+    self.long_log = Params().get("ShowDebugUI") >= 3
+    self.stopping_dist = Params().get("StoppingDist", return_default=True)
 
     self.loc_timer = 0
 
@@ -70,9 +70,9 @@ class LongControl:
 
   def update(self, active, CS, a_target, should_stop, accel_limits, long_plan_source, CO, radarState):
     self.loc_timer += 1
-    if self.loc_timer > 100:
+    if self.loc_timer > 300:
       self.loc_timer = 0
-      self.long_log = Params().get_bool("LongLogDisplay")
+      self.long_log = Params().get("ShowDebugUI") >= 3
 
     """Update longitudinal control. This updates the state machine and runs a PID loop"""
     self.pid.neg_limit = accel_limits[0]

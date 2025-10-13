@@ -19,7 +19,6 @@ from opendbc.car.car_helpers import get_car, interfaces
 from opendbc.car.interfaces import CarInterfaceBase, RadarInterfaceBase
 from openpilot.selfdrive.pandad import can_capnp_to_list, can_list_to_can_capnp
 from openpilot.selfdrive.car.cruise import VCruiseHelper
-from openpilot.selfdrive.car.car_specific import MockCarState
 
 REPLAY = "REPLAY" in os.environ
 
@@ -151,7 +150,6 @@ class Car:
     self.params.put_nonblocking("CarParamsCache", cp_bytes)
     self.params.put_nonblocking("CarParamsPersistent", cp_bytes)
 
-    self.mock_carstate = MockCarState()
     self.v_cruise_helper = VCruiseHelper(self.CP)
 
     self.is_metric = self.params.get_bool("IsMetric")
@@ -166,13 +164,13 @@ class Car:
     can_strs = messaging.drain_sock_raw(self.can_sock, wait_for_one=True)
     can_list = can_capnp_to_list(can_strs)
 
+    rcv_time = time.time()
+
     # Update carState from CAN
     CS = self.CI.update(can_list)
-    if self.CP.brand == 'mock':
-      CS = self.mock_carstate.update(CS)
 
     # Update radar tracks from CAN
-    RD: structs.RadarDataT | None = self.RI.update(can_list)
+    # RD: structs.RadarDataT | None = self.RI.update(can_list)
 
     self.sm.update(0)
 
@@ -184,6 +182,8 @@ class Car:
 
     if can_rcv_valid and REPLAY:
       self.can_log_mono_time = messaging.log_from_bytes(can_strs[0]).logMonoTime
+
+    RD: structs.RadarDataT | None = self.RI.update_carrot(CS.vEgo, CS.aEgo, rcv_time, can_list)
 
     self.v_cruise_helper.update_v_cruise(CS, self.sm['carControl'].enabled, self.is_metric, self.sm['controlsState'], self.sm['liveENaviData'], self.sm['liveMapData'])
     if self.sm['carControl'].enabled and not self.CC_prev.enabled:

@@ -25,11 +25,6 @@ function agnos_init {
     fi
   fi
 
-  # wait longer for screen recorder
-  if [ -f "$DIR/prebuilt" ]; then
-    sleep 10
-  fi
-
   # TODO: move this to agnos
   sudo rm -f /data/etc/NetworkManager/system-connections/*.nmmeta
 
@@ -69,13 +64,13 @@ function agnos_init {
     chmod 600 /data/params/d/GithubSshKeys
   fi
 
-  cat /data/openpilot/opendbc_repo/opendbc/car/hyundai/values.py | grep ' = Hyundai' | awk '{print $1}' > /data/CarList
+  cat /data/openpilot/opendbc_repo/opendbc/car/hyundai/values.py | grep ' = Hyundai' | awk '{print $1}' > /data/params/d/CarList
 }
 
 function launch {
 
   # one touch git pull
-  KILINE="alias gi='git pull && touch /data/ks && sudo reboot'"; KIFILE="$HOME/.bashrc"; grep -qxF "$KILINE" "$KIFILE" || echo "$KILINE" >> "$KIFILE"
+  KILINE="alias gi='git -C /data/openpilot pull && rm -f /data/openpilot/prebuilt && touch /data/ks && echo -en 1 > /data/params/d/DoReboot'"; KIFILE="$HOME/.bashrc"; grep -qxF "$KILINE" "$KIFILE" || echo "$KILINE" >> "$KIFILE"
 
   # Remove orphaned git lock if it exists on boot
   [ -f "$DIR/.git/index.lock" ] && rm -f $DIR/.git/index.lock
@@ -132,32 +127,28 @@ function launch {
   # KisaPilot Current Stat
   git log -n 1 --pretty=format:"/ %cd / %h" --date=short > /data/params/d/KisaPilotCurrentDescription
 
-  # KisaPilot Model check
-  Model_P=$(stat --printf=%s /data/openpilot/selfdrive/modeld/models/driving_policy.onnx)
-  Model_V=$(stat --printf=%s /data/openpilot/selfdrive/modeld/models/driving_vision.onnx)
-  Model_P_Hash=$(md5sum /data/openpilot/selfdrive/modeld/models/driving_policy.onnx | awk '{print $1}')
-  Model_V_Hash=$(md5sum /data/openpilot/selfdrive/modeld/models/driving_vision.onnx | awk '{print $1}')
-  MODEL_NAME=$(awk -v p="$Model_P" -v v="$Model_V" -v ph="$Model_P_Hash" -v vh="$Model_V_Hash" '
-    $1 == p && $2 == v && $4 == ph && $5 == vh {
-      print $3;
-    }
-  ' /data/openpilot/selfdrive/modeld/models/ModelList)
+# KisaPilot Model check
 
-  if [ -z "$MODEL_NAME" ]; then
-    MODEL_NAME=$(awk -v p="$Model_P" -v v="$Model_V" '
-      $1 == p && $2 == v {
-        print $3;
-      }
-    ' /data/openpilot/selfdrive/modeld/models/ModelList)
-  fi
-  if [ -z "$MODEL_NAME" ]; then MODEL_NAME=$(head -n 1 /data/openpilot/selfdrive/modeld/models/ModelList | awk '{print $3}'); fi
-  echo -en "$MODEL_NAME" > /data/params/d/DrivingModel
+Model_P_Hash=$(sha256sum /data/openpilot/selfdrive/modeld/models/driving_policy.onnx | awk '{print $1}')
+Model_V_Hash=$(sha256sum /data/openpilot/selfdrive/modeld/models/driving_vision.onnx | awk '{print $1}')
+
+MODEL_NAME=$(awk -v ph="$Model_P_Hash" -v vh="$Model_V_Hash" '
+  $2 == ph && $3 == vh {
+    print $1;
+  }
+' /data/openpilot/selfdrive/modeld/models/ModelList)
+
+if [ -z "$MODEL_NAME" ]; then
+  MODEL_NAME=$(head -n 1 /data/openpilot/selfdrive/modeld/models/ModelList | awk '{print $1}')
+fi
+
+echo -en "$MODEL_NAME" > /data/params/d/DrivingModel
+
+  # kisa agent start
+  python3 /data/openpilot/selfdrive/kisapilot/kisa_agent.py &
 
   # start manager
   cd system/manager
-  if [ -f "/data/params/d/OSMEnable" ]; then
-    OSM_ENABLE=$(cat /data/params/d/OSMEnable)
-  fi
   if [ -f "/data/params/d/OSMSpeedLimitEnable" ]; then
     OSM_SL_ENABLE=$(cat /data/params/d/OSMSpeedLimitEnable)
   fi
@@ -165,7 +156,7 @@ function launch {
     OSM_CURV_ENABLE=$(cat /data/params/d/CurvDecelOption)
   fi
 
-  if [ "$OSM_ENABLE" == "1" ] || [ "$OSM_SL_ENABLE" == "1" ] || [ "$OSM_CURV_ENABLE" == "1" ] || [ "$OSM_CURV_ENABLE" == "3" ]; then
+  if [ "$OSM_SL_ENABLE" == "1" ] || [ "$OSM_CURV_ENABLE" == "1" ] || [ "$OSM_CURV_ENABLE" == "3" ]; then
     if [ "$OSM_OFFLINE_ENABLE" == "1" ]; then
       ./custom_dep.py && ./local_osm_install.py
     else

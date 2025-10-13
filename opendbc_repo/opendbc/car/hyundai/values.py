@@ -5,7 +5,7 @@ from enum import IntFlag
 from opendbc.car import Bus, CarSpecs, DbcDict, PlatformConfig, Platforms, uds
 from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.structs import CarParams
-from opendbc.car.docs_definitions import CarHarness, CarDocs, CarParts, Device
+from opendbc.car.docs_definitions import CarHarness, CarDocs, CarParts
 from opendbc.car.fw_query_definitions import FwQueryConfig, Request, p16
 
 from opendbc.car.lateral import AngleSteeringLimits
@@ -22,19 +22,21 @@ class CarControllerParams:
   ANGLE_LIMITS: AngleSteeringLimits = AngleSteeringLimits(
     # ToDo, seen changing at 0.2 deg/frame down, 0.1 deg/frame up at 100Hz, testing with IONIQ5_PE 2025(The New IONIQ5)
     #   CANPacker packs wrong angle output to be decoded by panda
-    480,  # deg, reasonable limit
-  (
-    [0 * CV.KPH_TO_MS, 5 * CV.KPH_TO_MS, 10 * CV.KPH_TO_MS, 20 * CV.KPH_TO_MS, 30 * CV.KPH_TO_MS,
-     40 * CV.KPH_TO_MS, 50 * CV.KPH_TO_MS, 60 * CV.KPH_TO_MS, 70 * CV.KPH_TO_MS,
-     80 * CV.KPH_TO_MS],
-    [0.1, 2.0, 0.84, 0.48, 0.30, 0.20, 0.17, 0.144, 0.132, 0.12]  # down
-  ),
-  (
-    [0 * CV.KPH_TO_MS, 5 * CV.KPH_TO_MS, 10 * CV.KPH_TO_MS, 20 * CV.KPH_TO_MS, 30 * CV.KPH_TO_MS,
-     40 * CV.KPH_TO_MS, 50 * CV.KPH_TO_MS, 60 * CV.KPH_TO_MS, 70 * CV.KPH_TO_MS,
-     80 * CV.KPH_TO_MS],
-    [0.1, 2.4, 2.0, 1.0, 0.6, 0.4, 0.3, 0.26, 0.24, 0.22]   # up
-  )
+    175,  # deg, reasonable limit
+    # (
+    #   [0 * CV.KPH_TO_MS, 5 * CV.KPH_TO_MS, 10 * CV.KPH_TO_MS, 20 * CV.KPH_TO_MS, 30 * CV.KPH_TO_MS,
+    #   40 * CV.KPH_TO_MS, 50 * CV.KPH_TO_MS, 60 * CV.KPH_TO_MS, 70 * CV.KPH_TO_MS,
+    #   80 * CV.KPH_TO_MS],
+    #   [0.1, 2.0, 0.84, 0.48, 0.30, 0.20, 0.17, 0.144, 0.132, 0.12]  # down
+    # ),
+    # (
+    #   [0 * CV.KPH_TO_MS, 5 * CV.KPH_TO_MS, 10 * CV.KPH_TO_MS, 20 * CV.KPH_TO_MS, 30 * CV.KPH_TO_MS,
+    #   40 * CV.KPH_TO_MS, 50 * CV.KPH_TO_MS, 60 * CV.KPH_TO_MS, 70 * CV.KPH_TO_MS,
+    #   80 * CV.KPH_TO_MS],
+    #   [0.1, 2.4, 2.0, 1.0, 0.6, 0.4, 0.3, 0.26, 0.24, 0.22]   # up
+    # )
+    ([0, 9, 16, 25], [1.4, 1.2, 0.8, 0.2]),
+    ([0, 9, 16, 25], [2.0, 1.6, 1.0, 0.35]),
   )
 
   def __init__(self, CP):
@@ -43,7 +45,7 @@ class CarControllerParams:
     self.STEER_DRIVER_ALLOWANCE = 50
     self.STEER_DRIVER_MULTIPLIER = 2
     self.STEER_DRIVER_FACTOR = 1
-    self.STEER_THRESHOLD = Params().get("SteerThreshold", return_default=True)  # default 150
+    self.STEER_THRESHOLD = 150
     self.STEER_STEP = 1  # 100 Hz
 
     if CP.flags & HyundaiFlags.CANFD:
@@ -139,6 +141,13 @@ class HyundaiFlags(IntFlag):
 
   LEGACY_ALT = 2 ** 27
 
+class HyundaiExtFlags(IntFlag):
+  NAVI_CLUSTER = 2 ** 2
+  HAS_LFAHDA = 2 ** 4
+  CANFD_GEARS_NONE = 2 ** 6
+  RADAR_GROUP1 = 2 ** 7  # 0x210 radar group 1, 0x3A5 radar group 2
+  CANFD_GEARS_69 = 2 ** 10
+
 
 @dataclass
 class HyundaiCarDocs(CarDocs):
@@ -150,7 +159,7 @@ class HyundaiPlatformConfig(PlatformConfig):
   dbc_dict: DbcDict = field(default_factory=lambda: {Bus.pt: "hyundai_kia_generic"})
 
   def init(self):
-    if (self.flags & HyundaiFlags.MANDO_RADAR) or Params().get_bool("UseRadarTrack"):
+    if self.flags & HyundaiFlags.MANDO_RADAR:
       self.dbc_dict = {Bus.pt: "hyundai_kia_generic", Bus.radar: 'hyundai_kia_mando_front_radar_generated'}
 
     if self.flags & HyundaiFlags.MIN_STEER_32_MPH:
@@ -159,7 +168,7 @@ class HyundaiPlatformConfig(PlatformConfig):
 
 @dataclass
 class HyundaiCanFDPlatformConfig(PlatformConfig):
-  dbc_dict: DbcDict = field(default_factory=lambda: {Bus.pt: "hyundai_canfd_generated"})
+  dbc_dict: DbcDict = field(default_factory=lambda: {Bus.pt: "hyundai_canfd_generated", Bus.radar: 'hyundai_canfd_radar_generated'})
 
   def init(self):
     self.flags |= HyundaiFlags.CANFD
@@ -339,7 +348,7 @@ class CAR(Platforms):
   HYUNDAI_PALISADE = HyundaiPlatformConfig(
     [
       HyundaiCarDocs("Hyundai Palisade 2020-22", "All", video="https://youtu.be/TAnDqjF4fDY?t=456", car_parts=CarParts.common([CarHarness.hyundai_h])),
-      HyundaiCarDocs("Kia Telluride 2020-22", "All", car_parts=CarParts([Device.threex_angled_mount, CarHarness.hyundai_h])),
+      HyundaiCarDocs("Kia Telluride 2020-22", "All", car_parts=CarParts.common([CarHarness.hyundai_h])),
     ],
     CarSpecs(mass=1999, wheelbase=2.9, steerRatio=15.6 * 1.15, tireStiffnessFactor=0.63),
     flags=HyundaiFlags.MANDO_RADAR | HyundaiFlags.CHECKSUM_CRC8,

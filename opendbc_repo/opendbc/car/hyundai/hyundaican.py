@@ -1,5 +1,6 @@
 import crcmod
 from opendbc.car.hyundai.values import CAR, HyundaiFlags, LEGACY_SAFETY_MODE_CAR_ALT
+import numpy as np
 
 hyundai_checksum = crcmod.mkCrcFun(0x11D, initCrc=0xFD, rev=False, xorOut=0xdf)
 
@@ -258,9 +259,9 @@ def create_scc11(packer, frame, set_speed, lead_visible, scc_live, lead_dist, le
     values["TauGapSet"] = gap_setting
     values["ObjValid"] = lead_visible
     values["ACC_ObjStatus"] = lead_visible
-    values["ACC_ObjRelSpd"] = clip(lead_vrel if lead_visible else 0, -20., 20.)
-    values["ACC_ObjDist"] = clip(lead_dist if lead_visible else 204.6, 0., 204.6)
-    values["ACC_ObjLatPos"] = clip(-lead_yrel if lead_visible else 0, -170., 170.)
+    values["ACC_ObjRelSpd"] = np.clip(lead_vrel if lead_visible else 0, -20., 20.)
+    values["ACC_ObjDist"] = np.clip(lead_dist if lead_visible else 204.6, 0., 204.6)
+    values["ACC_ObjLatPos"] = np.clip(-lead_yrel if lead_visible else 0, -170., 170.)
 
   return packer.make_can_msg("SCC11", 0, values)
 

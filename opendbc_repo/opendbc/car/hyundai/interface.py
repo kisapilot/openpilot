@@ -1,4 +1,4 @@
-from opendbc.car import Bus, get_safety_config, structs, uds
+from opendbc.car import Bus, get_safety_config, structs
 from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, \
                                                    CANFD_UNSUPPORTED_LONGITUDINAL_CAR, \
@@ -12,7 +12,6 @@ from opendbc.car.hyundai.radar_interface import RadarInterface
 
 ButtonType = structs.CarState.ButtonEvent.Type
 
-from opendbc.car.hyundai.tunes import LatTunes, set_lat_tune
 from openpilot.common.params import Params
 
 Ecu = structs.CarParams.Ecu
@@ -26,6 +25,7 @@ class CarInterface(CarInterfaceBase):
   CarController = CarController
   RadarInterface = RadarInterface
 
+  DRIVABLE_GEARS = (structs.CarState.GearShifter.sport, structs.CarState.GearShifter.manumatic)
   @staticmethod
   def _get_params(ret: structs.CarParams, candidate, fingerprint, car_fw, alpha_long, is_release, docs) -> structs.CarParams:
     ret.brand = "hyundai"
@@ -43,6 +43,7 @@ class CarInterface(CarInterfaceBase):
     kisaLongAlt = params.get("KISALongAlt", return_default=True)
 
     if ret.flags & HyundaiFlags.CANFD:
+      params.put("KisaCANType", "CANFD")
       # Shared configuration for CAN-FD cars
       ret.alphaLongitudinalAvailable = candidate not in CANFD_UNSUPPORTED_LONGITUDINAL_CAR
       if lka_steering and Ecu.adas not in [fw.ecu for fw in car_fw]:
@@ -79,8 +80,8 @@ class CarInterface(CarInterfaceBase):
         # no LKA steering
         if 0x1cf not in fingerprint[CAN.ECAN]:
           ret.flags |= HyundaiFlags.CANFD_ALT_BUTTONS.value
-        if not ret.flags & HyundaiFlags.RADAR_SCC:
-          ret.flags |= HyundaiFlags.CANFD_CAMERA_SCC.value
+        #if not ret.flags & HyundaiFlags.RADAR_SCC:
+        #  ret.flags |= HyundaiFlags.CANFD_CAMERA_SCC.value
 
       # Some LKA steering cars have alternative messages for gear checks
       # ICE cars do not have 0x130; GEARS message on 0x40 or 0x70 instead
@@ -105,6 +106,8 @@ class CarInterface(CarInterfaceBase):
         ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.CAMERA_SCC.value
       if ret.adrvControl:
         ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.CANFD_ADRV_CONTROL.value
+        ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.CAMERA_SCC.value
+        ret.sccBus = 2
       if ret.sccBus == 2:
         ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.LONG.value
       if params.get_bool("LFAButtonEngagement"):
@@ -124,6 +127,7 @@ class CarInterface(CarInterfaceBase):
       ret.longitudinalActuatorDelay = 0.5
 
     else:
+      params.put("KisaCANType", "CAN")
       ret.isCanFD = False
       # Shared configuration for non CAN-FD cars
       ret.alphaLongitudinalAvailable = candidate not in UNSUPPORTED_LONGITUDINAL_CAR
@@ -174,7 +178,12 @@ class CarInterface(CarInterfaceBase):
       ret.longitudinalActuatorDelay = 0.5
 
       if (ret.flags & HyundaiFlags.CAMERA_SCC) or ret.sccBus == 2:
+        params.put("KisaSCCType", "CAMERA_SCC")
         ret.safetyConfigs[0].safetyParam |= HyundaiSafetyFlags.CAMERA_SCC.value
+      elif ret.openpilotLongitudinalControl:
+        params.put("KisaSCCType", "OP_LONG")
+      else:
+        params.put("KisaSCCType", "STOCK")
       if ret.sccBus == 2:
         ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.LONG.value
 
@@ -187,30 +196,16 @@ class CarInterface(CarInterfaceBase):
     # Common lateral control setup
 
     ret.centerToFront = ret.wheelbase * 0.4
-    ret.steerActuatorDelay = params.get("SteerActuatorDelayAdj", return_default=True) * 0.01   #0.1
-    ret.steerLimitTimer = params.get("SteerLimitTimerAdj", return_default=True) * 0.01   #0.4
-
-    ret.smoothSteer.method = params.get("KisaSteerMethod", return_default=True)   # 1
-    ret.smoothSteer.maxSteeringAngle = params.get("KisaMaxSteeringAngle", return_default=True)   # 90
-    ret.smoothSteer.maxDriverAngleWait = params.get("KisaMaxDriverAngleWait", return_default=True)  # 0.002
-    ret.smoothSteer.maxSteerAngleWait = params.get("KisaMaxSteerAngleWait", return_default=True)   # 0.001  # 10 sec
-    ret.smoothSteer.driverAngleWait = params.get("KisaDriverAngleWait", return_default=True)  #0.001
+    ret.steerActuatorDelay = params.get("SteerActuatorDelayAdj", return_default=True)  #0.1
+    ret.steerLimitTimer = params.get("SteerLimitTimerAdj", return_default=True)   #0.4
 
     ret.experimentalLong = params.get_bool("AlphaLongitudinalEnabled")
     
     if ret.isAngleControl:    
       ret.steerControlType = SteerControlType.angle
     else:
-      lat_control_method = params.get("LateralControlMethod", return_default=True)
-      if lat_control_method == 0:
-        set_lat_tune(ret.lateralTuning, LatTunes.PID)
-      elif lat_control_method == 1:
-        set_lat_tune(ret.lateralTuning, LatTunes.INDI)
-      elif lat_control_method == 2:
-        set_lat_tune(ret.lateralTuning, LatTunes.LQR)
-      elif lat_control_method == 3:
-        #set_lat_tune(ret.lateralTuning, LatTunes.TORQUE)
-        CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
+      CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
+    ret.radarTimeStep = 0.05
 
     if (ret.openpilotLongitudinalControl and not kisaLongAlt) or params.get_bool("AlphaLongitudinalEnabled"):
       ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.LONG.value
@@ -231,22 +226,50 @@ class CarInterface(CarInterfaceBase):
     return ret
 
   @staticmethod
-  def init(CP, can_recv, can_send, communication_control=None):
-    # 0x80 silences response
-    if communication_control is None:
-      communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, 0x80 | uds.CONTROL_TYPE.DISABLE_RX_DISABLE_TX, uds.MESSAGE_TYPE.NORMAL])
+  def init(CP, can_recv, can_send):
 
-    if CP.openpilotLongitudinalControl and not (CP.flags & (HyundaiFlags.CANFD_CAMERA_SCC | HyundaiFlags.CAMERA_SCC)):
-      addr, bus = 0x7d0, CanBus(CP).ECAN if CP.flags & HyundaiFlags.CANFD else 0
+    params = Params()
+
+    if CP.openpilotLongitudinalControl and not (CP.flags & (HyundaiFlags.CANFD_CAMERA_SCC | HyundaiFlags.CAMERA_SCC)) and not CP.adrvControl:
+      addr, bus = 0x7d0, 0
       if CP.flags & HyundaiFlags.CANFD_LKA_STEERING.value:
         addr, bus = 0x730, CanBus(CP).ECAN
-      disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=communication_control)
+      disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=b'\x28\x83\x01')
+
+    if params.get("EnableRadarTracks") > 0 and not CP.flags & HyundaiFlags.CANFD:
+      result = enable_radar_tracks(CP, can_recv, can_send)
+      params.put_bool("EnableRadarTracksResult", result)
 
     # for blinkers
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS:
-      disable_ecu(can_recv, can_send, bus=CanBus(CP).ECAN, addr=0x7B1, com_cont_req=communication_control)
+      disable_ecu(can_recv, can_send, bus=CanBus(CP).ECAN, addr=0x7B1, com_cont_req=b'\x28\x83\x01')
 
-  @staticmethod
-  def deinit(CP, can_recv, can_send):
-    communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, 0x80 | uds.CONTROL_TYPE.ENABLE_RX_ENABLE_TX, uds.MESSAGE_TYPE.NORMAL])
-    CarInterface.init(CP, can_recv, can_send, communication_control)
+def enable_radar_tracks(CP, logcan, sendcan):
+  from opendbc.car.isotp_parallel_query import IsoTpParallelQuery
+  print("################ Try To Enable Radar Tracks ####################")
+
+  ret = False
+  sccBus = 2 if CP.flags & HyundaiFlags.CAMERA_SCC.value else 0
+  rdr_fw = None
+  rdr_fw_address = 0x7d0 #
+  try:
+    try:
+      query = IsoTpParallelQuery(sendcan, logcan, sccBus, [rdr_fw_address], [b'\x10\x07'], [b'\x50\x07'])
+      for addr, dat in query.get_data(0.1).items(): # pylint: disable=unused-variable
+        print("ecu write data by id ...")
+        new_config = b"\x00\x00\x00\x01\x00\x01"
+        #new_config = b"\x00\x00\x00\x00\x00\x01"
+        dataId = b'\x01\x42'
+        WRITE_DAT_REQUEST = b'\x2e'
+        WRITE_DAT_RESPONSE = b'\x68'
+        query = IsoTpParallelQuery(sendcan, logcan, sccBus, [rdr_fw_address], [WRITE_DAT_REQUEST+dataId+new_config], [WRITE_DAT_RESPONSE])
+        result = query.get_data(0)
+        print("result=", result)
+        ret = True
+        break
+    except Exception as e:
+      print(f"Failed : {e}") 
+  except Exception as e:
+    print("##############  Failed to enable tracks" + str(e))
+  print("################ END Try to enable radar tracks")
+  return ret

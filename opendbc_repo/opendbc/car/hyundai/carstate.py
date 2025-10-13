@@ -67,13 +67,19 @@ class CarState(CarStateBase):
     self.cruise_btn_info = {}
     self.lfa_info = {}
     self.lfa_alt_info = {}
-    self.ccnc_161 = {}
-    self.ccnc_162 = {}
-    self.adrv_1ea = {}
-    self.adrv_160 = {}
+    self.adrv_161_info = {}
+    self.adrv_162_info = {}
+    self.adrv_1ea_info = {}
+    self.adrv_160_info = {}
+    self.adrv_200_info = {}
+    self.adrv_345_info = {}
+    self.adrv_1daS_info = {}
     self.csw_info = {}
     self.mdps_info = {}
     self.lfa_hda_info = {}
+    self.hda_4a3_info = {}
+    self.tcs_373_info = {}
+    self.cruise_buttons_msg = {}
 
     # On some cars, CLU15->CF_Clu_VehicleSpeed can oscillate faster than the dash updates. Sample at 5 Hz
     self.cluster_speed = 0
@@ -91,7 +97,7 @@ class CarState(CarStateBase):
     self.prev_gap_button = 0
 
     params = Params()
-    self.steer_anglecorrection = params.get("KisaSteerAngleCorrection", return_default=True) * 0.1
+    self.steer_anglecorrection = params.get("KisaSteerAngleCorrection", return_default=True)
     self.gear_correction = params.get_bool("JustDoGearD")
 
     self.cruise_gap = params.get("KisaCruiseGapSet", return_default=True)
@@ -141,6 +147,10 @@ class CarState(CarStateBase):
 
     self.brake_check = False
     self.cancel_check = False
+
+    self.MainMode_ACC = False
+    self.LFA_ICON = 0
+
 
     self.sm = messaging.SubMaster(['carState'])
 
@@ -550,8 +560,8 @@ class CarState(CarStateBase):
         ret.leftBlindspot = cp_cam.vl["BLINDSPOTS_REAR_CORNERS"]["FL_INDICATOR"] != 0
         ret.rightBlindspot = cp_cam.vl["BLINDSPOTS_REAR_CORNERS"]["FR_INDICATOR"] != 0
 
-    cp_cruise_info = cp_cam if self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC else cp
-    if self.CP.openpilotLongitudinalControl:
+    cp_cruise_info = cp_cam if self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC or self.CP.adrvControl else cp
+    if self.CP.openpilotLongitudinalControl and not self.CP.adrvControl:
       # These are not used for engage/disengage since openpilot keeps track of state using the buttons
       # ret.cruiseState.enabled = cp.vl["TCS"]["ACC_REQ"] == 1
       ret.cruiseState.standstill = False
@@ -581,14 +591,20 @@ class CarState(CarStateBase):
       self.cruise_info = copy.copy(cp_cruise_info.vl["SCC_CONTROL"])
       self.cruise_btn_info = copy.copy(cp.vl[self.cruise_btns_msg_canfd])
       if self.CP.adrvControl:
+        self.MainMode_ACC = cp_cam.vl["SCC_CONTROL"]["MainMode_ACC"] == 1
+        self.LFA_ICON = cp_cam.vl["LFAHDA_CLUSTER"]["HDA_LFA_SymSta"] == 2
         self.lfa_info = copy.copy(cp_cruise_info.vl["LFA"])
         self.lfa_alt_info = copy.copy(cp_cruise_info.vl["ADAS_CMD_35_10ms"])
-        self.ccnc_161 = copy.copy(cp_cruise_info.vl["CCNC_0x161"])
-        self.ccnc_162 = copy.copy(cp_cruise_info.vl["CCNC_0x162"])
-        self.adrv_1ea = copy.copy(cp_cruise_info.vl["ADRV_0x1ea"])
-        self.adrv_160 = copy.copy(cp_cruise_info.vl["ADRV_0x160"])
+        self.adrv_161_info = copy.copy(cp_cruise_info.vl["ADRV_0x161"])
+        self.adrv_162_info = copy.copy(cp_cruise_info.vl["ADRV_0x162"])
+        self.adrv_1ea_info = copy.copy(cp_cruise_info.vl["ADRV_0x1ea"])
+        self.adrv_160_info = copy.copy(cp_cruise_info.vl["ADRV_0x160"])
+        self.adrv_200_info = copy.copy(cp_cruise_info.vl["ADRV_0x200"])
+        self.adrv_345_info = copy.copy(cp_cruise_info.vl["ADRV_0x345"])
+        self.adrv_1da_info = copy.copy(cp_cruise_info.vl["ADRV_0x1da"])
         self.lfa_hda_info = copy.copy(cp_cruise_info.vl["LFAHDA_CLUSTER"])
         self.mdps_info = copy.copy(cp.vl["MDPS"])
+        self.tcs_373_info = copy.copy(cp.vl["TCS"])
 
       if self.lfa_button_eng:
         if self.lfa_buttons[-1]:
@@ -666,6 +682,8 @@ class CarState(CarStateBase):
     self.prev_cruise_buttons = self.cruise_buttons[-1]
 
     prev_cruise_buttons = self.cruise_buttons[-1]
+    if self.cruise_btns_msg_canfd in cp.vl:
+      self.cruise_buttons_msg = copy.copy(cp.vl[self.cruise_btns_msg_canfd])
     prev_main_buttons = self.main_buttons[-1]
     prev_lda_button = self.lda_button
     self.cruise_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["CRUISE_BUTTONS"])

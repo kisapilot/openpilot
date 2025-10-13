@@ -11,11 +11,10 @@ from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.lib.shader_polygon import draw_polygon, Gradient
 from openpilot.system.ui.widgets import Widget
 
+
 CLIP_MARGIN = 500
 MIN_DRAW_DISTANCE = 10.0
 MAX_DRAW_DISTANCE = 100.0
-
-MAX_POINTS = 200
 
 THROTTLE_COLORS = [
   rl.Color(13, 248, 122, 102),   # HSLF(148/360, 0.94, 0.51, 0.4)
@@ -29,6 +28,18 @@ NO_THROTTLE_COLORS = [
   rl.Color(242, 242, 242, 0),   # HSLF(112/360, 0.0, 0.95, 0.0)
 ]
 
+# kisa
+LL_THROTTLE_COLORS = [
+  rl.Color(64, 200, 255, 102),
+  rl.Color(90, 220, 255, 89),
+  rl.Color(90, 220, 255, 0),
+]
+
+LL_NO_THROTTLE_COLORS = [
+  rl.Color(200, 230, 255, 102),
+  rl.Color(200, 230, 255, 89),
+  rl.Color(200, 230, 255, 0),
+]
 
 @dataclass
 class ModelPoints:
@@ -107,7 +118,7 @@ class ModelRenderer(Widget):
     model = sm['modelV2']
     radar_state = sm['radarState'] if sm.valid['radarState'] else None
     lead_one = radar_state.leadOne if radar_state else None
-    render_lead_indicator = self._longitudinal_control and radar_state is not None
+    render_lead_indicator = radar_state is not None
 
     # Update model data when needed
     model_updated = sm.updated['modelV2']
@@ -169,12 +180,12 @@ class ModelRenderer(Widget):
     # Update lane lines using raw points
     for i, lane_line in enumerate(self._lane_lines):
       lane_line.projected_points = self._map_line_to_polygon(
-        lane_line.raw_points, 0.025 * self._lane_line_probs[i], 0.0, max_idx
+        lane_line.raw_points, 0.025 * self._lane_line_probs[i], 0.0, max_idx, max_distance
       )
 
     # Update road edges using raw points
     for road_edge in self._road_edges:
-      road_edge.projected_points = self._map_line_to_polygon(road_edge.raw_points, 0.025, 0.0, max_idx)
+      road_edge.projected_points = self._map_line_to_polygon(road_edge.raw_points, 0.025, 0.0, max_idx, max_distance)
 
     # Update path using raw points
     if lead and lead.status:
@@ -183,7 +194,7 @@ class ModelRenderer(Widget):
 
     max_idx = self._get_path_length_idx(path_x_array, max_distance)
     self._path.projected_points = self._map_line_to_polygon(
-      self._path.raw_points, 0.9, self._path_offset_z, max_idx, allow_invert=False
+      self._path.raw_points, 0.9, self._path_offset_z, max_idx, max_distance, allow_invert=False
     )
 
     self._update_experimental_gradient()
@@ -226,8 +237,12 @@ class ModelRenderer(Widget):
       i += 1 + (1 if (i + 2) < max_len else 0)
 
     # Store the gradient in the path object
-    self._exp_gradient.colors = segment_colors
-    self._exp_gradient.stops = gradient_stops
+    self._exp_gradient = Gradient(
+      start=(0.0, 1.0),  # Bottom of path
+      end=(0.0, 0.0),  # Top of path
+      colors=segment_colors,
+      stops=gradient_stops,
+    )
 
   def _update_lead_vehicle(self, d_rel, v_rel, point, rect):
     speed_buff, lead_buff = 10.0, 40.0
@@ -254,13 +269,13 @@ class ModelRenderer(Widget):
     return LeadVehicle(glow=glow, chevron=chevron, fill_alpha=int(fill_alpha))
 
   def _draw_lane_lines(self):
-    """Draw lane lines and road edges"""
+    """Draw lane lines, road edges and bsm alert"""
     for i, lane_line in enumerate(self._lane_lines):
       if lane_line.projected_points.size == 0:
         continue
 
       alpha = np.clip(self._lane_line_probs[i], 0.0, 0.7)
-      color = rl.Color(255, 255, 255, int(alpha * 255))
+      color = rl.Color(0, 255, 100, int(alpha * 255))
       draw_polygon(self._rect, lane_line.projected_points, color)
 
     for i, road_edge in enumerate(self._road_edges):
@@ -270,6 +285,41 @@ class ModelRenderer(Widget):
       alpha = np.clip(1.0 - self._road_edge_stds[i], 0.0, 1.0)
       color = rl.Color(255, 0, 0, int(alpha * 255))
       draw_polygon(self._rect, road_edge.projected_points, color)
+
+    if ui_state.show_ui_bsm:
+      if ui_state.leftblindspot:
+        if len(self._lane_lines) >= 2:
+          # 0 ~ 1
+          left_pts = self._lane_lines[0].projected_points
+          mid_pts  = self._lane_lines[1].projected_points
+          if left_pts.size > 0 and mid_pts.size > 0:
+            polygon_pts = np.vstack([left_pts, mid_pts])
+            draw_polygon(self._rect, polygon_pts, rl.Color(230, 50, 50, 125))
+          # e0 ~ 1
+          elif len(self._road_edges) >= 1:
+            road_edge_pts = self._road_edges[0].projected_points
+            if mid_pts.size > 0 and road_edge_pts.size > 0:
+              polygon_pts = np.vstack([mid_pts, road_edge_pts])
+              draw_polygon(self._rect, polygon_pts, rl.Color(230, 50, 50, 125))
+
+      if ui_state.rightblindspot:
+        if len(self._lane_lines) >= 4:
+          # 2 ~ 3
+          right_bsm = False
+          mid_pts = self._lane_lines[2].projected_points
+          right_pts = self._lane_lines[3].projected_points
+          if mid_pts.size > 0 and right_pts.size > 0:
+            right_bsm = True
+            polygon_pts = np.vstack([mid_pts, right_pts])
+            draw_polygon(self._rect, polygon_pts, rl.Color(230, 50, 50, 125))
+            return
+        # 2 ~ e1
+        if len(self._lane_lines) >= 3 and len(self._road_edges) >= 2 and not right_bsm:
+          mid_pts = self._lane_lines[2].projected_points
+          road_edge_pts = self._road_edges[1].projected_points
+          if mid_pts.size > 0 and road_edge_pts.size > 0:
+            polygon_pts = np.vstack([mid_pts, road_edge_pts])
+            draw_polygon(self._rect, polygon_pts, rl.Color(230, 50, 50, 125))
 
   def _draw_path(self, sm):
     """Draw path with dynamic coloring based on mode and throttle state."""
@@ -286,16 +336,22 @@ class ModelRenderer(Widget):
       else:
         draw_polygon(self._rect, self._path.projected_points, rl.Color(255, 255, 255, 30))
     else:
-      # Blend throttle/no throttle colors based on transition
-      blend_factor = round(self._blend_filter.x * 100) / 100
-      blended_colors = self._blend_colors(NO_THROTTLE_COLORS, THROTTLE_COLORS, blend_factor)
-      gradient = Gradient(
-        start=(0.0, 1.0),  # Bottom of path
-        end=(0.0, 0.0),  # Top of path
-        colors=blended_colors,
-        stops=[0.0, 0.5, 1.0],
-      )
-      draw_polygon(self._rect, self._path.projected_points, gradient=gradient)
+      if not ui_state.enabled:
+        draw_polygon(self._rect, self._path.projected_points, rl.Color(255, 255, 255, 30))
+      else:
+        # Blend throttle/no throttle colors based on transition
+        blend_factor = round(self._blend_filter.x * 100) / 100
+        if True:
+          blended_colors = self._blend_colors(NO_THROTTLE_COLORS, THROTTLE_COLORS, blend_factor)
+        else:
+          blended_colors = self._blend_colors(LL_NO_THROTTLE_COLORS, LL_THROTTLE_COLORS, blend_factor)
+        gradient = Gradient(
+          start=(0.0, 1.0),  # Bottom of path
+          end=(0.0, 0.0),  # Top of path
+          colors=blended_colors,
+          stops=[0.0, 0.5, 1.0],
+        )
+        draw_polygon(self._rect, self._path.projected_points, gradient=gradient)
 
   def _draw_lead_indicator(self):
     # Draw lead vehicles if available
@@ -303,15 +359,19 @@ class ModelRenderer(Widget):
       if not lead.glow or not lead.chevron:
         continue
 
-      rl.draw_triangle_fan(lead.glow, len(lead.glow), rl.Color(218, 202, 37, 255))
-      rl.draw_triangle_fan(lead.chevron, len(lead.chevron), rl.Color(201, 34, 49, lead.fill_alpha))
+      if 0 < ui_state.radarDRel < 149:
+        rl.draw_triangle_fan(lead.glow, len(lead.glow), rl.Color(218, 202, 37, 255))
+        rl.draw_triangle_fan(lead.chevron, len(lead.chevron), rl.Color(201, 34, 49, lead.fill_alpha))
+      else:
+        rl.draw_triangle_fan(lead.glow, len(lead.glow), rl.Color(100, 255, 100, 255))
+        rl.draw_triangle_fan(lead.chevron, len(lead.chevron), rl.Color(50, 200, 50, lead.fill_alpha))
 
   @staticmethod
-  def _get_path_length_idx(pos_x_array: np.ndarray, path_height: float) -> int:
-    """Get the index corresponding to the given path height"""
+  def _get_path_length_idx(pos_x_array: np.ndarray, path_distance: float) -> int:
+    """Get the index corresponding to the given path distance"""
     if len(pos_x_array) == 0:
       return 0
-    indices = np.where(pos_x_array <= path_height)[0]
+    indices = np.where(pos_x_array <= path_distance)[0]
     return indices[-1] if indices.size > 0 else 0
 
   def _map_to_screen(self, in_x, in_y, in_z):
@@ -330,13 +390,24 @@ class ModelRenderer(Widget):
 
     return (x, y)
 
-  def _map_line_to_polygon(self, line: np.ndarray, y_off: float, z_off: float, max_idx: int, allow_invert: bool = True) -> np.ndarray:
+  def _map_line_to_polygon(self, line: np.ndarray, y_off: float, z_off: float, max_idx: int, max_distance: float, allow_invert: bool = True) -> np.ndarray:
     """Convert 3D line to 2D polygon for rendering."""
     if line.shape[0] == 0:
       return np.empty((0, 2), dtype=np.float32)
 
     # Slice points and filter non-negative x-coordinates
     points = line[:max_idx + 1]
+
+    # Interpolate around max_idx so path end is smooth (max_distance is always >= p0.x)
+    if 0 < max_idx < line.shape[0] - 1:
+      p0 = line[max_idx]
+      p1 = line[max_idx + 1]
+      x0, x1 = p0[0], p1[0]
+      interp_y = np.interp(max_distance, [x0, x1], [p0[1], p1[1]])
+      interp_z = np.interp(max_distance, [x0, x1], [p0[2], p1[2]])
+      interp_point = np.array([max_distance, interp_y, interp_z], dtype=points.dtype)
+      points = np.concatenate((points, interp_point[None, :]), axis=0)
+
     points = points[points[:, 0] >= 0]
     if points.shape[0] == 0:
       return np.empty((0, 2), dtype=np.float32)

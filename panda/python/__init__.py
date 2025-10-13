@@ -117,6 +117,7 @@ class Panda:
   HW_TYPE_RED_PANDA = b'\x07'
   HW_TYPE_TRES = b'\x09'
   HW_TYPE_CUATRO = b'\x0a'
+  HW_TYPE_BODY = b'\xb1'
 
   CAN_PACKET_VERSION = 4
   HEALTH_PACKET_VERSION = 17
@@ -124,7 +125,7 @@ class Panda:
   HEALTH_STRUCT = struct.Struct("<IIIIIIIIBBBBBHBBBHfBBHHHB")
   CAN_HEALTH_STRUCT = struct.Struct("<BIBBBBBBBBIIIIIIIHHBBBIIII")
 
-  H7_DEVICES = [HW_TYPE_RED_PANDA, HW_TYPE_TRES, HW_TYPE_CUATRO]
+  H7_DEVICES = [HW_TYPE_RED_PANDA, HW_TYPE_TRES, HW_TYPE_CUATRO, HW_TYPE_BODY]
   SUPPORTED_DEVICES = H7_DEVICES
 
   INTERNAL_DEVICES = (HW_TYPE_TRES, HW_TYPE_CUATRO)
@@ -225,8 +226,8 @@ class Panda:
     self.can_reset_communications()
 
     # disable automatic CAN-FD switching
-    for bus in range(PANDA_CAN_CNT):
-      self.set_canfd_auto(bus, False)
+    #for bus in range(PANDA_CAN_CNT):
+    #  self.set_canfd_auto(bus, False)
 
     # set CAN speed
     for bus in range(PANDA_CAN_CNT):
@@ -741,14 +742,14 @@ class Panda:
 
   # ******************* serial *******************
 
-  def serial_read(self, port_number):
-    ret = []
+  def serial_read(self, port_number, maxlen=1024):
+    ret = b''
     while 1:
-      lret = bytes(self._handle.controlRead(Panda.REQUEST_IN, 0xe0, port_number, 0, 0x40))
-      if len(lret) == 0:
+      r = bytes(self._handle.controlRead(Panda.REQUEST_IN, 0xe0, port_number, 0, 0x40))
+      if len(r) == 0 or len(ret) >= maxlen:
         break
-      ret.append(lret)
-    return b''.join(ret)
+      ret += r
+    return ret
 
   def serial_write(self, port_number, ln):
     ret = 0

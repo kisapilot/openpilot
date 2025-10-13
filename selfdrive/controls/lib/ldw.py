@@ -4,7 +4,7 @@ from openpilot.common.constants import CV
 
 from openpilot.common.params import Params
 
-CAMERA_OFFSET = Params().get("CameraOffsetAdj", return_default=True) * 0.001 if Params().get("CameraOffsetAdj", return_default=True) is not None else 0.04 # default 0.04
+CAMERA_OFFSET = Params().get("CameraOffsetAdj", return_default=True) if Params().get("CameraOffsetAdj", return_default=True) is not None else 0.04 # default 0.04
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
 LANE_DEPARTURE_THRESHOLD = 0.1
 

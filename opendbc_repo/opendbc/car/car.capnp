@@ -246,13 +246,11 @@ struct CarState {
   isMph @74 :Bool;
   aReqValue @75 :Float32;
   chargeMeter @76 :Float32;
-  brakeLights @77 :Bool;
-  pauseSpdLimit @78 :Bool;
-  leftLaneColor @79 :Int8;
-  rightLaneColor @80 :Int8;
-  engineRpm @81 :Float32;
-  cluVanz @82 :Float32;
-  isCanFD @83 :Bool;
+  pauseSpdLimit @77 :Bool;
+  leftLaneColor @78 :Int8;
+  rightLaneColor @79 :Int8;
+  cluVanz @80 :Float32;
+  isCanFD @81 :Bool;
 
   struct TPMS {
     unit @0 :Int8;
@@ -318,19 +316,21 @@ struct CarState {
       resumeCruise @10;
       gapAdjustCruise @11;
       lfa @12;
+      paddleLeft @13;
+      paddleRight @14;
     }
   }
 
   # deprecated
   errorsDEPRECATED @0 :List(OnroadEventDEPRECATED.EventName);
-  gasDEPRECATED @3 :Float32;        # this is user pedal only
-  brakeLightsDEPRECATED @19 :Bool;
+  gas @3 :Float32;        # this is user pedal only
+  brakeLights @19 :Bool;
   steeringRateLimitedDEPRECATED @29 :Bool;
   canMonoTimesDEPRECATED @12: List(UInt64);
   canRcvTimeoutDEPRECATED @49 :Bool;
   eventsDEPRECATED @13 :List(OnroadEventDEPRECATED);
   clutchPressedDEPRECATED @28 :Bool;
-  engineRpmDEPRECATED @46 :Float32;
+  engineRpm @46 :Float32;
 }
 
 # ******* radar state @ 20hz *******
@@ -362,6 +362,10 @@ struct RadarData @0x888ad6581cf0aacb {
 
     # some radars flag measurements VS estimates
     measured @6 :Bool;
+
+    vLead @7 :Float32; # m/s
+    aLead @8 :Float32; # m/s^2
+    jLead @9 :Float32; # m/s^3
   }
 
   enum ErrorDEPRECATED {
@@ -433,35 +437,37 @@ struct CarControl {
     oaccel @9: Float32; # m/s^2
     safetySpeed @10: Float32;
     lkasTemporaryOff @11: Bool;
-    gapBySpdOnTemp @12: Bool;
-    expModeTemp @13: Bool;
-    btnPressing @14: Int8;
-    aqValue @15: Float32;
-    aqValueRaw @16: Float32;
-    autoResvCruisekph @17: Float32;
-    resSpeed @18: Float32;
-    setLoadspeedTempStop @19: Bool;
-    kisaLog1 @20: Text;
-    kisaLog2 @21: Text;
-    kisaLog3 @22: Text;
+    expModeTemp @12: Bool;
+    btnPressing @13: Int8;
+    aqValue @14: Float32;
+    aqValueRaw @15: Float32;
+    autoResvCruisekph @16: Float32;
+    resSpeed @17: Float32;
+    setLoadspeedTempStop @18: Bool;
+    kisaLog1 @19: Text;
+    kisaLog2 @20: Text;
+    kisaLog3 @21: Text;
 
-    needBrake @23: Bool;
-    lkasTempDisabled @24: Bool;
-    lanechangeManualTimer @25: Int8;
-    emergencyManualTimer @26: Int8;
-    standstillResButton @27: Bool;
-    cruiseGapAdjusting @28: Bool;
-    onSpeedBumpControl @29: Bool;
-    onSpeedControl @30: Bool;
-    curvSpeedControl @31: Bool;
-    cutInControl @32: Bool;
-    driverSccSetControl @33: Bool;
-    autoholdPopupTimer @34: Int8;
-    autoResStarting @35: Bool;
-    e2eStandstill @36: Bool;
-    modeChangeTimer @37: Int8;
-    lkasTempDisabledTimer @38: Int8;
-    standStill @39: Bool;
+    needBrake @22: Bool;
+    lkasTempDisabled @23: Bool;
+    lanechangeManualTimer @24: Int8;
+    emergencyManualTimer @25: Int8;
+    standstillResButton @26: Bool;
+    cruiseGapAdjusting @27: Bool;
+    onSpeedBumpControl @28: Bool;
+    onSpeedControl @29: Bool;
+    curvSpeedControl @30: Bool;
+    cutInControl @31: Bool;
+    driverSccSetControl @32: Bool;
+    autoholdPopupTimer @33: Int8;
+    autoResStarting @34: Bool;
+    e2eStandstill @35: Bool;
+    modeChangeTimer @36: Int8;
+    lkasTempDisabledTimer @37: Int8;
+    standStill @38: Bool;
+
+    jerk @39: Float32;  # m/s^3
+    aTarget @40: Float32;  # m/s^2
 
     enum LongControlState @0xe40f3a917d908282{
       off @0;
@@ -496,6 +502,24 @@ struct CarControl {
 
     vFuture @11:Float32;
     vFutureA @12:Float32;
+
+    leadDistance @13: Float32;
+    leadRelSpeed @14: Float32;
+    leadDPath @15: Float32;
+    leadRadar @16: Int16;
+    modelDesire @17: Int16;
+    atcDistance @18: Float32;
+
+    leadLeftDist @19: Float32;
+    leadRightDist @20: Float32;
+    leadLeftLat @21: Float32;
+    leadRightLat @22: Float32;
+    leadLeftDist2 @23: Float32;
+    leadRightDist2 @24: Float32;
+    leadLeftLat2 @25: Float32;
+    leadRightLat2 @26: Float32;
+
+    e2eX @27 :List(Float64);
 
     enum VisualAlert {
       # these are the choices from the Honda
@@ -556,7 +580,6 @@ struct CarParams {
   notCar @66 :Bool;  # flag for non-car robotics platforms
 
   pcmCruise @3 :Bool;        # is openpilot's state tied to the PCM's cruise state?
-  enableDsu @5 :Bool;        # driving support unit
   enableBsm @56 :Bool;       # blind spot monitoring
   flags @64 :UInt32;         # flags for car specific quirks
   alphaLongitudinalAvailable @71 :Bool;
@@ -632,39 +655,30 @@ struct CarParams {
 
   experimentalLong @78 :Bool;
   experimentalLongAlt @79 :Bool;
-  smoothSteer @80 :SmoothSteerData;
-  mdpsBus @81: Int8;
-  sasBus @82: Int8;
-  sccBus @83: Int8;
-  fcaBus @84: Int8;
-  bsmAvailable @85: Bool;
-  lfaAvailable @86: Bool;
-  lvrAvailable @87: Bool;
-  evgearAvailable @88: Bool;
-  emsAvailable @89: Bool;
-  autoHoldAvailable @90 :Bool;
-  scc13Available @91 :Bool;
-  scc14Available @92 :Bool;
-  lfaHdaAvailable @93 :Bool;
-  navAvailable @94 :Bool;
-  isCanFD @95 :Bool;
-  adrvAvailable @96 :Bool;
-  brakeAvailable @97 :Bool;
-  tpmsAvailable @98 :Bool;
-  isAngleControl @99 :Bool;
-  evInfo @100 :Bool;
-  adrvControl @101 :Bool;
-  capacitiveSteeringWheel @102 :Bool;
-  capacitiveSteeringWheelAlt @103 :Bool;
-
-  struct SmoothSteerData
-  {
-    method @0: Int8;
-    maxSteeringAngle @1 :Int32;
-    maxDriverAngleWait @2 :Float32;
-    maxSteerAngleWait @3 :Float32;
-    driverAngleWait @4 :Float32;
-  }
+  mdpsBus @80: Int8;
+  sasBus @81: Int8;
+  sccBus @82: Int8;
+  fcaBus @83: Int8;
+  bsmAvailable @84: Bool;
+  lfaAvailable @85: Bool;
+  lvrAvailable @86: Bool;
+  evgearAvailable @87: Bool;
+  emsAvailable @88: Bool;
+  autoHoldAvailable @89 :Bool;
+  scc13Available @90 :Bool;
+  scc14Available @91 :Bool;
+  lfaHdaAvailable @92 :Bool;
+  navAvailable @93 :Bool;
+  isCanFD @94 :Bool;
+  adrvAvailable @95 :Bool;
+  brakeAvailable @96 :Bool;
+  tpmsAvailable @97 :Bool;
+  isAngleControl @98 :Bool;
+  evInfo @99 :Bool;
+  adrvControl @100 :Bool;
+  capacitiveSteeringWheel @101 :Bool;
+  capacitiveSteeringWheelAlt @102 :Bool;
+  extFlags @103 :UInt32;     # carrot ext car flags
 
   struct LateralParams {
     torqueBP @0 :List(Int32);
@@ -677,19 +691,18 @@ struct CarParams {
     kiBP @2 :List(Float32);
     kiV @3 :List(Float32);
     kf @4 :Float32;
-    kd @5 :Float32;
   }
 
   struct LateralTorqueTuning {
-    kp @1 :Float32;
-    ki @2 :Float32;
-    kd @8 : Float32;
     friction @3 :Float32;
-    kf @4 :Float32;
     steeringAngleDeadzoneDeg @5 :Float32;
     latAccelFactor @6 :Float32;
     latAccelOffset @7 :Float32;
     useSteeringAngleDEPRECATED @0 :Bool;
+    kpDEPRECATED @1 :Float32;
+    kiDEPRECATED @2 :Float32;
+    kfDEPRECATED @4 :Float32;
+    kdDEPRECATED @8 : Float32;
   }
 
   struct LongitudinalPIDTuning {
@@ -697,7 +710,7 @@ struct CarParams {
     kpV @1 :List(Float32);
     kiBP @2 :List(Float32);
     kiV @3 :List(Float32);
-    kf @6 :Float32;
+    kfDEPRECATED @6 :Float32;
     deadzoneBPDEPRECATED @4 :List(Float32);
     deadzoneVDEPRECATED @5 :List(Float32);
   }
@@ -864,5 +877,6 @@ struct CarParams {
   maxSteeringAngleDegDEPRECATED @54 :Float32;
   longitudinalActuatorDelayLowerBoundDEPRECATED @61 :Float32;
   stoppingControlDEPRECATED @31 :Bool; # Does the car allow full control even at lows speeds when stopping
-  radarTimeStepDEPRECATED @45: Float32 = 0.05;  # time delta between radar updates, 20Hz is very standard
+  radarTimeStep @45: Float32;  # time delta between radar updates, 20Hz is very standard
+  enableDsuDEPRECATED @5 :Bool;        # driving support unit
 }

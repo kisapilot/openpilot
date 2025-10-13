@@ -22,6 +22,7 @@ from openpilot.selfdrive.selfdrived.state import StateMachine
 from openpilot.selfdrive.selfdrived.alertmanager import AlertManager, set_offroad_alert
 
 from openpilot.system.version import get_build_metadata
+from openpilot.system.hardware import HARDWARE
 
 from openpilot.common.constants import CV
 from opendbc.car import structs
@@ -134,6 +135,8 @@ class SelfdriveD:
 
     # Determine startup event
     self.startup_event = EventName.startup
+    if HARDWARE.get_device_type() == 'mici':
+      self.startup_event = None
     if not car_recognized:
       self.startup_event = EventName.startupNoCar
     elif car_recognized and self.CP.passive:
@@ -147,8 +150,6 @@ class SelfdriveD:
     elif self.CP.passive:
       self.events.add(EventName.dashcamMode, static=True)
 
-
-    self.auto_enabled = self.params.get_bool("AutoEnable") and self.params.get_bool("UFCModeEnabled")
     self.no_mdps_mods = self.params.get_bool("NoSmartMDPS")
     self.ufc_mode = self.params.get_bool("UFCModeEnabled")
     self.second = 0.0
@@ -168,7 +169,7 @@ class SelfdriveD:
 
   def auto_enable(self, CS):
     if self.state_machine.state != State.enabled:
-      if CS.cruiseState.available and CS.vEgo > self.auto_enable_speed * (CV.KPH_TO_MS if self.is_metric else CV.MPH_TO_MS) and CS.gearShifter == structs.CarState.GearShifter.drive and \
+      if self.auto_enable_speed and CS.cruiseState.available and CS.vEgo > self.auto_enable_speed * (CV.KPH_TO_MS if self.is_metric else CV.MPH_TO_MS) and CS.gearShifter == structs.CarState.GearShifter.drive and \
        self.sm['liveCalibration'].calStatus != log.LiveCalibrationData.Status.uncalibrated and self.initialized and self.ready_timer > 300:
         self.events.add( EventName.pcmEnable )
 
@@ -340,10 +341,10 @@ class SelfdriveD:
       elif not self.params.get_bool("KisaMonitoringMode"):
         self.unsleep_mode_alert_prev = True
       # DoNotDisturb Mode Alert
-      if self.params.get("CommaStockUI", return_default=True) == 2 and self.donotdisturb_mode_alert_prev:
+      if self.donotdisturb_mode_alert_prev:
         self.events.add(EventName.doNotDisturb)
         self.donotdisturb_mode_alert_prev = not self.donotdisturb_mode_alert_prev
-      elif not self.params.get("CommaStockUI", return_default=True) == 2:
+      elif False:
         self.donotdisturb_mode_alert_prev = True
       self.second = 0.0
 
@@ -434,8 +435,8 @@ class SelfdriveD:
       clipped_speed = max(CS.vEgo, 0.3)
       actual_lateral_accel = controlstate.curvature * (clipped_speed**2)
       desired_lateral_accel = self.sm['modelV2'].action.desiredCurvature * (clipped_speed**2)
-      undershooting = abs(desired_lateral_accel) / abs(1e-3 + actual_lateral_accel) > 1.6
-      turning = abs(desired_lateral_accel) > 1.4
+      undershooting = abs(desired_lateral_accel) / abs(1e-3 + actual_lateral_accel) > 1.2
+      turning = abs(desired_lateral_accel) > 1.0
       # TODO: lac.saturated includes speed and other checks, should be pulled out
       if undershooting and turning and lac.saturated:
         self.events.add(EventName.steerSaturated)
@@ -468,7 +469,7 @@ class SelfdriveD:
         self.events.add(EventName.personalityChanged)
 
     # atom
-    if self.auto_enabled and not self.no_mdps_mods and self.ufc_mode:
+    if self.auto_enable_speed and not self.no_mdps_mods and self.ufc_mode:
       self.ready_timer += 1 if self.ready_timer < 350 else 350
       self.auto_enable(CS)
 

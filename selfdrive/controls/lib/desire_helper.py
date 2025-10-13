@@ -51,11 +51,6 @@ class DesireHelper:
 
     self.lane_change_auto_delay = {0: 0.0, 1: 0.2, 2: 0.5, 3: 1.0, 4: 1.5}.get(params.get("KisaAutoLaneChangeDelay", return_default=True), 2.0)
     self.lane_change_wait_timer = 0.0
-    self.lane_change_adjust = [params.get(k, return_default=True) * 0.01 for k in ("LCTimingFactor30", "LCTimingFactor60", "LCTimingFactor80", "LCTimingFactor110")]
-
-    self.lane_change_adjust_vel = [30*CV.KPH_TO_MS, 60*CV.KPH_TO_MS, 80*CV.KPH_TO_MS, 110*CV.KPH_TO_MS]
-    self.lane_change_adjust_weight = 2.0
-    self.lane_change_adjust_enable = params.get_bool("LCTimingFactorEnable")
 
     self.output_scale = 0.0
     self.ready_to_change = False
@@ -66,14 +61,7 @@ class DesireHelper:
 
   def update(self, carstate, lateral_active, lane_change_prob, controlsstate=None, md=None):
     try:
-      if controlsstate is not None:
-        states = [
-          controlsstate.lateralControlState.pidState,
-          controlsstate.lateralControlState.indiState,
-          controlsstate.lateralControlState.lqrState,
-          controlsstate.lateralControlState.torqueState,
-        ]
-        self.output_scale = states[controlsstate.lateralControlMethod].output
+      self.output_scale = controlsstate.lateralControlState.torqueState.output
     except:
       pass
 
@@ -97,7 +85,7 @@ class DesireHelper:
 
     lane_direction = -1 if carstate.leftBlinker else 1 if carstate.rightBlinker else 2
     colored_lc_block = (carstate.leftLaneColor == 2 and lane_direction == -1) or (carstate.rightLaneColor == 2 and lane_direction == 1)
-    cancel_condition = ((abs(self.output_scale) >= 0.8 ) or (carstate.steeringTorque > 270 and controlsstate.lateralControlMethod == 4)) and self.lane_change_timer > 0.3
+    cancel_condition = ((abs(self.output_scale) >= 0.8 ) or (carstate.steeringTorque > 270 and controlsstate.lateralControlMethod == 1)) and self.lane_change_timer > 0.3
 
     if self.lane_change_state == LaneChangeState.off and (road_edge_stat == lane_direction or colored_lc_block):
       self.lane_change_direction = LaneChangeDirection.none
@@ -113,18 +101,6 @@ class DesireHelper:
         self.lane_change_direction = self.get_lane_change_direction(carstate)
 
         self.lane_change_wait_timer = 0 if not self.ready_to_change else self.lane_change_auto_delay
-        if self.lane_change_adjust_enable:
-          if controlsstate is not None:
-            if controlsstate.curvature > 0.0005 and self.lane_change_direction == LaneChangeDirection.left: # left curve
-              self.lane_change_adjust_weight = min(2.0, np.interp(v_ego, self.lane_change_adjust_vel, self.lane_change_adjust)*1.5)
-            elif controlsstate.curvature < -0.0005 and self.lane_change_direction == LaneChangeDirection.right: # right curve
-              self.lane_change_adjust_weight = min(2.0, np.interp(v_ego, self.lane_change_adjust_vel, self.lane_change_adjust)*1.5)
-            else:
-              self.lane_change_adjust_weight = np.interp(v_ego, self.lane_change_adjust_vel, self.lane_change_adjust)
-          else:
-            self.lane_change_adjust_weight = np.interp(v_ego, self.lane_change_adjust_vel, self.lane_change_adjust)
-        else:
-          self.lane_change_adjust_weight = 2.0
       # LaneChangeState.preLaneChange
       elif self.lane_change_state == LaneChangeState.preLaneChange:
         self.lane_change_wait_timer += DT_MDL
@@ -148,7 +124,7 @@ class DesireHelper:
       # LaneChangeState.laneChangeStarting
       elif self.lane_change_state == LaneChangeState.laneChangeStarting:
         # fade out over .5s
-        self.lane_change_ll_prob = max(self.lane_change_ll_prob - self.lane_change_adjust_weight * DT_MDL, 0.0)
+        self.lane_change_ll_prob = max(self.lane_change_ll_prob - 2 * DT_MDL, 0.0)
 
         # 98% certainty
         if lane_change_prob < 0.02 and self.lane_change_ll_prob < 0.01:

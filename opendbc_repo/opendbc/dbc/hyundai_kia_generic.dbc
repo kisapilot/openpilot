@@ -1341,6 +1341,17 @@ BO_ 273 TCU11: 8 TCU
 BO_ 16 ACU13: 8 ACU
  SG_ CF_Acu_CshAct : 0|1@1+ (1.0,0.0) [0.0|1.0] ""  CUBIS,IBOX,ODS
 
+BO_ 1007 CRUISE_BUTTON_ALT: 8 XXX
+ SG_ SET_ME_1 : 52|1@0+ (1,0) [0|1] "" XXX
+ SG_ CruiseSwMain : 58|1@0+ (1,0) [0|1] "" XXX
+ SG_ CruiseSwState : 60|3@1+ (1,0) [0|7] "" XXX
+
+BO_ 1046 CRUISE_BUTTON_LFA: 8 XXX
+ SG_ NEW_SIGNAL_2 : 49|1@0+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_1 : 54|1@0+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_3 : 57|1@0+ (1,0) [0|1] "" XXX
+ SG_ CruiseSwLfa : 58|1@0+ (1,0) [0|1] "" XXX
+
 BO_ 1040 CGW_USM1: 8 BCM
  SG_ CF_Gway_ATTurnRValue : 0|2@1+ (1.0,0.0) [0.0|3.0] ""  CLU
  SG_ CF_Gway_PTGMRValue : 2|2@1+ (1.0,0.0) [0.0|3.0] ""  CLU
@@ -1384,6 +1395,8 @@ BO_ 1290 SCC13: 8 SCC
  SG_ SCC_Equip : 3|1@1+ (1,0) [0|1] "" ESC
  SG_ AebDrvSetStatus : 4|3@1+ (1,0) [0|7] "" CLU,ESC
  SG_ Lead_Veh_Dep_Alert_USM : 13|2@0+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_1 : 23|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_2 : 31|8@0+ (1,0) [0|255] "" XXX
 
 BO_ 1287 TCS15: 4 ESC
  SG_ ABS_W_LAMP : 0|1@1+ (1.0,0.0) [0.0|1.0] ""  _4WD,CLU,CUBIS,IBOX
@@ -1478,17 +1491,21 @@ BO_ 905 SCC14: 8 SCC
  SG_ ComfortBandLower : 6|6@1+ (0.02,0) [0|1.26] "m/s^2" ESC
  SG_ JerkUpperLimit : 12|7@1+ (0.1,0) [0|12.7] "m/s^3" ESC
  SG_ JerkLowerLimit : 19|7@1+ (0.1,0) [0|12.7] "m/s^3" ESC
+ SG_ NEW_SIGNAL_1 : 26|6@1+ (1,0) [0|63] "" XXX
  SG_ ACCMode : 32|3@1+ (1,0) [0|7] "" CLU,HUD,LDWS_LKAS,ESC
+ SG_ ObjDistStat : 42|2@1+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_2 : 55|8@0+ (1,0) [0|255] "" XXX
  SG_ ObjGap : 56|8@1+ (1,0) [0|255] "" CLU,HUD,ESC
 
-BO_ 1157 LFAHDA_MFC: 4 XXX
+BO_ 1157 LFAHDA_MFC: 8 XXX
  SG_ HDA_USM : 0|2@1+ (1,0) [0|3] "" XXX
  SG_ HDA_Active : 2|1@1+ (1,0) [0|1] "" XXX
  SG_ HDA_Icon_State : 3|2@1+ (1,0) [0|3] "" XXX
  SG_ HDA_Chime : 7|1@1+ (1,0) [0|1] "" XXX
  SG_ HDA_VSetReq : 8|8@1+ (1,0) [0|255] "km/h" XXX
  SG_ LFA_SysWarning : 16|3@1+ (1,0) [0|7] "" XXX
- SG_ NEW_SIGNAL_1 : 20|3@1+ (1,0) [0|7] "" XXX
+ SG_ HDA_Icon_Wheel : 20|1@1+ (1,0) [0|1] "" XXX
+ SG_ HDA_LdwSysState : 21|2@1+ (1,0) [0|3] "" XXX
  SG_ LFA_Icon_State : 24|2@1+ (1,0) [0|3] "" XXX
  SG_ LFA_USM : 27|2@1+ (1,0) [0|3] "" XXX
  SG_ HDA_SysWarning : 29|2@1+ (1,0) [0|3] "" XXX
@@ -1496,7 +1513,7 @@ BO_ 1157 LFAHDA_MFC: 4 XXX
 BO_ 913 BCM_PO_11: 8 Vector__XXX
  SG_ BCM_Door_Dri_Status : 5|1@0+ (1,0) [0|1] "" PT_ESC_ABS
  SG_ BCM_Shift_R_MT_SW_Status : 39|2@0+ (1,0) [0|3] "" PT_ESC_ABS
- SG_ LDA_BTN : 4|1@0+ (1,0) [0|1] "" XXX
+ SG_ LFA_Pressed : 4|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 1426 LABEL11: 8 XXX
  SG_ CC_React : 34|1@1+ (1,0) [0|1] "" XXX
@@ -1582,7 +1599,7 @@ BO_ 352 AHB1: 8 iBAU
  SG_ CF_Ahb_Bzzr : 26|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ CF_Ahb_ChkSum : 56|8@1+ (1,0) [0|255] "" Vector__XXX
 
-BO_ 1191 MFC_4a7: 8 XXX
+BO_ 1191 MFC_4a7: 2 XXX
  SG_ PAINT1 : 0|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 1162 BCA11: 8 BCW

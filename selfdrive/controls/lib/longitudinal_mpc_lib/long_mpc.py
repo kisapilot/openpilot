@@ -57,7 +57,7 @@ T_IDXS = np.array(T_IDXS_LST)
 FCW_IDXS = T_IDXS < 5.0
 T_DIFFS = np.diff(T_IDXS, prepend=[0.])
 COMFORT_BRAKE = 2.5
-STOP_DISTANCE = ((Params().get("StoppingDist", return_default=True) * 0.1) + 1.0) if Params().get("StoppingDist", return_default=True) is not None else 6.0 # 6.0
+STOP_DISTANCE = (Params().get("StoppingDist", return_default=True) + 1.0) if Params().get("StoppingDist", return_default=True) is not None else 6.0 # 6.0
 CRUISE_MIN_ACCEL = -1.2
 CRUISE_MAX_ACCEL = 1.6
 
@@ -234,15 +234,19 @@ class LongitudinalMpc:
     self.source = SOURCES[2]
 
     self.t_follow = 1.45
-    self.cruise_gap1 = Params().get("CruiseGap1", return_default=True) * 0.1
-    self.cruise_gap2 = Params().get("CruiseGap2", return_default=True) * 0.1
-    self.cruise_gap3 = Params().get("CruiseGap3", return_default=True) * 0.1
-    self.cruise_gap4 = Params().get("CruiseGap4", return_default=True) * 0.1
+    self.cruise_gap1 = Params().get("CruiseGap1", return_default=True)
+    self.cruise_gap2 = Params().get("CruiseGap2", return_default=True)
+    self.cruise_gap3 = Params().get("CruiseGap3", return_default=True)
+    self.cruise_gap4 = Params().get("CruiseGap4", return_default=True)
 
-    self.dynamic_tr_spd = list(map(float, Params().get("DynamicTRSpd", return_default=True).split(',')))
-    self.dynamic_tr_set = list(map(float, Params().get("DynamicTRSet", return_default=True).split(',')))
+    self.dynamic_tr_set = [
+      Params().get("DynamicTR0to20", return_default=True),
+      Params().get("DynamicTR20to40", return_default=True),
+      Params().get("DynamicTR40to60", return_default=True),
+      Params().get("DynamicTR60to80", return_default=True),
+      Params().get("DynamicTR80to110", return_default=True),
+    ]
     self.dynamic_TR_mode = Params().get("DynamicTRGap", return_default=True)
-    self.custom_tr_enabled = Params().get_bool("CustomTREnabled")
 
     self.alpha_long_enabled = Params().get_bool("AlphaLongitudinalEnabled")
 
@@ -360,32 +364,39 @@ class LongitudinalMpc:
 
     # kisapilot
     self.lo_timer += 1
-    if self.lo_timer > 200:
+    if self.lo_timer > 300:
       self.lo_timer = 0
       self.dynamic_TR_mode = Params().get("DynamicTRGap", return_default=True)
-      self.custom_tr_enabled = Params().get_bool("CustomTREnabled")
+      if self.dynamic_TR_mode:
+        self.dynamic_tr_set = [
+          Params().get("DynamicTR0to20", return_default=True),
+          Params().get("DynamicTR20to40", return_default=True),
+          Params().get("DynamicTR40to60", return_default=True),
+          Params().get("DynamicTR60to80", return_default=True),
+          Params().get("DynamicTR80to110", return_default=True),
+        ]
 
     self.status = radarstate.leadOne.status or radarstate.leadTwo.status
 
     lead_xv_0 = self.process_lead(radarstate.leadOne)
     lead_xv_1 = self.process_lead(radarstate.leadTwo)
 
-    if self.custom_tr_enabled:
+    if self.dynamic_TR_mode:
       cruise_gap = int(np.clip(carstate.cruiseGapSet, 1., 4.))
-      t_follow_d = np.interp(self.v_ego*self.ms_to_spd, self.dynamic_tr_spd, self.dynamic_tr_set)
+      t_follow_d = np.interp(self.v_ego*self.ms_to_spd, [20, 40, 60, 80, 110], self.dynamic_tr_set)
       if self.dynamic_TR_mode == 1:
-        self.t_follow = np.interp(float(cruise_gap), [1., 2., 3., 4.], [t_follow_d, self.cruise_gap2, self.cruise_gap3, self.cruise_gap4])
+        t_follow = np.interp(float(cruise_gap), [1., 2., 3., 4.], [t_follow_d, self.cruise_gap2, self.cruise_gap3, self.cruise_gap4])
       elif self.dynamic_TR_mode == 2:
-        self.t_follow = np.interp(float(cruise_gap), [1., 2., 3., 4.], [self.cruise_gap1, t_follow_d, self.cruise_gap3, self.cruise_gap4])
+        t_follow = np.interp(float(cruise_gap), [1., 2., 3., 4.], [self.cruise_gap1, t_follow_d, self.cruise_gap3, self.cruise_gap4])
       elif self.dynamic_TR_mode == 3:
-        self.t_follow = np.interp(float(cruise_gap), [1., 2., 3., 4.], [self.cruise_gap1, self.cruise_gap2, t_follow_d, self.cruise_gap4])
+        t_follow = np.interp(float(cruise_gap), [1., 2., 3., 4.], [self.cruise_gap1, self.cruise_gap2, t_follow_d, self.cruise_gap4])
       elif self.dynamic_TR_mode == 4:
-        self.t_follow = np.interp(float(cruise_gap), [1., 2., 3., 4.], [self.cruise_gap1, self.cruise_gap2, self.cruise_gap3, t_follow_d])
+        t_follow = np.interp(float(cruise_gap), [1., 2., 3., 4.], [self.cruise_gap1, self.cruise_gap2, self.cruise_gap3, t_follow_d])
       else:
-        self.t_follow = np.interp(float(cruise_gap), [1., 2., 3., 4.], [self.cruise_gap1, self.cruise_gap2, self.cruise_gap3, self.cruise_gap4])
-    elif self.alpha_long_enabled:
+        t_follow = np.interp(float(cruise_gap), [1., 2., 3., 4.], [self.cruise_gap1, self.cruise_gap2, self.cruise_gap3, self.cruise_gap4])
+    else:
       cruise_gap = int(np.clip(carstate.cruiseGapSet, 1., 4.))
-      self.t_follow = np.interp(float(cruise_gap), [1., 2., 3., 4.], [self.cruise_gap1, self.cruise_gap2, self.cruise_gap3, self.cruise_gap4])
+      t_follow = np.interp(float(cruise_gap), [1., 2., 3., 4.], [self.cruise_gap1, self.cruise_gap2, self.cruise_gap3, self.cruise_gap4])
 
     # To estimate a safe distance from a moving lead, we calculate how much stopping
     # distance that lead needs as a minimum. We can add that to the current distance
@@ -408,7 +419,7 @@ class LongitudinalMpc:
       v_cruise_clipped = np.clip(v_cruise * np.ones(N+1),
                                  v_lower,
                                  v_upper)
-      cruise_obstacle = np.cumsum(T_DIFFS * v_cruise_clipped) + get_safe_obstacle_distance(v_cruise_clipped, t_follow if not (self.custom_tr_enabled or self.alpha_long_enabled) else self.t_follow)
+      cruise_obstacle = np.cumsum(T_DIFFS * v_cruise_clipped) + get_safe_obstacle_distance(v_cruise_clipped, t_follow)
       x_obstacles = np.column_stack([lead_0_obstacle, lead_1_obstacle, cruise_obstacle])
       self.source = SOURCES[np.argmin(x_obstacles[0])]
 
@@ -449,7 +460,7 @@ class LongitudinalMpc:
 
     self.params[:,2] = np.min(x_obstacles, axis=1)
     self.params[:,3] = np.copy(self.prev_a)
-    self.params[:,4] = t_follow if not self.custom_tr_enabled else self.t_follow
+    self.params[:,4] = t_follow
 
 
     self.e2e_x = e2ex[:]

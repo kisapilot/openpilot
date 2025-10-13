@@ -1,6 +1,6 @@
 from cereal import car, log
-import cereal.messaging as messaging
 from opendbc.car import DT_CTRL, structs
+from opendbc.car.car_helpers import interfaces
 from opendbc.car.interfaces import MAX_CTRL_SPEED
 
 from openpilot.selfdrive.selfdrived.events import Events
@@ -11,21 +11,6 @@ ButtonType = structs.CarState.ButtonEvent.Type
 GearShifter = structs.CarState.GearShifter
 EventName = log.OnroadEvent.EventName
 NetworkLocation = structs.CarParams.NetworkLocation
-
-
-# TODO: the goal is to abstract this file into the CarState struct and make events generic
-class MockCarState:
-  def __init__(self):
-    self.sm = messaging.SubMaster(['gpsLocation', 'gpsLocationExternal'])
-
-  def update(self, CS: car.CarState):
-    self.sm.update(0)
-    gps_sock = 'gpsLocationExternal' if self.sm.recv_frame['gpsLocationExternal'] > 1 else 'gpsLocation'
-
-    CS.vEgo = self.sm[gps_sock].speed
-    CS.vEgoRaw = self.sm[gps_sock].speed
-
-    return CS
 
 
 class CarSpecificEvents:
@@ -41,22 +26,17 @@ class CarSpecificEvents:
     self.steer_warning_fix_enabled = Params().get_bool("SteerWarningFix")
     self.user_specific_feature = Params().get("UserSpecificFeature", return_default=True)
     self.long_alt = Params().get("KISALongAlt", return_default=True)
-    self.exp_long = self.CP.sccBus <= 0 and self.CP.openpilotLongitudinalControl and self.long_alt not in (1, 2)
+    self.exp_long = self.CP.sccBus <= 0 and self.CP.openpilotLongitudinalControl and not self.long_alt
     self.no_mdps_mods = Params().get_bool("NoSmartMDPS")
     self.lfa_button_eng = Params().get_bool("LFAButtonEngagement")
 
   def update(self, CS: car.CarState, CS_prev: car.CarState, CC: car.CarControl):
+    extra_gears = interfaces[self.CP.carFingerprint].DRIVABLE_GEARS
     if self.CP.brand in ('body', 'mock'):
       events = Events()
 
-    elif self.CP.brand == 'ford':
-      events = self.create_common_events(CS, CS_prev, extra_gears=[GearShifter.low, GearShifter.manumatic])
-
-    elif self.CP.brand == 'nissan':
-      events = self.create_common_events(CS, CS_prev, extra_gears=[GearShifter.brake])
-
     elif self.CP.brand == 'chrysler':
-      events = self.create_common_events(CS, CS_prev, extra_gears=[GearShifter.low])
+      events = self.create_common_events(CS, CS_prev, extra_gears=extra_gears)
 
       # Low speed steer alert hysteresis logic
       if self.CP.minSteerSpeed > 0. and CS.vEgo < (self.CP.minSteerSpeed + 0.5):
@@ -67,7 +47,7 @@ class CarSpecificEvents:
         events.add(EventName.belowSteerSpeed)
 
     elif self.CP.brand == 'honda':
-      events = self.create_common_events(CS, CS_prev, extra_gears=[GearShifter.sport], pcm_enable=False)
+      events = self.create_common_events(CS, CS_prev, extra_gears=extra_gears, pcm_enable=False)
 
       if self.CP.pcmCruise and CS.vEgo < self.CP.minEnableSpeed:
         events.add(EventName.belowEngageSpeed)
@@ -89,10 +69,11 @@ class CarSpecificEvents:
 
     elif self.CP.brand == 'toyota':
       # TODO: when we check for unexpected disengagement, check gear not S1, S2, S3
-      events = self.create_common_events(CS, CS_prev, extra_gears=[GearShifter.sport])
+      events = self.create_common_events(CS, CS_prev, extra_gears=extra_gears)
 
       if self.CP.openpilotLongitudinalControl:
-        if CS.cruiseState.standstill and not CS.brakePressed:
+        # Only can leave standstill when planner wants to move
+        if CS.cruiseState.standstill and not CS.brakePressed and CC.cruiseControl.resume:
           events.add(EventName.resumeRequired)
         if CS.vEgo < self.CP.minEnableSpeed:
           events.add(EventName.belowEngageSpeed)
@@ -104,9 +85,7 @@ class CarSpecificEvents:
             events.add(EventName.manualRestart)
 
     elif self.CP.brand == 'gm':
-      events = self.create_common_events(CS, CS_prev, extra_gears=[GearShifter.sport, GearShifter.low,
-                                                                   GearShifter.eco, GearShifter.manumatic],
-                                         pcm_enable=self.CP.pcmCruise)
+      events = self.create_common_events(CS, CS_prev, extra_gears=extra_gears, pcm_enable=self.CP.pcmCruise)
 
       # Enabling at a standstill with brake is allowed
       # TODO: verify 17 Volt can enable for the first time at a stop and allow for all GMs
@@ -117,8 +96,7 @@ class CarSpecificEvents:
         events.add(EventName.resumeRequired)
 
     elif self.CP.brand == 'volkswagen':
-      events = self.create_common_events(CS, CS_prev, extra_gears=[GearShifter.eco, GearShifter.sport, GearShifter.manumatic],
-                                         pcm_enable=self.CP.pcmCruise)
+      events = self.create_common_events(CS, CS_prev, extra_gears=extra_gears, pcm_enable=self.CP.pcmCruise)
 
       if self.CP.openpilotLongitudinalControl:
         if CS.vEgo < self.CP.minEnableSpeed + 0.5:
@@ -131,7 +109,7 @@ class CarSpecificEvents:
       #   events.add(EventName.steerTimeLimit)
 
     elif self.CP.brand == 'hyundai':
-      events = self.create_common_events(CS, CS_prev, extra_gears=(GearShifter.sport, GearShifter.manumatic),
+      events = self.create_common_events(CS, CS_prev, extra_gears=extra_gears,
                                          pcm_enable=self.CP.pcmCruise, allow_button_cancel=False)
 
       # kisa
@@ -183,11 +161,11 @@ class CarSpecificEvents:
         events.add(EventName.lkasEnabled)
 
     else:
-      events = self.create_common_events(CS, CS_prev)
+      events = self.create_common_events(CS, CS_prev, extra_gears=extra_gears)
 
     return events
 
-  def create_common_events(self, CS: structs.CarState, CS_prev: car.CarState, extra_gears=None, pcm_enable=True,
+  def create_common_events(self, CS: structs.CarState, CS_prev: car.CarState, extra_gears: tuple = (), pcm_enable=True,
                            allow_button_cancel=True):
     events = Events()
 
@@ -229,8 +207,6 @@ class CarSpecificEvents:
       events.add(EventName.accFaulted)
     if CS.steeringPressed:
       events.add(EventName.steerOverride)
-    if CS.steeringDisengage and not CS_prev.steeringDisengage and not self.ufc_mode:
-      events.add(EventName.steerDisengage)
     if CS.brakePressed and CS.standstill and not self.ufc_mode:
       events.add(EventName.preEnableStandstill)
     if CS.gasPressed and not self.ufc_mode:

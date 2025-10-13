@@ -73,6 +73,8 @@ class LongitudinalPlanner:
 
     self.is_metric = Params().get_bool('IsMetric')
 
+    self.v_cruise_kph = 0.0
+
   @staticmethod
   def parse_model(model_msg):
     if (len(model_msg.position.x) == ModelConstants.IDX_N and
@@ -105,6 +107,8 @@ class LongitudinalPlanner:
     v_cruise_kph = sm['carState'].vSetDis if CP.sccBus != 0 else sm['carState'].vCruise
     v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
     v_cruise = v_cruise_kph * (CV.KPH_TO_MS if self.is_metric else CV.MPH_TO_MS)
+    
+    self.v_cruise_kph = v_cruise_kph
 
     v_cruise_initialized = sm['carState'].vCruise != V_CRUISE_UNSET
 
@@ -210,6 +214,6 @@ class LongitudinalPlanner:
     longitudinalPlan.e2eX = self.mpc.e2e_x.tolist()
     longitudinalPlan.lead0Obstacle = self.mpc.lead_0_obstacle.tolist()
     longitudinalPlan.lead1Obstacle = self.mpc.lead_1_obstacle.tolist()
-    longitudinalPlan.cruiseTarget = self.mpc.cruise_target.tolist()
+    longitudinalPlan.cruiseTarget = self.v_cruise_kph
 
     pm.send('longitudinalPlan', plan_send)

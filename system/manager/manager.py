@@ -5,6 +5,7 @@ import signal
 import sys
 import time
 import traceback
+import subprocess
 
 from cereal import log
 import cereal.messaging as messaging
@@ -17,9 +18,10 @@ from openpilot.system.manager.process import ensure_running
 from openpilot.system.manager.process_config import managed_processes
 from openpilot.system.athena.registration import register, UNREGISTERED_DONGLE_ID
 from openpilot.common.swaglog import cloudlog, add_file_handler
-from openpilot.system.version import get_build_metadata, terms_version, training_version
+from openpilot.system.version import get_build_metadata
 from openpilot.system.hardware.hw import Paths
 
+import importlib.util
 
 def manager_init() -> None:
   #save_bootlog()
@@ -76,8 +78,6 @@ def manager_init() -> None:
   # set params
   serial = HARDWARE.get_serial()
   params.put("Version", build_metadata.openpilot.version)
-  params.put("TermsVersion", terms_version)
-  params.put("TrainingVersion", training_version)
   params.put("GitCommit", build_metadata.openpilot.git_commit)
   params.put("GitCommitDate", build_metadata.openpilot.git_commit_date)
   params.put("GitBranch", build_metadata.channel)
@@ -113,6 +113,19 @@ def manager_init() -> None:
   # kisapilot
   if os.path.isfile('/data/log/error.txt'):
     os.remove('/data/log/error.txt')
+
+  if importlib.util.find_spec("flask") is None:
+    print("flask Installing...")
+    os.system("pip install flask")
+    print("flask Installed!")
+  if importlib.util.find_spec("shapely") is None:
+    print("shapely Installing...")
+    os.system("pip install shapely")
+    print("shapely Installed!")
+  if importlib.util.find_spec("netifaces") is None:
+    print("netifaces Installing...")
+    os.system("pip install netifaces")
+    print("netifaces Installed!")
 
   # preimport all processes
   for p in managed_processes.values():
@@ -208,6 +221,15 @@ def manager_thread() -> None:
 
 
 def main() -> None:
+  try:
+    subprocess.run(
+      ["pkill", "-f", "kisa_agent.py"],
+      stdout=subprocess.DEVNULL,
+      stderr=subprocess.DEVNULL
+    )
+  except Exception as e:
+    print("Failed to stop kisa_agent:", e)
+
   manager_init()
   if os.getenv("PREPAREONLY") is not None:
     return

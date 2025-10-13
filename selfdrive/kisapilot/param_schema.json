@@ -1,0 +1,1613 @@
+[
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "후측방 차량 감지 표시",
+      "en": "Display BSM Status"
+    },
+    "param": "KisaBlindSpotDetect",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "화면에 후측방 차량 감지 기능 표시를 추가합니다.",
+      "en": "Displays rear-side vehicle detection on the screen."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "장치 자동 전원 종료 시간",
+      "en": "Device Auto Shutdown Time"
+    },
+    "param": "KisaAutoShutdown",
+    "min_value": 0,
+    "max_value": 14,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "즉시", "en": "RightNow" },
+      "1": { "ko": "5초", "en": "5sec" },
+      "2": { "ko": "30초", "en": "30sec" },
+      "3": { "ko": "1분", "en": "1min" },
+      "4": { "ko": "3분", "en": "3min" },
+      "5": { "ko": "5분", "en": "5min" },
+      "6": { "ko": "10분", "en": "10min" },
+      "7": { "ko": "30분", "en": "30min" },
+      "8": { "ko": "1시간", "en": "1hour" },
+      "9": { "ko": "3시간", "en": "3hour" },
+      "10": { "ko": "5시간", "en": "5hour" },
+      "11": { "ko": "10시간", "en": "10hour" },
+      "12": { "ko": "30시간", "en": "30hour" },
+      "13": { "ko": "1일", "en": "1day" },
+      "14": { "ko": "3일", "en": "3day" }
+    },
+    "description": {
+      "ko": "장치 자동 전원 종료 시간 설정(상시 전원 혹은 OBD 연결차량)",
+      "en": "Device Auto Shutdown Time (12v on or OBD Connected Vehicle)"
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "UI 밝기",
+      "en": "UI Brightness"
+    },
+    "param": "KisaUIBrightness",
+    "min_value": 5,
+    "max_value": 100,
+    "step": 5,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "UI 화면 밝기를 조절합니다.",
+      "en": "Adjusts UI screen brightness."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "UI 볼륨",
+      "en": "UI Volume"
+    },
+    "param": "KisaUIVolumeBoost",
+    "min_value": -10,
+    "max_value": 100,
+    "step": 10,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "UI 및 안내음 볼륨을 조절합니다.",
+      "en": "Adjusts UI notification volume."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "UTC 시간 조정",
+      "en": "UTC Timezone(Hours)"
+    },
+    "param": "TimeFactorModHours",
+    "min_value": -24,
+    "max_value": 24,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "UTC 시간을 조절합니다. + - 값",
+      "en": "Adjusts device UTC hours. + - value"
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "UTC 분 조정",
+      "en": "UTC Timezone(Minutes)"
+    },
+    "param": "TimeFactorModMinutes",
+    "min_value": -59,
+    "max_value": 59,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "장치의 UTC 분을 조절합니다. + - 값",
+      "en": "Adjusts device UTC minute. + - value"
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "방해금지 모드(준비중)",
+      "en": "Do Not Disturb Mode(WIP)"
+    },
+    "param": "DoNotDisturbMode",
+    "min_value": 0,
+    "max_value": 3,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "미사용", "en": "Unused" },
+      "1": { "ko": "화면만", "en": "Screen Only" },
+      "2": { "ko": "소리만", "en": "Sound Only" },
+      "3": { "ko": "둘다", "en": "Both" }
+    },
+    "description": {
+      "ko": "방해금지 모드를 설정합니다. 각 기능이 꺼집니다.",
+      "en": "Sets Do Not Disturb mode. Disables each feature."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "레이더트랙 사용 (준비중)",
+      "en": "Use RadarTracks (WIP)"
+    },
+    "param": "EnableRadarTracks",
+    "min_value": 0,
+    "max_value": 2,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "미사용", "en": "Unused" },
+      "1": { "ko": "거리", "en": "Distance Only" },
+      "2": { "ko": "거리(컷인)", "en": "Distance(Cutin)" }
+    },
+    "description": {
+      "ko": "레이더트랙을 사용합니다.",
+      "en": "Enables RadarTracks."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "비디오 녹화 시간",
+      "en": "Video Recording Time"
+    },
+    "param": "RecordingTimePerVideo",
+    "min_value": 5,
+    "max_value": 30,
+    "step": 5,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "파일당 비디오 녹화시간을 설정합니다.",
+      "en": "Sets video recording time per file."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "비디오 최대 녹화 갯수",
+      "en": "Max Video Recordings"
+    },
+    "param": "RecordingMaxFiles",
+    "min_value": 10,
+    "max_value": 2000,
+    "step": 10,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "최대 저장되는 비디오 갯수를 설정합니다. 초과시 가장 오래된것부터 자동 삭제",
+      "en": "Sets max number of saved video files. Oldest files will be deleted automatically."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "부팅 시 핫스팟(준비중)",
+      "en": "Hotspot on Boot(WIP)"
+    },
+    "param": "KisaHotspotOnBoot",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "부팅 시 Wi-Fi 핫스팟을 자동으로 켭니다.",
+      "en": "Enables Wi-Fi hotspot on boot."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "모니터링 모드(준비중)",
+      "en": "Monitoring Mode(WIP)"
+    },
+    "param": "KisaMonitoringMode",
+    "min_value": 0,
+    "max_value": 2,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "기본값", "en": "Default" },
+      "1": { "ko": "졸음방지", "en": "Unsleep" },
+      "2": { "ko": "커스텀", "en": "Custom" }
+    },
+    "description": {
+      "ko": "모니터링 모드를 설정합니다.",
+      "en": "Sets Monitoring Mode."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "LFA버튼으로 오픈파일럿 활성화",
+      "en": "LFA button Engagement"
+    },
+    "param": "LFAButtonEngagement",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "LFA버튼으로 오픈파일럿을 활성화 합니다.",
+      "en": "Enables LFA button Engagement."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "주행 모델 선택",
+      "en": "Drive Model Selection"
+    },
+    "param": "UseLegacyLaneModel",
+    "min_value": 0,
+    "max_value": 2,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "모델", "en": "Model" },
+      "1": { "ko": "MPC", "en": "MPC" },
+      "2": { "ko": "복합", "en": "Mix" }
+    },
+    "description": {
+      "ko": "주행모델을 선택합니다. MPC는 이전의 차선 추종모드이며, 모델은 모델이 직접 경로를 계산합니다. MIX는 직선로에서는 MPC, 곡률이 있는 구간에서는 모델경로를 사용합니다.",
+      "en": "Selects Drive Model. MPC is the previous lane model and Model is the model that uses the direct route. MIX uses the model route in the straight section and the MPC route in the curve section."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "클러스터 HDP 표시 사용",
+      "en": "Use HDP Display"
+    },
+    "param": "KisaHDPuse",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "기존 차량 갭 표시 대신 HDP 표시를 사용하여 클러스터에 시각적 효과를 줍니다.",
+      "en": "Use HDP display instead of standard car display to improve cluster visibility."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "자동 활성화 속도 지정",
+      "en": "Auto Enable Speed"
+    },
+    "param": "AutoEnableSpeed",
+    "min_value": 0,
+    "max_value": 200,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "미사용", "en": "Unuse" }
+    },
+    "description": {
+      "ko": "자동 활성화 속도를 지정합니다. UFC모드가 켜져 있어야 합니다.",
+      "en": "Sets Auto Enable Speed. Must be in UFC Mode."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "턴시그널 사용 중 조향 해제",
+      "en": "Steering pause on turn signal"
+    },
+    "param": "KisaTurnSteeringDisable",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "턴 시그널 작동시 조향을 일시적으로 해제 합니다.",
+      "en": "Disables steering on turn signal."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "스티어링 경고 해제(일부 차종 한정)",
+      "en": "Steering Warning Fix(Some cars only)"
+    },
+    "param": "SteerWarningFix",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "정지구간 ISG 동작시 스티어링 경고를 일시적으로 해제 합니다.",
+      "en": "Disables steering warning during ISG."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "드라이브 기어 강제 설정",
+      "en": "Drive Gear Setting Forcely"
+    },
+    "param": "JustDoGearD",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "기어를 드라이브로 강제 설정합니다. 일부 기어인식이 되지 않는 차종 전용 옵션입니다.",
+      "en": "Forces drive gear setting. Only use for cars that do not identify drive gear."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "비 스마트 MDPS 차량",
+      "en": "Non Smart MDPS Car"
+    },
+    "param": "NoSmartMDPS",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "스마트 MDPS가 없는 차량으 선택하세요. 일반 사용자는 선택하지 않아도 됩니다.",
+      "en": "Select non smart MDPS cars. Normal users do not need to select."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "LDWS 차량 전용",
+      "en": "LDWS Car Only"
+    },
+    "param": "LdwsCarFix",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "LDWS 차량을 이 옵션을 선택해야 합니다.",
+      "en": "Select LDWS cars only."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "레이더 거리 값 표시",
+      "en": "Radar Distance Display"
+    },
+    "param": "UseRadarValue",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "비전 거리 대신 레이더 거리를 표시합니다. 차량 주행에는 영향이 없으며 화면 표시 전용입니다.",
+      "en": "Displays radar range instead of vision range. Only for display on screen."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "정지 상태 출발 신호 알림",
+      "en": "Depart Chime at Stop"
+    },
+    "param": "DepartChimeAtResume",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "정지 상태에서 출발 조건 발생 시 알람을 울립니다.",
+      "en": "Play chime at stop condition when start signal is detected."
+    }
+  },
+  {
+    "group": "UI/Start",
+    "title": {
+      "ko": "배선개조 or 카메라 롱컨 차량",
+      "en": "Wired or Camera SCC Car"
+    },
+    "param": "KISALongAlt",
+    "min_value": 0,
+    "max_value": 2,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "설정안함", "en": "Unset" },
+      "1": { "ko": "카메라SCC", "en": "CameraSCC" },
+      "2": { "ko": "배선개조", "en": "WiredSCC" }
+    },
+    "description": {
+      "ko": "SCC 작동 방식을 설정합니다.\n카메라SCC: 배선 개조없이 직접 컨트롤 할 수 있는 차량은 설정합니다.\n배선개조: 별도의 배선을 통해 SCC를 제어하는 차량은 선택합니다.",
+      "en": "Sets SCC action mode.\nCameraSCC: Sets for cars that can directly control SCC without wires.\nWiredSCC: Sets for cars that control SCC with wires."
+    }
+  },
+
+
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "자동 차선변경 속도",
+      "en": "Auto Lane Change Speed"
+    },
+    "param": "KisaLaneChangeSpeed",
+    "min_value": 0,
+    "max_value": 200,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "비활성", "en": "Disabled" }
+    },
+    "description": {
+      "ko": "자동 차선변경 가능 속도를 지정합니다.(0: 자동차선변경 미사용)",
+      "en": "Sets Auto Lane Change Speed.(0: Auto Lane Change Disabled)"
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "자동 차선변경 지연 시간",
+      "en": "Auto Lane Change Delay"
+    },
+    "param": "KisaAutoLaneChangeDelay",
+    "min_value": 0,
+    "max_value": 5,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "넛지필요", "en": "Need Nudge" },
+      "1": { "ko": "즉시", "en": "RightNow" },
+      "2": { "ko": "0.5초", "en": "0.5sec" },
+      "3": { "ko": "1초", "en": "1sec" },
+      "4": { "ko": "1.5초", "en": "1.5sec" },
+      "5": { "ko": "2초", "en": "2sec" }
+    },
+    "description": {
+      "ko": "자동 차선 변경 전 지연 시간을 설정합니다.(0: 사용자가 직접 조작 필요)",
+      "en": "Sets Auto Lane Change Delay.(0: User Needs to Nudge)"
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "스티어링 앵글 값 보정",
+      "en": "Steer Angle Correction"
+    },
+    "param": "KisaSteerAngleCorrection",
+    "min_value": -8,
+    "max_value": 8,
+    "step": 0.1,
+    "decimal_places": 1,
+    "value_type": "FLOAT",
+    "special_texts": {
+      "0": { "ko": "보정안함", "en": "No Correction" }
+    },
+    "description": {
+      "ko": "핸들 중앙정렬시 스티어링 앵글 값이 0.0이 아닌경우에 + - 값으로 보정합니다. 오픈파일럿은 자체 보정기능이 있으므로 미관상 보정 기능이며, 너무 큰 보정값은 파라미터 보정이 아니라 정비소에서 스티어링 앵글 조정 및 앵글 센서를 초기화 해야 합니다.",
+      "en": "Corrects steering angle in center steering position. Only works with openpilot parameter steering angle correction. Do not use for manual control."
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "카메라 오프셋 설정",
+      "en": "Camera Offset"
+    },
+    "param": "CameraOffsetAdj",
+    "min_value": -1,
+    "max_value": 1,
+    "step": 0.01,
+    "decimal_places": 2,
+    "value_type": "FLOAT",
+    "special_texts": {
+      "0.04": { "ko": "기본값", "en": "Default" }
+    },
+    "description": {
+      "ko": "장치를 중앙이 아니라 좌 우측으로 치우쳐 설치한 경우 기본 카메라 오프셋 값을 조정합니다. 장치가 10cm 왼쪽으로 치우친 경우 0.1만큼 더해야 합니다. 오른쪽으로 치우친 경우는 뺍니다. 장치를 중앙에 위치하였는데 주행 시 왼쪽으로 치우쳐 운행하고 싶은경우는 조금씩 값을 낮춰야 합니다. 오른쪽으로 치우쳐 운행하고 싶은경우는 높입니다.",
+      "en": "Adjusts the default camera offset for the device. For a left camera, add 0.1. For a right camera, subtract 0.1. For a camera at the center, adjust occasionally."
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "Steer Ratio",
+      "en": "Steer Ratio"
+    },
+    "param": "SteerRatioAdj",
+    "min_value": 10,
+    "max_value": 30,
+    "step": 0.05,
+    "decimal_places": 2,
+    "value_type": "FLOAT",
+    "special_texts": {
+      "10": { "ko": "라이브SR", "en": "Live SR" }
+    },
+    "description": {
+      "ko": "Steer Ratio를 조정합니다.(Live Steer Ratio 사용시 10으로 맞추세요.)",
+      "en": "Adjusts Steer Ratio.(Use 10 for Live Steer Ratio.)"
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "Live Steer Ratio 조정 비율(%)",
+      "en": "Live Steer Ratio Adjustment(%)"
+    },
+    "param": "LiveSteerRatioPercent",
+    "min_value": -50,
+    "max_value": 50,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "기본값", "en": "Default" }
+    },
+    "description": {
+      "ko": "Live Steer Ratio 조정 비율를 설정합니다.",
+      "en": "Sets Live Steer Ratio Adjustment Percentage."
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "Steer Actuator Delay",
+      "en": "Steer Actuator Delay"
+    },
+    "param": "SteerActuatorDelayAdj",
+    "min_value": 0.01,
+    "max_value": 1,
+    "step": 0.01,
+    "decimal_places": 2,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "스티어 액츄에이터 딜레이를 조정합니다. 커브 진입시 차량이 느리게 조향을 하는 경우 값을 높여야 합니다.",
+      "en": "Adjusts steering actuator delay. Use high values if the car is understeering."
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "Steer Limit Timer",
+      "en": "Steer Limit Timer"
+    },
+    "param": "SteerLimitTimerAdj",
+    "min_value": 0.1,
+    "max_value": 5,
+    "step": 0.1,
+    "decimal_places": 1,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "조향이 계속 포화된 상태로 유지될 수 있는 최대 허용 시간이며 초과시 제어를 약화하거나 경고/페일세이프를 트리거하는 데 사용됩니다.(단위:초)",
+      "en": "Adjusts the maximum steering limit timer. Use it to reduce the steering limit or increase the steering limit timer.(Units:seconds)"
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "TireStiffness Factor",
+      "en": "TireStiffness Factor"
+    },
+    "param": "TireStiffnessFactorAdj",
+    "min_value": 0.05,
+    "max_value": 1,
+    "step": 0.05,
+    "decimal_places": 2,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "타이어 강성 보정 계수입니다. 값이 낮을수록 차량이 기민하게 움직입니다. 차량 spec에 값이 이미 지정된 경우는 그 값을 사용합니다.", 
+      "en": "Tire stiffness adjustment factor. Use it to reduce the tire stiffness. Use the tire stiffness specified in the car spec if you don't want to adjust the tire stiffness."
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "최대 조향 토크",
+      "en": "Max Steering Torque"
+    },
+    "param": "SteerMaxAdj",
+    "min_value": 255,
+    "max_value": 409,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "조향 토크 최대값을 설정합니다.",
+      "en": "Sets maximum steering torque."
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "조향 델타 상승",
+      "en": "Steer Delta Up"
+    },
+    "param": "SteerDeltaUpAdj",
+    "min_value": 1,
+    "max_value": 5,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "조향 토크 증가 속도입니다.",
+      "en": "Steering torque increase rate."
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "조향 델타 감소",
+      "en": "Steer Delta Down"
+    },
+    "param": "SteerDeltaDownAdj",
+    "min_value": 5,
+    "max_value": 10,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "조향 토크 감소 속도입니다.",
+      "en": "Steering torque decrease rate."
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "라이브 토크 파라미터 사용",
+      "en": "Use Live Torque Parameters"
+    },
+    "param": "KisaLiveTorque",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "라이브 토크 파라미터를 사용합니다.",
+      "en": "Uses Live Torque Parameters."
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "Torque KP",
+      "en": "Torque KP"
+    },
+    "param": "TorqueKp",
+    "min_value": 0.1,
+    "max_value": 3,
+    "step": 0.1,
+    "decimal_places": 1,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "조향 토크 비례 계수입니다..(라이브토크 사용시 미적용)",
+      "en": "Proportional gain for steering torque.(Not used with Live Torque.)"
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "Torque KI",
+      "en": "Torque KI"
+    },
+    "param": "TorqueKi",
+    "min_value": 0.1,
+    "max_value": 2,
+    "step": 0.05,
+    "decimal_places": 2,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "조향 토크 적분 계수입니다.(라이브토크 사용시 미적용)",
+      "en": "Integral gain for steering torque.(Not used with Live Torque.)"
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "Torque Friction",
+      "en": "Torque Friction"
+    },
+    "param": "TorqueFriction",
+    "min_value": 0.01,
+    "max_value": 1,
+    "step": 0.01,
+    "decimal_places": 2,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "조향 마찰 보정 값입니다.(라이브토크 사용시 미적용)",
+      "en": "Steering friction compensation.(Not used with Live Torque.)"
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "Torque MaxLatAccel",
+      "en": "Torque MaxLatAccel"
+    },
+    "param": "TorqueMaxLatAccel",
+    "min_value": 0.1,
+    "max_value": 3.5,
+    "step": 0.1,
+    "decimal_places": 1,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "허용 최대 횡가속입니다.(라이브토크 사용시 미적용)",
+      "en": "Maximum allowed lateral acceleration.(Not used with Live Torque.)"
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "Torque Angle DeadZone",
+      "en": "Torque Angle DeadZone"
+    },
+    "param": "TorqueAngDeadZone",
+    "min_value": 0.1,
+    "max_value": 3,
+    "step": 0.1,
+    "decimal_places": 1,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "조향 각 데드존을 설정합니다.(라이브토크 사용시 미적용)",
+      "en": "Sets steering angle deadzone.(Not used with Live Torque.)"
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "왼쪽 엣지 치우침 조정",
+      "en": "Left Edge Offset Adjust"
+    },
+    "param": "LeftEdgeOffset",
+    "min_value": -1,
+    "max_value": 1,
+    "step": 0.01,
+    "decimal_places": 2,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "차량의 왼쪽에 도로 엣지가 있을 경우 카메라 오프셋을 조절하여 차량 위치를 조정합니다.(-값: 차량을 왼쪽으로 이동, +값: 차량을 오른쪽으로 이동), 기본 카메라 오프셋과 값 조정 정도가 동일합니다.", 
+      "en": "Adjusts the camera offset to the left edge of the car if a road edge is present.(Negative value: moves the car to the left, Positive value: moves the car to the right), The default camera offset and value adjustment ratio are the same."
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "오른쪽 엣지 치우침 조정",
+      "en": "Right Edge Offset Adjust"
+    },
+    "param": "RightEdgeOffset",
+    "min_value": -1,
+    "max_value": 1,
+    "step": 0.01,
+    "decimal_places": 2,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "차량의 오른쪽에 도로 엣지가 있을 경우 카메라 오프셋을 조절하여 차량 위치를 조정합니다.(-값: 차량을 왼쪽으로 이동, +값: 차량을 오른쪽으로 이동), 기본 카메라 오프셋과 값 조정 정도가 동일합니다.", 
+      "en": "Adjusts the camera offset to the right edge of the car if a road edge is present.(Negative value: moves the car to the left, Positive value: moves the car to the right), The default camera offset and value adjustment ratio are the same."
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "왼쪽 커브 치우침 조정",
+      "en": "Left Curve Offset Adjust"
+    },
+    "param": "LeftCurvOffsetAdj",
+    "min_value": -100,
+    "max_value": 100,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "왼쪽으로 굽은 커브 구간 주행시 차량의 위치를 조정합니다.(-값: 차량을 왼쪽으로 이동, +값: 차량을 오른쪽으로 이동), 주행 모델이 MPC인 경우만 적용됩니다.", 
+      "en": "Adjusts the position of the car in the curve to the left.(Negative value: moves the car to the left, Positive value: moves the car to the right), Only applicable to the driving model of MPC."
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "오른쪽 커브 치우침 조정",
+      "en": "Right Curve Offset Adjust"
+    },
+    "param": "RightCurvOffsetAdj",
+    "min_value": -100,
+    "max_value": 100,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "오른쪽으로 굽은 커브 구간 주행시 차량의 위치를 조정합니다.(-값: 차량을 왼쪽으로 이동, +값: 차량을 오른쪽으로 이동), 주행 모델이 MPC인 경우만 적용될테요.", 
+      "en": "Adjusts the position of the car in the curve to the right.(Negative value: moves the car to the left, Positive value: moves the car to the right), Only applicable to the driving model of MPC."
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "스피드 카메라 오프셋",
+      "en": "Speed Camera Offset"
+    },
+    "param": "SpeedCameraOffset",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "속도에 따라 카메라 오프셋을 조정합니다. 저속구간에서는 왼쪽으로 치우쳐 주행하고 고속으로 갈수록 원래 값을 사용합니다.",
+      "en": "Adjusts the camera offset based on speed. In slow regions, the car drives to the left and uses the original value."
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "LKAS 스티어링 최대 허용각도 조정",
+      "en": "LKAS Steering Angle Limit Adjust"
+    },
+    "param": "KisaMaxAngleLimit",
+    "min_value": 80,
+    "max_value": 500,
+    "step": 10,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "80": { "ko": "무제한", "en": "Unlimited" }
+    },
+    "description": {
+      "ko": "스티어링 최대 허용 각도를 조정합니다. 일부차량의 경우 90도 이상에서 오류 발생시 값을 90도 미만으로 낮춰야 합니다.", 
+      "en": "Adjusts the maximum steering angle. In the case of a partial car, it is not allowed to exceed 90 degrees."
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "LKAS 오류 방지(일부차량 한정)",
+      "en": "LKAS Fault Avoidance (Partial Car Only)"
+    },
+    "param": "AvoidLKASFaultEnabled",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "90도 이상 스티어링 오류 방지(일부차량 한정)",
+      "en": "90 degree steering angle fault avoidance (partial car only)"
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "LKAS 오류 최대 각도 조정",
+      "en": "LKAS Fault Max Angle Adjust"
+    },
+    "param": "AvoidLKASFaultMaxAngle",
+    "min_value": 81,
+    "max_value": 200,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "LKAS 오류 최대 각도를 조정합니다.", 
+      "en": "Adjusts the maximum angle of LKAS fault."
+    }
+  },
+  {
+    "group": "LAT",
+    "title": {
+      "ko": "LKAS 오류 최대 프레임",
+      "en": "LKAS Fault Max Frame"
+    },
+    "param": "AvoidLKASFaultMaxFrame",
+    "min_value": 81,
+    "max_value": 200,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "LKAS 오류 최대 프레임을 조정합니다.", 
+      "en": "Adjusts the maximum frame of LKAS fault."
+    }
+  },
+
+
+  {
+    "group": "LONG",
+    "title": {
+      "ko": "가변크루즈 모드 사용",
+      "en": "Variable Cruise Mode"
+    },
+    "param": "KisaVariableCruise",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "크루즈 버튼 스패밍을 이용한 가변 크루즈 모드를 사용합니다.",
+      "en": "Uses variable cruise mode by pressing the cruise button."
+    }
+  },
+  {
+    "group": "LONG",
+    "title": {
+      "ko": "기사 주행 모드 설정",
+      "en": "Kisa Drive Mode Setting"
+    },
+    "param": "CruiseStatemodeSelInit",
+    "min_value": 0,
+    "max_value": 5,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "기본 모드", "en": "Default Mode" },
+      "1": { "ko": "차간+커브", "en": "Distance+Curv" },
+      "2": { "ko": "차간거리Only", "en": "Distance only" },
+      "3": { "ko": "커브구간Only", "en": "Curv only" },
+      "4": { "ko": "편도1차선모드", "en": "OneWay Mode" },
+      "5": { "ko": "안전구간모드", "en": "Safety Section" }
+    },
+    "description": {
+      "ko": "기사파일럿 주행 모드를 설정합니다.\n기본모드: 오픈파일럿 순정과 동일한 주행 모드입니다. 가변 크루즈(버튼스패밍)나 기타 안전 주행 모드(네비나 기타 속도를 조절하는 모드)를 사용하지 않습니다.\n차간거리+커브: 차간거리나 커브 구간에 따른 버튼스패밍을 사용하여 크루즈 속도를 조정합니다.\n차간거리조정: 커브 구간은 제외하고 차간거리에따른 버튼 스패밍을 사용합니다.\n커브구간: 커브구간만 버튼 스패밍을 사용합니다.\n편도1차선: 편도 1차선일 경우 안전 및 불안감 해소를 위해 차량을 약간 엣지쪽으로 치우쳐 주행하게 합니다.\n안전구간: 네비정보만 사용하여 버튼 스패밍을 조절합니다.(카메라, 과속방지턱 등)\n편도1차선 모드는 다른 모드를 포함합니다.\n차간거리와 커브 구간은 안전구간 모드를 포함합니다.", 
+      "en": "Sets the KisaPilot driving mode.\nDefault Mode: Identical to the stock OpenPilot driving behavior. Does not use adaptive cruise control adjustments (button spamming) or any other safety-based driving modes (such as navigation-based or other speed control modes).\nDistance + Curves: Adjusts cruise speed using button spamming based on inter-vehicle distance and curve sections.\nDistance Only: Uses button spamming based on inter-vehicle distance, excluding curve sections.\nCurves Only: Uses button spamming only in curve sections.\nOne-Way Single Lane: When driving on a one-way single-lane road, the vehicle slightly biases toward the road edge to improve safety and reduce driver anxiety.\nSafety Zones: Uses navigation data only to adjust button spamming (e.g., speed cameras, speed bumps).\nThe One-Way Single Lane mode includes other modes.\nDistance and Curves modes include the Safety Zones mode."
+    }
+  },
+  {
+    "group": "LONG",
+    "title": {
+      "ko": "크루즈 설정 속도 싱크 사용",
+      "en": "Cruise Set Speed Sync"
+    },
+    "param": "CruiseOverMaxSpeed",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "크루즈 설정 속도를 차량 최대 속도와 동기화 합니다.",
+      "en": "Synchronizes the cruise set speed with the vehicle's maximum speed."
+    }
+  },
+  {
+    "group": "LONG",
+    "title": {
+      "ko": "크루즈 자동 RES",
+      "en": "Cruise Auto RES"
+    },
+    "param": "CruiseAutoRes",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "크루즈 Auto Res 기능을 사용합니다.",
+      "en": "Uses the Cruise Auto RES feature."
+    }
+  },
+  {
+    "group": "LONG",
+    "title": {
+      "ko": "크루즈 자동 RES 옵션",
+      "en": "Cruise Auto RES Option"
+    },
+    "param": "AutoResOption",
+    "min_value": 0,
+    "max_value": 2,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "RES", "en": "RES" },
+      "1": { "ko": "SET", "en": "SET" },
+      "2": { "ko": "SET/RES", "en": "SET/RES" }
+    },
+    "description": {
+      "ko": "RES: RES 버튼 사용\nSET: SET버튼 사용\nSET/RES: 앞차 존재시 RES 버튼 사용 없을시 SET 버튼 사용",
+      "en": "RES: Use RES Button\nSET: Use SET Button\nSET/RES: Use RES Button Only When Ahead Vehicle is Present"
+    }
+  },
+  {
+    "group": "LONG",
+    "title": {
+      "ko": "크루즈 자동 RES 발동 조건",
+      "en": "Auto RES Trig Condition"
+    },
+    "param": "AutoResCondition",
+    "min_value": 0,
+    "max_value": 1,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "브레이크 해제시", "en": "Rel Brake" },
+      "1": { "ko": "가속페달 밟을시", "en": "On Gas" }
+    },
+    "description": {
+      "ko": "크루즈 Auto RES 발동 조건을 설정합니다.(브레이크 해제시: 브레이크 상태가 아닌경우 즉시 적용됩니다. 가속페달 밟을시: 가속페달을 작동한 경우에만 발동됩니다.)",
+      "en": "Sets the Cruise Auto RES trigger condition. (Rel Brake: Only trigger when the brake is released. On Gas: Only trigger when the gas pedal is applied.)"
+    }
+  },
+  {
+    "group": "LONG",
+    "title": {
+      "ko": "자동 RES 최대 대기 시간(초)",
+      "en": "Auto RES Max Waiting Time(sec)"
+    },
+    "param": "AutoResLimitTime",
+    "min_value": 0,
+    "max_value": 15,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "제한 없음", "en": "No Limit" }
+    },
+    "description": {
+      "ko": "Auto RES 허용 최대 대기 시간을 설정합니다. 조건이 맞을 때 해당 시간안에 기능을 작동시킵니다.",
+      "en": "Sets the maximum waiting time for Auto RES. The feature will be triggered within this time if the condition is met."
+    }
+  },
+  {
+    "group": "LONG",
+    "title": {
+      "ko": "자동 RES 시작 지연 시간(초)",
+      "en": "Auto RES Start Delay Time(sec)"
+    },
+    "param": "AutoRESDelay",
+    "min_value": 1,
+    "max_value": 5,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "Auto RES 작동 전 대기 시간을 설정합니다.",
+      "en": "Sets the delay time before Auto RES activation."
+    }
+  },
+  {
+    "group": "LONG",
+    "title": {
+      "ko": "정지거리 조정(m)",
+      "en": "Stopping Distance(m)"
+    },
+    "param": "StoppingDist",
+    "min_value": 2,
+    "max_value": 10,
+    "step": 0.1,
+    "decimal_places": 1,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "롱컨 사용시 앞차와의 정지거리를 조정합니다.",
+      "en": "Adjusts the stopping distance."
+    }
+  },
+
+
+  {
+    "group": "GAP/BTN",
+    "title": {
+      "ko": "RES 카운트 설정",
+      "en": "RES Count Setting"
+    },
+    "param": "RESCountatStandstill",
+    "min_value": 1,
+    "max_value": 100,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "RES 버튼 카운트를 설정합니다. 정지상태에서 출발시 RES버튼 신호가 응답하지 않을때는 개수를 올리고 클러스터 오류나 기타 오류가 발생하면 값을 낮추세요. 기본값은 25입니다.(캔FD차량 35 권장)",
+      "en": "Sets the RES button count. If the RES button does not respond when in a stopping state, increase the count. The default value is 25. (For CANFD cars, 35 is recommended.)"
+    }
+  },
+  {
+    "group": "GAP/BTN",
+    "title": {
+      "ko": "크루즈 버튼 스패밍 인터벌",
+      "en": "Button Spamming Interval"
+    },
+    "param": "KISACruiseSpammingInterval",
+    "min_value": 7,
+    "max_value": 15,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "크루즈 버튼 사용간 휴지 기간을 설정합니다. 너무 작으면 클러스터 오류가 발생할 수 있습니다.(7~8 권장)",
+      "en": "Sets the interval between using the cruise button. It may cause a cluster error.(7~8 is recommended.)"
+    }
+  },
+  {
+    "group": "GAP/BTN",
+    "title": {
+      "ko": "정지시 크루즈 갭1 으로 조정",
+      "en": "Cruise Gap Adjust to 1 at Stop"
+    },
+    "param": "CruiseGapAdjust",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "정지 상태에서 빠른 출발을 위해 크루즈갭을 1로 조정합니다.",
+      "en": "Adjusts the cruise gap to 1 when in a stopping state to make the launch faster."
+    }
+  },
+  {
+    "group": "GAP/BTN",
+    "title": {
+      "ko": "갭을 이용한 조기 감속",
+      "en": "Early Slowdown with Gap"
+    },
+    "param": "KISAEarlyStop",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "모델이 감속(정지)을 시작할 때, 크루즈 갭을 4로 설정하여 차량이 더 일찍 멈추도록 도와줄 수 있습니다.",
+      "en": "This feature may help your vehicle to stop early using Cruise Gap with value 4 when your car start to stop from model."
+    }
+  },
+  {
+    "group": "GAP/BTN",
+    "title": {
+      "ko": "크루즈 셋 스피드 증감 단위",
+      "en": "Cruise SetSpeed Changed Unit"
+    },
+    "param": "SetSpeedPlus",
+    "min_value": 0,
+    "max_value": 20,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "미사용", "en": "Not Used" }
+    },
+    "description": {
+      "ko": "크루즈 속도 설정시 숫자의 증감 단위를 설정합니다.(ex. 5로 설정한 경우 5단위로 바뀝니다.)",
+      "en": "Sets the unit of the number when setting the cruise speed. (ex. Setting 5 will make it 5 units.)"
+    }
+  },
+  {
+    "group": "GAP/BTN",
+    "title": {
+      "ko": "초기 크루즈 갭을 설정합니다.",
+      "en": "Initial Cruise Gap Set"
+    },
+    "param": "KisaCruiseGapSet",
+    "min_value": 1,
+    "max_value": 4,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "description": {
+      "ko": "롱컨트롤 사용시 초기 크루즈 갭 설정을 위함입니다.",
+      "en": "Sets the initial cruise gap when using the long control"
+    }
+  },
+  {
+    "group": "GAP/BTN",
+    "title": {
+      "ko": "크루즈 갭 1 설정",
+      "en": "Cruise Gap 1 Set"
+    },
+    "param": "CruiseGap1",
+    "min_value": 0.5,
+    "max_value": 2,
+    "step": 0.1,
+    "decimal_places": 1,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "크루즈 갭 1의 앞차와의 거리 시간을 설정합니다.",
+      "en": "Sets the time gap between the front car and the cruise gap 1."
+    }
+  },
+  {
+    "group": "GAP/BTN",
+    "title": {
+      "ko": "크루즈 갭 2 설정",
+      "en": "Cruise Gap 2 Set"
+    },
+    "param": "CruiseGap2",
+    "min_value": 0.5,
+    "max_value": 2,
+    "step": 0.1,
+    "decimal_places": 1,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "크루즈 갭 2의 앞차와의 거리 시간을 설정합니다.",
+      "en": "Sets the time gap between the front car and the cruise gap 2."
+    }
+  },
+  {
+    "group": "GAP/BTN",
+    "title": {
+      "ko": "크루즈 갭 3 설정",
+      "en": "Cruise Gap 3 Set"
+    },
+    "param": "CruiseGap3",
+    "min_value": 0.5,
+    "max_value": 2,
+    "step": 0.1,
+    "decimal_places": 1,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "크루즈 갭 3의 앞차와의 거리 시간을 설정합니다.",
+      "en": "Sets the time gap between the front car and the cruise gap 3."
+    }
+  },
+  {
+    "group": "GAP/BTN",
+    "title": {
+      "ko": "크루즈 갭 4 설정",
+      "en": "Cruise Gap 4 Set"
+    },
+    "param": "CruiseGap4",
+    "min_value": 0.5,
+    "max_value": 2,
+    "step": 0.1,
+    "decimal_places": 1,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "크루즈 갭 4의 앞차와의 거리 시간을 설정합니다.",
+      "en": "Sets the time gap between the front car and the cruise gap 4."
+    }
+  },
+  {
+    "group": "GAP/BTN",
+    "title": {
+      "ko": "다이나믹 TR GAP 사용",
+      "en": "Dynamic TR GAP Use"
+    },
+    "param": "DynamicTRGap",
+    "min_value": 0,
+    "max_value": 4,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "미사용", "en": "Not Used" }
+    },
+    "description": {
+      "ko": "다이나믹 갭을 특정 갭에 할당합니다.(1로 설정시 갭 1은 다이나믹 갭으로 사용되며 TR이 속도에따라 변합니다.)",
+      "en": "Assigns the dynamic gap to a specific gap.(Setting 1 will make gap 1 dynamic and change with the TR speed.)"
+    }
+  },
+  {
+    "group": "GAP/BTN",
+    "title": {
+      "ko": "다이나믹 TR(0~20)",
+      "en": "Dynamic TR(0~20)"
+    },
+    "param": "DynamicTR0to20",
+    "min_value": 0.5,
+    "max_value": 2,
+    "step": 0.1,
+    "decimal_places": 1,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "속도(0~20) 구간의 TR(앞차와의 거리 시간)을 설정합니다.",
+      "en": "Sets the time gap between the front car and the TR in the speed range (0~20)."
+    }
+  },
+  {
+    "group": "GAP/BTN",
+    "title": {
+      "ko": "다이나믹 TR(20~40)",
+      "en": "Dynamic TR(20~40)"
+    },
+    "param": "DynamicTR20to40",
+    "min_value": 0.5,
+    "max_value": 2,
+    "step": 0.1,
+    "decimal_places": 1,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "속도(20~40) 구간의 TR(앞차와의 거리 시간)을 설정합니다.",
+      "en": "Sets the time gap between the front car and the TR in the speed range (20~40)."
+    }
+  },
+  {
+    "group": "GAP/BTN",
+    "title": {
+      "ko": "다이나믹 TR(40~60)",
+      "en": "Dynamic TR(40~60)"
+    },
+    "param": "DynamicTR40to60",
+    "min_value": 0.5,
+    "max_value": 2,
+    "step": 0.1,
+    "decimal_places": 1,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "속도(40~60) 구간의 TR(앞차와의 거리 시간)을 설정합니다.",
+      "en": "Sets the time gap between the front car and the TR in the speed range (40~60)."
+    }
+  },
+  {
+    "group": "GAP/BTN",
+    "title": {
+      "ko": "다이나믹 TR(60~80)",
+      "en": "Dynamic TR(60~80)"
+    },
+    "param": "DynamicTR60to80",
+    "min_value": 0.5,
+    "max_value": 2,
+    "step": 0.1,
+    "decimal_places": 1,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "속도(60~80) 구간의 TR(앞차와의 거리 시간)을 설정합니다.",
+      "en": "Sets the time gap between the front car and the TR in the speed range (60~80)."
+    }
+  },
+  {
+    "group": "GAP/BTN",
+    "title": {
+      "ko": "다이나믹 TR(80~)",
+      "en": "Dynamic TR(80~)"
+    },
+    "param": "DynamicTR80to110",
+    "min_value": 0.5,
+    "max_value": 2,
+    "step": 0.1,
+    "decimal_places": 1,
+    "value_type": "FLOAT",
+    "description": {
+      "ko": "속도(80이상) 구간의 TR(앞차와의 거리 시간)을 설정합니다.",
+      "en": "Sets the time gap between the front car and the TR in the speed range (above 80)."
+    }
+  },
+
+
+  {
+    "group": "Nav/Safety",
+    "title": {
+      "ko": "크루즈 설정시 도로 제한속도 반영",
+      "en": "Road Limit Speed to Cruise Setting"
+    },
+    "param": "CruiseSetwithRoadLimitSpeedEnabled",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "크루즈 설정시 도로제한 속도가 있는 경우 도로제한속도로 크루즈 셋 스피드를 설정합니다.",
+      "en": "If there is a road limit speed, set the cruise speed to the road limit speed."
+    }
+  },
+  {
+    "group": "Nav/Safety",
+    "title": {
+      "ko": "도로 제한속도 오프셋",
+      "en": "Road Limit Speed Offset"
+    },
+    "param": "CruiseSetwithRoadLimitSpeedOffset",
+    "min_value": 0,
+    "max_value": 50,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "미설정", "en": "Not Set" }
+    },
+    "description": {
+      "ko": "크루즈 설정시 도로제한 속도로 설정한 경우 오프셋을 지정합니다.",
+      "en": "Sets the offset for the cruise speed when setting the road limit speed."
+    }
+  },
+  {
+    "group": "Nav/Safety",
+    "title": {
+      "ko": "외부 네비게이션 선택",
+      "en": "External Nav Selection"
+    },
+    "param": "KISANaviSelect",
+    "min_value": 0,
+    "max_value": 2,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "미사용", "en": "Not Used" },
+      "1": { "ko": "티맵", "en": "TMap" },
+      "2": { "ko": "웨이즈", "en": "Waze" }
+    },
+    "description": {
+      "ko": "이용 가능한 외부 네비게이션을 선택합니다. 데이터 파싱이 가능한 작업이 완료된 네비게이션이어야 합니다.",
+      "en": "Selects the available external navigation. Only works for navigation data that can be parsed."
+    }
+  },
+  {
+    "group": "Nav/Safety",
+    "title": {
+      "ko": "제한 속도 표시 모양 선택",
+      "en": "Limit Speed Display Shape"
+    },
+    "param": "KisaSpeedLimitSignType",
+    "min_value": 0,
+    "max_value": 1,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "원형", "en": "Circle" },
+      "1": { "ko": "사각형", "en": "Rectangle" }
+    },
+    "description": {
+      "ko": "화면에 표시되는 제한속도 표지판 모양을 설정합니다.",
+      "en": "Sets the shape of the speed limit sign on the screen."
+    }
+  },
+  {
+    "group": "Nav/Safety",
+    "title": {
+      "ko": "제한 속도 오프셋(%)",
+      "en": "Limit Speed Offset(%)"
+    },
+    "param": "KisaSpeedLimitOffset",
+    "min_value": -1,
+    "max_value": 50,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "미사용", "en": "Not Used" },
+      "-1": { "ko": "OSM 커스텀", "en": "OSM Custom" }
+    },
+    "description": {
+      "ko": "제한속도 오프셋 값을 설정합니다. 퍼센티지 단위입니다.(60구간에서 63으로 설정하려면 5%를 선택.), OSM Custom 값을 사용하려면 -1로 설정하세요.",
+      "en": "Sets the limit speed offset. Unit in percentage. (60-63 to select 5%), use -1 for OSM Custom"
+    }
+  },
+  {
+    "group": "Nav/Safety",
+    "title": {
+      "ko": "제한속도 구간 감속 거리조정(%)",
+      "en": "Limit Speed Distance Gain(%)"
+    },
+    "param": "SafetyCamDecelDistGain",
+    "min_value": -50,
+    "max_value": 50,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "기본값", "en": "Default" }
+    },
+    "description": {
+      "ko": "제한속도 구간의 감속 거리를 조정합니다. 일찍 감속하고 싶으면 값을 올리고 늦게 감속하려면 값을 낮추세요.",
+      "en": "Sets the deceleration distance for the limit speed range. Increase to slow down, decrease to speed up."
+    }
+  },
+  {
+    "group": "Nav/Safety",
+    "title": {
+      "ko": "과속 방지턱 감지 및 감속",
+      "en": "SpeedBump Detect and Decel"
+    },
+    "param": "KISASpeedBump",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "외부 네비 사용시 과속 방지턱 구간에서 미리 감속을 합니다.",
+      "en": "Decelerates in speed bump regions when using an external navigation."
+    }
+  },
+  {
+    "group": "Nav/Safety",
+    "title": {
+      "ko": "차량 네비게이션 정보 사용",
+      "en": "Use Car Navigation Info"
+    },
+    "param": "StockNaviSpeedEnabled",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "가능한 경우 차량 네비게이션 정보를 사용합니다. 오동작시 기능을 꺼야 합니다.",
+      "en": "Uses car navigation information when possible. If it is not available, the function should be disabled."
+    }
+  },
+  {
+    "group": "Nav/Safety",
+    "title": {
+      "ko": "차량 순정 감속 신호 사용",
+      "en": "Use Car Navigation Decel Signal"
+    },
+    "param": "UseStockDecelOnSS",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "가능한 경우 차량의 안전구간 자동 감속 기능을 사용합니다.",
+      "en": "Uses the car's safety zone automatic deceleration feature when possible."
+    }
+  },
+  {
+    "group": "Nav/Safety",
+    "title": {
+      "ko": "커브 구간 자동 감속 기능 사용",
+      "en": "Use Curv Decel Feature"
+    },
+    "param": "CurvDecelOption",
+    "min_value": 0,
+    "max_value": 3,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "미사용", "en": "Not Used" },
+      "1": { "ko": "비젼+OSM", "en": "Vision+OSM" },
+      "2": { "ko": "비젼만", "en": "Vision only" },
+      "3": { "ko": "OSM만", "en": "OSM only" }
+    },
+    "description": {
+      "ko": "커브 구간에서 감속 기능 사용시 어떤 데이터를 사용할지 정합니다.",
+      "en": "Select which data to use in curve regions when using deceleration features."
+    }
+  },
+  {
+    "group": "Nav/Safety",
+    "title": {
+      "ko": "OSM 제한 속도만 사용",
+      "en": "Use only OSM Speed Limit"
+    },
+    "param": "OSMSpeedLimitEnable",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "제한 속도를 OSM 값만 사용합니다. 다른 제한 속도 값은 무시됩니다. 꼭 필요한 경우만 활성화 하세요.",
+      "en": "Use only OSM speed limits. Other speed limits will not be used. Only activate when needed."
+    }
+  },
+
+
+  {
+    "group": "Dev",
+    "title": {
+      "ko": "스마트 프리빌드 사용",
+      "en": "Use Smart Prebuilt"
+    },
+    "param": "PutPrebuiltOn",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "프리빌드 파일을 생성하여 부팅 속도를 향상시킵니다. 활성화 시 캐시를 사용해 부팅이 빨라지며, 코드 수정 후 메뉴에서 업데이트 버튼을 누르거나 명령창에서 'gi'로 재부팅하면 자동으로 삭제 후 재컴파일됩니다.",
+      "en": "Creates a prebuilt file to speed up booting. When enabled, boot time is accelerated using cache. It is automatically removed and recompiled when you press the update button after code changes or reboot with the 'gi' command."
+    }
+  },
+  {
+    "group": "Dev",
+    "title": {
+      "ko": "UFC(User Friendly Control) 모드",
+      "en": "UFC(User Friendly Control) Mode"
+    },
+    "param": "UFCModeEnabled",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "UFC 모드를 활성화 합니다.",
+      "en": "Activate UFC mode."
+    }
+  },
+  {
+    "group": "Dev",
+    "title": {
+      "ko": "사용자 기능 설정",
+      "en": "User Specific Feature"
+    },
+    "param": "UserSpecificFeature",
+    "min_value": 0,
+    "max_value": 100,
+    "step": 1,
+    "decimal_places": 0,
+    "value_type": "INT",
+    "special_texts": {
+      "0": { "ko": "미사용", "en": "Not Used" }
+    },
+    "description": {
+      "ko": "사용자 기능을 켭니다. 미리 설정된 개인화된 숫자 사용",
+      "en": "Select user feature. Use non-configured personal number"
+    }
+  },
+  {
+    "group": "Dev",
+    "title": {
+      "ko": "디버그 UI 표시",
+      "en": "Debug UI"
+    },
+    "param": "ShowDebugUI",
+    "value_type": "INT",
+    "min_value": 0,
+    "max_value": 3,
+    "step": 1,
+    "decimal_places": 0,
+    "special_texts": {
+      "0": { "ko": "표시 안 함", "en": "None" },
+      "1": { "ko": "디바이스 상태", "en": "Dev Stat" },
+      "2": { "ko": "+ 세이프티", "en": "+ Safety" },
+      "3": { "ko": "+ 디버그로그", "en": "+ Debug Logs" }
+    },
+    "description": {
+      "ko": "장치 상태 및 안전 관련 디버그 정보를 화면에 표시합니다.",
+      "en": "Displays device status and safety-related debug information on the screen."
+    }
+  },
+  {
+    "group": "Dev",
+    "title": {
+      "ko": "주행 로그 기록 활성화",
+      "en": "Enable Driving Log Record"
+    },
+    "param": "KisaEnableLogger",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "데이터 분석을 위해 주행 로그를 로컬에 기록합니다. 로그는 서버로 업로드되지 않습니다.",
+      "en": "Records driving logs locally for data analysis. Logs are not uploaded to the server."
+    }
+  },
+  {
+    "group": "Dev",
+    "title": {
+      "ko": "기존 SSH Key 사용",
+      "en": "Use Legacy SSH Key"
+    },
+    "param": "KisaSSHLegacy",
+    "value_type": "BOOL",
+    "description": {
+      "ko": "이전의 콤마 공통 SSH-Key 사용. Git 계정의 개인키를 사용하려면 기능을 끄세요.",
+      "en": "Use legacy SSH key. If you want to use your personal key, please disable this function."
+    }
+  }
+]

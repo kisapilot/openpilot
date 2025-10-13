@@ -50,7 +50,13 @@ class ExpButton(Widget):
 
     texture = self._txt_exp if self._held_or_actual_mode() else self._txt_wheel
     rl.draw_circle(center_x, center_y, self._rect.width / 2, self._black_bg)
-    rl.draw_texture(texture, center_x - texture.width // 2, center_y - texture.height // 2, self._white_color)
+    rl.draw_texture_pro(texture,
+     rl.Rectangle(0, 0, texture.width, texture.height),
+     rl.Rectangle(center_x, center_y, texture.width, texture.height),
+     rl.Vector2(texture.width / 2, texture.height / 2),
+     -ui_state.angleSteers,
+     self._white_color
+    )
 
   def _held_or_actual_mode(self):
     now = time.monotonic()
@@ -66,8 +72,5 @@ class ExpButton(Widget):
     if not self._params.get_bool("ExperimentalModeConfirmed"):
       return False
 
-    car_params = ui_state.sm["carParams"]
-    if car_params.alphaLongitudinalAvailable:
-      return self._params.get_bool("AlphaLongitudinalEnabled")
-    else:
-      return car_params.openpilotLongitudinalControl
+    # Mirror exp mode toggle using persistent car params
+    return ui_state.has_longitudinal_control

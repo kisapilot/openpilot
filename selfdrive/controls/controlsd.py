@@ -14,8 +14,6 @@ from opendbc.car.vehicle_model import VehicleModel
 from openpilot.selfdrive.controls.lib.drive_helpers import clip_curvature, get_lag_adjusted_curvature
 from openpilot.selfdrive.controls.lib.latcontrol import LatControl
 from openpilot.selfdrive.controls.lib.latcontrol_pid import LatControlPID
-from openpilot.selfdrive.controls.lib.latcontrol_indi import LatControlINDI
-from openpilot.selfdrive.controls.lib.latcontrol_lqr import LatControlLQR
 from openpilot.selfdrive.controls.lib.latcontrol_angle import LatControlAngle, STEER_ANGLE_SATURATION_THRESHOLD
 from openpilot.selfdrive.controls.lib.latcontrol_torque import LatControlTorque
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
@@ -72,32 +70,17 @@ class Controls:
     self.lateral_control_method = -1
     if self.CP.steerControlType == car.CarParams.SteerControlType.angle:
       self.LaC = LatControlAngle(self.CP, self.CI, DT_CTRL)
-      self.lateral_control_method = 4
-    elif self.CP.lateralTuning.which() == 'pid':
-      self.LaC = LatControlPID(self.CP, self.CI, DT_CTRL)
-      self.lateral_control_method = 0
-    elif self.CP.lateralTuning.which() == 'indi':
-      self.LaC = LatControlINDI(self.CP, self.CI, DT_CTRL)
       self.lateral_control_method = 1
-    elif self.CP.lateralTuning.which() == 'lqr':
-      self.LaC = LatControlLQR(self.CP, self.CI, DT_CTRL)
-      self.lateral_control_method = 2
     elif self.CP.lateralTuning.which() == 'torque':
       self.LaC = LatControlTorque(self.CP, self.CI, DT_CTRL)
-      self.lateral_control_method = 3
+      self.lateral_control_method = 0
 
-    self.new_steerRatio = self.params.get("SteerRatioAdj", return_default=True) * 0.01
+    self.new_steerRatio = self.params.get("SteerRatioAdj", return_default=True)
     self.steerRatio_to_send = 0
-    self.live_sr = self.params.get_bool("KisaLiveSteerRatio")
     self.live_sr_percent = self.params.get("LiveSteerRatioPercent", return_default=True)
 
     self.ready_timer = 0
     self.osm_speedlimit_enabled = self.params.get_bool("OSMSpeedLimitEnable")
-    try:
-      self.roadname_and_slc = self.params.get("RoadList", return_default=True).strip().splitlines()[1].split(',')
-    except:
-      self.roadname_and_slc = ""
-      pass
 
     self.var_cruise_speed_factor = 0
     self.cruise_spamming_level = list(map(int, self.params.get("CruiseSpammingLevel", return_default=True).split(',')))
@@ -119,7 +102,7 @@ class Controls:
     self.timer += DT_CTRL
     if self.timer > 1.0:
       self.timer = 0.0
-      self.live_sr = self.params.get_bool("KisaLiveSteerRatio")
+      self.new_steerRatio = self.params.get("SteerRatioAdj")
       self.live_sr_percent = self.params.get("LiveSteerRatioPercent", return_default=True)
 
   def state_control(self):
@@ -129,7 +112,7 @@ class Controls:
     lp = self.sm['liveParameters']
     x = max(lp.stiffnessFactor, 0.1)
 
-    if self.live_sr:
+    if self.new_steerRatio == 10.0:
       sr = max(lp.steerRatio, 0.1)
       if self.live_sr_percent != 0:
         sr = sr * (1+(0.01*self.live_sr_percent))
@@ -204,10 +187,10 @@ class Controls:
 
     lat_delay = self.sm["liveDelay"].lateralDelay + LAT_SMOOTH_SECONDS
 
-    actuators.curvature = self.desired_curvature
+    actuators.curvature = float(self.desired_curvature)
     steer, steeringAngleDeg, lac_log = self.LaC.update(CC.latActive, CS, self.VM, lp,
                                                        self.steer_limited_by_safety, self.desired_curvature,
-                                                       curvature_limited, lat_delay, self.desired_curvature_rate)
+                                                       curvature_limited, lat_delay)
     actuators.torque = float(steer)
     actuators.steeringAngleDeg = float(steeringAngleDeg)
     self.desired_angle_deg = actuators.steeringAngleDeg
@@ -295,8 +278,8 @@ class Controls:
     cs.curvature = self.curvature
     cs.longitudinalPlanMonoTime = self.sm.logMonoTime['longitudinalPlan']
     cs.lateralPlanMonoTime = self.sm.logMonoTime['lateralPlan'] if self.legacy_lane_mode else self.sm.logMonoTime['modelV2']
-    cs.desiredCurvature = self.desired_curvature
-    cs.desiredCurvatureRate = self.desired_curvature_rate
+    cs.desiredCurvature = float(self.desired_curvature)
+    cs.desiredCurvatureRate = float(self.desired_curvature_rate)
     cs.longControlState = self.LoC.long_control_state
     cs.upAccelCmd = float(self.LoC.pid.p)
     cs.uiAccelCmd = float(self.LoC.pid.i)
@@ -310,20 +293,14 @@ class Controls:
     cs.alertTextMsg2 = str(CO.actuatorsOutput.kisaLog2)
     cs.alertTextMsg3 = str(trace1.global_alertTextMsg3)
 
-    if self.osm_speedlimit_enabled or self.navi_selection in (2, 4):
-      if self.navi_selection in (2, 4):
+    if self.osm_speedlimit_enabled or self.navi_selection == 2:
+      if self.navi_selection == 2:
         cs.limitSpeedCamera = int(round(self.sm['liveENaviData'].wazeRoadSpeedLimit))
         cs.limitSpeedCameraDist = float(self.sm['liveENaviData'].wazeAlertDistance)
       elif self.osm_speedlimit_enabled:
         cs.limitSpeedCamera = int(round(self.sm['liveMapData'].speedLimit))
         cs.limitSpeedCameraDist = float(self.sm['liveMapData'].speedLimitAheadDistance)
-      if self.sm['liveMapData'].currentRoadName in self.roadname_and_slc:
-        try:
-          r_index = self.roadname_and_slc.index(self.sm['liveMapData'].currentRoadName)
-          cs.limitSpeedCamera = float(self.roadname_and_slc[r_index+1])
-        except:
-          pass
-    elif self.navi_selection in (1, 3) and str(self.sm['liveENaviData'].safetySign) not in ("20", "21"):
+    elif self.navi_selection == 1 and str(self.sm['liveENaviData'].safetySign) not in ("20", "21"):
       cs.limitSpeedCamera = int(round(self.sm['liveENaviData'].speedLimit))
       cs.limitSpeedCameraDist = float(self.sm['liveENaviData'].safetyDistance)
       cs.mapSign = str(self.sm['liveENaviData'].safetySign)
@@ -336,7 +313,6 @@ class Controls:
     cs.dynamicTRValue = float(self.sm['longitudinalPlan'].dynamicTRValue)
     cs.accel = float(CO.actuatorsOutput.accel)
     cs.safetySpeed = float(CO.actuatorsOutput.safetySpeed)
-    cs.gapBySpeedOn = bool(CO.actuatorsOutput.gapBySpdOnTemp)
     cs.expModeTemp = bool(CO.actuatorsOutput.expModeTemp)
     cs.btnPressing = int(CO.actuatorsOutput.btnPressing)
     cs.autoResvCruisekph = float(CO.actuatorsOutput.autoResvCruisekph)
@@ -369,12 +345,6 @@ class Controls:
     lat_tuning = self.CP.lateralTuning.which()
     if self.CP.steerControlType == car.CarParams.SteerControlType.angle:
       cs.lateralControlState.angleState = lac_log
-    elif lat_tuning == 'pid':
-      cs.lateralControlState.pidState = lac_log
-    elif lat_tuning == 'lqr':
-      cs.lateralControlState.lqrState = lac_log
-    elif lat_tuning == 'indi':
-      cs.lateralControlState.indiState = lac_log
     elif lat_tuning == 'torque':
       cs.lateralControlState.torqueState = lac_log
 
