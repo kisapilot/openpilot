@@ -571,7 +571,7 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control, left_lane_
 
         ret.append(packer.make_can_msg("ADRV_0x161", CAN.ECAN, values))
 
-      if CS.adrv_200_info is not None:
+      if CS.adrv_200_info:
         values = CS.adrv_200_info
         ret.append(packer.make_can_msg("ADRV_0x200", CAN.ECAN, values))
 
