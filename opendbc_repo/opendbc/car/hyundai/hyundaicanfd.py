@@ -133,52 +133,54 @@ def create_steering_messages_adrv(packer, CP, CAN, lat_active, apply_torque, app
     values["STEERING_COL_TORQUE"] += 220
   ret.append(packer.make_can_msg("MDPS", CAN.CAM, values))
 
-  if frame % 10 == 0 and CP.capacitiveSteeringWheel:
-    values = csw_info
-    if frame % 1000 < 40:
-      values["TOUCH_DETECT"] = 3
-      values["TOUCH1"] = 50
-      values["TOUCH2"] = 50
-      values["CHECKSUM_"] = 0
-      dat = packer.make_can_msg("HOD_FD_01_100ms", 0, values)[1]
-      values["_CHECKSUM"] = hyundai_crc8(dat[1:8])
-    ret.append(packer.make_can_msg("HOD_FD_01_100ms", CAN.CAM, values))
+  if frame % 10 == 0:
+    if csw_info:
+      values = csw_info
+      if frame % 1000 < 40:
+        values["TOUCH_DETECT"] = 3
+        values["TOUCH1"] = 50
+        values["TOUCH2"] = 50
+        values["CHECKSUM_"] = 0
+        dat = packer.make_can_msg("HOD_FD_01_100ms", 0, values)[1]
+        values["CHECKSUM_"] = hyundai_crc8(dat[1:8])
+      ret.append(packer.make_can_msg("HOD_FD_01_100ms", CAN.CAM, values))
 
   if CP.isAngleControl:
     if emergency_steering:
-      ang_values = lfa_alt
+      values = lfa_alt
     else:
-      ang_values["ADAS_ActvACILvl2Sta"] = 2 if lat_active else 1
-      ang_values["ADAS_StrAnglReqVal"] = apply_angle
-      ang_values["LKAS_ANGLE_MAX_TORQUE"] = max_torque if lat_active else 0
-    ret.append(packer.make_can_msg("ADAS_CMD_35_10ms", CAN.ECAN, ang_values))
+      values = {}
+      values["ADAS_ActvACILvl2Sta"] = 2 if lat_active else 1
+      values["ADAS_StrAnglReqVal"] = apply_angle
+      values["LKAS_ANGLE_MAX_TORQUE"] = max_torque if lat_active else 0
+    ret.append(packer.make_can_msg("ADAS_CMD_35_10ms", CAN.ECAN, values))
 
-    lfa_values = lfa_info
+    values = lfa_info
     if not emergency_steering:
-      lfa_values["LKA_MODE"] = 0
-      lfa_values["LKA_ICON"] = 2 if lat_active else 1
-      lfa_values["TORQUE_REQUEST"] = -1024
-      lfa_values["VALUE63"] = 0
-      lfa_values["STEER_REQ"] = 0
-      lfa_values["HAS_LANE_SAFETY"] = 0
-      lfa_values["LKA_ACTIVE"] = 3 if lat_active else 0
-      lfa_values["VALUE64"] = 0
-      lfa_values["LKAS_ANGLE_CMD"] = -25.6
-      lfa_values["LKAS_ANGLE_ACTIVE"] = 0
-      lfa_values["LKAS_ANGLE_MAX_TORQUE"] = 0
-      lfa_values["NEW_SIGNAL_1"] = 10
+      values["LKA_MODE"] = 0
+      values["LKA_ICON"] = 2 if lat_active else 1
+      values["TORQUE_REQUEST"] = -1024
+      values["VALUE63"] = 0
+      values["STEER_REQ"] = 0
+      values["HAS_LANE_SAFETY"] = 0
+      values["LKA_ACTIVE"] = 3 if lat_active else 0
+      values["VALUE64"] = 0
+      values["LKAS_ANGLE_CMD"] = -25.6
+      values["LKAS_ANGLE_ACTIVE"] = 0
+      values["LKAS_ANGLE_MAX_TORQUE"] = 0
+      values["NEW_SIGNAL_1"] = 10
   else:
-    lfa_values = {}
-    lfa_values["LKA_MODE"] = 2
-    lfa_values["LKA_ICON"] = 2 if lat_active else 1
-    lfa_values["TORQUE_REQUEST"] = apply_torque
-    lfa_values["STEER_REQ"] = 1 if lat_active else 0
-    lfa_values["VALUE64"] = 0
-    lfa_values["HAS_LANE_SAFETY"] = 0
-    lfa_values["LKA_ACTIVE"] = 0
-    lfa_values["DAMP_FACTOR"] = 0 if lat_active else 100  
+    values = {}
+    values["LKA_MODE"] = 2
+    values["LKA_ICON"] = 2 if lat_active else 1
+    values["TORQUE_REQUEST"] = apply_torque
+    values["STEER_REQ"] = 1 if lat_active else 0
+    values["VALUE64"] = 0
+    values["HAS_LANE_SAFETY"] = 0
+    values["LKA_ACTIVE"] = 0
+    values["DAMP_FACTOR"] = 0 if lat_active else 100  
 
-  ret.append(packer.make_can_msg("LFA", CAN.ECAN, lfa_values))
+  ret.append(packer.make_can_msg("LFA", CAN.ECAN, values))
 
   return ret
 
