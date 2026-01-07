@@ -1,3 +1,9 @@
+KisaPilot Version 0.10.4
+========================
+* Up to __nightly(2025-12-19)
+* ~ MacroStiff model, AGNOS 16
+* KisaAgent application (refer to selfdirve/kisapilot)
+
 KisaPilot Version 0.10.1
 ========================
 * Up to __nightly(2025-10-12)
