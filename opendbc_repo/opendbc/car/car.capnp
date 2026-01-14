@@ -251,6 +251,13 @@ struct CarState {
   rightLaneColor @79 :Int8;
   cluVanz @80 :Float32;
   isCanFD @81 :Bool;
+  speedLimit @82 :Float32;
+  speedLimitDistance @83 :Float32;
+  latEnabled @84 :Bool;
+  roadLimitSpeed @85 :Float32;
+  steerTouch @86 :Bool;
+  datetime @87 :UInt64;
+  cruiseGap @88 :Int8;
 
   struct TPMS {
     unit @0 :Int8;

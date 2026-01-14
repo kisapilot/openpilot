@@ -5,7 +5,7 @@
 
 #define HYUNDAI_CANFD_CRUISE_BUTTON_TX_MSGS(bus) \
   {0x1CF, bus, 8, .check_relay = false},  /* CRUISE_BUTTON */   \
-  {0x2AF, bus, 8, .check_relay = (bus) == 2},  /* HOD_FD_01_100ms */  \
+  {0x2AF, bus, 8, .check_relay = (bus) == 2},  /* STEERING_WHEEL */  \
 
 #define HYUNDAI_CANFD_LKA_STEERING_COMMON_TX_MSGS(a_can, e_can) \
   HYUNDAI_CANFD_CRUISE_BUTTON_TX_MSGS(e_can)                        \
@@ -250,7 +250,7 @@ static safety_config hyundai_canfd_init(uint16_t param) {
     HYUNDAI_CANFD_CRUISE_BUTTON_TX_MSGS(2)
     HYUNDAI_CANFD_LFA_STEERING_COMMON_TX_MSGS(0)
     HYUNDAI_CANFD_SCC_CONTROL_COMMON_TX_MSGS(0, false)
-    {0xCB,  0, 24, .check_relay = true},  // ADAS_CMD_35_10ms(Angle)
+    {0xCB,  0, 24, .check_relay = true},  // LFA_ALT(Angle)
   };
 
   // ADRV_0x160 is checked for radar liveness
@@ -305,6 +305,7 @@ static safety_config hyundai_canfd_init(uint16_t param) {
 
     {0xEA,  2, 24, .check_relay = true},  // MDPS
     {0x2AF, 2,  8, .check_relay = true},  // STEER_TOUCH
+    {0x4B9, 2,  8, .check_relay = true},
 
     {0x38C, 0, 32, .check_relay = false},
     {0x57A, 0, 32, .check_relay = false},
@@ -327,7 +328,7 @@ static safety_config hyundai_canfd_init(uint16_t param) {
     HYUNDAI_CANFD_LFA_STEERING_COMMON_TX_MSGS(0) \
     HYUNDAI_CANFD_SCC_CONTROL_COMMON_TX_MSGS(0, (longitudinal)) \
     {0x160, 0, 16, .check_relay = (longitudinal)}, /* ADRV_0x160 */ \
-    {0xCB,  0, 24, .check_relay = true}, /* ADAS_CMD_35_10ms(Angle) */ \
+    {0xCB,  0, 24, .check_relay = true}, /* LFA_ALT(Angle) */ \
 
   hyundai_common_init(param);
 

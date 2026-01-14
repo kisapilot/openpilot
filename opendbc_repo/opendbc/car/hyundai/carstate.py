@@ -63,23 +63,23 @@ class CarState(CarStateBase):
     self.wheel_counter = 0
     self.wheel_touched = False
 
-    self.cruise_info = {}
-    self.cruise_btn_info = {}
-    self.lfa_info = {}
-    self.lfa_alt_info = {}
-    self.adrv_161_info = {}
-    self.adrv_162_info = {}
-    self.adrv_1ea_info = {}
-    self.adrv_160_info = {}
-    self.adrv_200_info = {}
-    self.adrv_345_info = {}
-    self.adrv_1daS_info = {}
-    self.csw_info = {}
+    self.cruise_info = None
+    self.cruise_btn_info = None
+    self.lfa_info = None
+    self.lfa_alt_info = None
+    self.adrv_161_info = None
+    self.adrv_162_info = None
+    self.adrv_1ea_info = None
+    self.adrv_160_info = None
+    self.adrv_200_info = None
+    self.adrv_345_info = None
+    self.adrv_1daS_info = None
     self.mdps_info = {}
-    self.lfa_hda_info = {}
-    self.hda_4a3_info = {}
-    self.tcs_373_info = {}
-    self.cruise_buttons_msg = {}
+    self.steer_touch_info = {}
+    self.lfahda_cluster_info = None
+    self.hda_4a3_info = None
+    self.tcs_373_info = None
+    self.cruise_buttons_msg = None
 
     # On some cars, CLU15->CF_Clu_VehicleSpeed can oscillate faster than the dash updates. Sample at 5 Hz
     self.cluster_speed = 0
@@ -149,6 +149,7 @@ class CarState(CarStateBase):
     self.cancel_check = False
 
     self.MainMode_ACC = False
+    self.ACCMode = 0
     self.LFA_ICON = 0
 
 
@@ -592,19 +593,20 @@ class CarState(CarStateBase):
       self.cruise_btn_info = copy.copy(cp.vl[self.cruise_btns_msg_canfd])
       if self.CP.adrvControl:
         self.MainMode_ACC = cp_cam.vl["SCC_CONTROL"]["MainMode_ACC"] == 1
-        self.LFA_ICON = cp_cam.vl["LFAHDA_CLUSTER"]["HDA_LFA_SymSta"] == 2
-        self.lfa_info = copy.copy(cp_cruise_info.vl["LFA"])
-        self.lfa_alt_info = copy.copy(cp_cruise_info.vl["ADAS_CMD_35_10ms"])
-        self.adrv_161_info = copy.copy(cp_cruise_info.vl["ADRV_0x161"])
-        self.adrv_162_info = copy.copy(cp_cruise_info.vl["ADRV_0x162"])
-        self.adrv_1ea_info = copy.copy(cp_cruise_info.vl["ADRV_0x1ea"])
-        self.adrv_160_info = copy.copy(cp_cruise_info.vl["ADRV_0x160"])
-        self.adrv_200_info = copy.copy(cp_cruise_info.vl["ADRV_0x200"])
-        self.adrv_345_info = copy.copy(cp_cruise_info.vl["ADRV_0x345"])
-        self.adrv_1da_info = copy.copy(cp_cruise_info.vl["ADRV_0x1da"])
-        self.lfa_hda_info = copy.copy(cp_cruise_info.vl["LFAHDA_CLUSTER"])
-        self.mdps_info = copy.copy(cp.vl["MDPS"])
-        self.tcs_373_info = copy.copy(cp.vl["TCS"])
+        self.ACCMode = cp_cam.vl["SCC_CONTROL"]["ACCMode"]
+        self.LFA_ICON = cp_cam.vl["LFAHDA_CLUSTER"]["HDA_LFA_SymSta"]
+        self.lfa_info = cp_cam.vl["LFA"]
+        self.lfa_alt_info = cp_cam.vl["LFA_ALT"]
+        self.adrv_161_info = cp_cruise_info.vl["ADRV_0x161"]
+        self.adrv_162_info = cp_cruise_info.vl["ADRV_0x162"]
+        self.adrv_1ea_info = cp_cruise_info.vl["ADRV_0x1ea"]
+        self.adrv_160_info = cp_cruise_info.vl["ADRV_0x160"]
+        self.adrv_200_info = cp_cruise_info.vl["ADRV_0x200"]
+        self.adrv_345_info = cp_cruise_info.vl["ADRV_0x345"]
+        self.adrv_1da_info = cp_cruise_info.vl["ADRV_0x1da"]
+        self.lfahda_cluster_info = cp_cam.vl["LFAHDA_CLUSTER"]
+        self.mdps_info = cp.vl["MDPS"]
+        self.tcs_373_info = cp.vl["TCS"]
 
       if self.lfa_button_eng:
         if self.lfa_buttons[-1]:
@@ -666,7 +668,7 @@ class CarState(CarStateBase):
         self.driverAcc_time -= 1
       ret.driverAcc = bool(self.driverOverride)
       if self.CP.isAngleControl and self.CP.flags & HyundaiFlags.CANFD_LKA_STEERING :
-        self.stock_str_angle = cp_cam.vl["LKAS_ALT"]["ADAS_StrAnglReqVal"] * -1 if self.CP.flags & HyundaiFlags.CANFD_LKA_STEERING_ALT else 0
+        self.stock_str_angle = cp_cam.vl["LKAS_ALT"]["LKAS_ANGLE_CMD"] * -1 if self.CP.flags & HyundaiFlags.CANFD_LKA_STEERING_ALT else 0
 
     # Manual Speed Limit Assist is a feature that replaces non-adaptive cruise control on EV CAN FD platforms.
     # It limits the vehicle speed, overridable by pressing the accelerator past a certain point.
@@ -691,8 +693,9 @@ class CarState(CarStateBase):
     self.lda_button = cp.vl[self.cruise_btns_msg_canfd]["LDA_BTN"]
     self.buttons_counter = cp.vl[self.cruise_btns_msg_canfd]["COUNTER"]
     if self.CP.capacitiveSteeringWheel:
-      self.csw_info = copy.copy(cp.vl["HOD_FD_01_100ms"])
-      self.wheel_touched = True if cp.vl["HOD_FD_01_100ms"]["HOD_Dir_Status"] > 0 else False
+      self.steer_touch_info = cp.vl["STEERING_WHEEL"]
+      self.wheel_touched = self.steer_touch_info["TOUCH_STAT"] > 0
+      ret.steerTouch = self.steer_touch_info["TOUCH_DETECT"] > 0
     ret.accFaulted = cp.vl["TCS"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
     ret.cruiseButtons = self.cruise_buttons[-1]
 

@@ -194,6 +194,8 @@ class Car:
     CS.vCruise = float(self.v_cruise_helper.v_cruise_kph)
     CS.vCruiseCluster = float(self.v_cruise_helper.v_cruise_cluster_kph)
     CS.pauseSpdLimit = bool(self.v_cruise_helper.pause_spdlimit)
+    CS.cruiseGap = self.v_cruise_helper.cruiseGap
+    CS.latEnabled = self.v_cruise_helper._lat_enabled
 
     return CS, RD
 

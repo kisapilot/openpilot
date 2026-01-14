@@ -6,14 +6,13 @@ from opendbc.car.interfaces import RadarInterfaceBase
 from opendbc.car.hyundai.values import DBC, HyundaiFlags, HyundaiExtFlags
 from openpilot.common.params import Params
 from opendbc.car.hyundai.hyundaicanfd import CanBus
-from openpilot.common.filter_simple import MyMovingAverage
 
 SCC_TID = 0
 RADAR_START_ADDR = 0x500
 RADAR_MSG_COUNT = 32
 RADAR_START_ADDR_CANFD1 = 0x210
 RADAR_MSG_COUNT1 = 16
-RADAR_START_ADDR_CANFD2 = 0x3A5 # Group 2, Group 1: 0x210
+RADAR_START_ADDR_CANFD2 = 0x3A5 # Group 2, Group 1: 0x210 2ê°œì”©ìˆì–´ì„œ ì¼ë‹¨ ë³´ë¥˜.
 RADAR_MSG_COUNT2 = 32
 
 # POC for parsing corner radars: https://github.com/commaai/openpilot/pull/24221/
@@ -173,7 +172,7 @@ class RadarInterface(RadarInterfaceBase):
         self.pts[t_id].yvRel = 0.0
 
       t_id += 1
-    # radar group1Àº ÇÏ³ªÀÇ msg¿¡ 2°³ÀÇ ·¹ÀÌ´õ°¡ µé¾îÀÖÀ½.
+    # radar group1ì€ í•˜ë‚˜ì˜ msgì— 2ê°œì˜ ë ˆì´ë”ê°€ ë“¤ì–´ìˆìŒ.
     if self.radar_group1:
       for addr in range(self.radar_start_addr, self.radar_start_addr + self.radar_msg_count):
         msg = self.rcp_tracks.vl[f"RADAR_TRACK_{addr:x}"]
